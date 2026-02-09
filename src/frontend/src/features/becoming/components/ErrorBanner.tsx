@@ -1,17 +1,32 @@
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, RefreshCw } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 
 interface ErrorBannerProps {
   error: Error;
+  onRetry?: () => void;
 }
 
-export function ErrorBanner({ error }: ErrorBannerProps) {
+export function ErrorBanner({ error, onRetry }: ErrorBannerProps) {
   return (
     <Alert variant="destructive" className="glass-surface">
       <AlertCircle className="h-4 w-4" />
-      <AlertTitle>Error</AlertTitle>
-      <AlertDescription>
-        Failed to load habits: {error.message}
+      <AlertTitle>Unable to Load Habits</AlertTitle>
+      <AlertDescription className="mt-2 space-y-3">
+        <p>{error.message}</p>
+        {onRetry && (
+          <div className="flex gap-2">
+            <Button
+              onClick={onRetry}
+              variant="outline"
+              size="sm"
+              className="gap-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Retry
+            </Button>
+          </div>
+        )}
       </AlertDescription>
     </Alert>
   );

@@ -1,45 +1,49 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "App should display monthly totals and remove all goal-related fields across the entire UI.",
+  "summary": "New project",
   "architectural_notes": [],
-  "known_issues": [],
-  "isFixRequest": false,
+  "known_issues": [
+    "After Version 18 deployment, app can get stuck in loading/skeleton state on mobile and not render the monthly totals."
+  ],
+  "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-remove-all-goal-related-labels-and-values-from-each-habit-row-so-the-habit-info-cell-never-shows-a-goal-line-and-the-monthly-total-area-never-renders-a-goal-segment-only-show-the-monthly-total-value",
-      "title": "Remove all goal-related labels and values from each habit row so the habit info cell never shows a \"Goal\" line and the monthly total area never renders a \"/ Goal: …\" segment; only show the monthly total value.",
+      "id": "feature-prevent-the-app-from-staying-indefinitely-in-the-loading-skeleton-ui-on-mobile-by-ensuring-actor-initialization-failures-and-long-running-actor-initialization-are-surfaced-to-the-ui-as-an-error-state-instead-of-keeping-isfetching-isloading-true-forever",
+      "title": "Prevent the app from staying indefinitely in the loading/skeleton UI on mobile by ensuring actor initialization failures and long-running actor initialization are surfaced to the UI as an error state (instead of keeping `isFetching/isLoading` true forever).",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-update-the-habit-edit-modal-to-remove-goal-related-ui-do-not-show-any-field-labeled-monthly-goal-and-do-not-allow-editing-storing-a-per-month-goal-value-the-volume-input-should-only-appear-for-unit-types-that-use-per-completion-volume-reps-and-time-for-all-other-unit-types-hide-the-volume-input-entirely",
-      "title": "Update the habit edit modal to remove goal-related UI: do not show any field labeled \"Monthly Goal\" and do not allow editing/storing a per-month goal value. The volume input should only appear for unit types that use per-completion volume (\"reps\" and \"time\"); for all other unit types, hide the volume input entirely.",
+      "id": "feature-add-a-user-visible-recovery-path-when-loading-fails-provide-a-clear-error-ui-english-text-with-a-primary-action-to-retry-loading-refetch-recreate-actor-refetch-habits-without-requiring-the-user-to-close-the-tab",
+      "title": "Add a user-visible recovery path when loading fails: provide a clear error UI (English text) with a primary action to retry loading (refetch/recreate actor + refetch habits) without requiring the user to close the tab.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-ensure-all-habit-related-screens-components-in-the-app-contain-no-goal-related-copy-or-ui-remnants-e-g-goal-monthly-goal-including-empty-zero-values-and-that-monthly-totals-remain-visible-wherever-they-are-currently-shown",
-      "title": "Ensure all habit-related screens/components in the app contain no goal-related copy or UI remnants (e.g., \"Goal:\", \"Monthly Goal\"), including empty/zero values, and that monthly totals remain visible wherever they are currently shown.",
+      "id": "feature-adjust-the-loading-state-logic-in-the-main-view-so-that-it-does-not-rely-on-a-condition-that-can-remain-true-indefinitely-e-g-isinitializing-actor-fetching-and-so-that-error-states-take-precedence-over-skeleton-rendering-for-authenticated-users",
+      "title": "Adjust the loading-state logic in the main view so that it does not rely on a condition that can remain true indefinitely (e.g., `isInitializing`/actor fetching) and so that error states take precedence over skeleton rendering for authenticated users.",
       "reqIds": [
-        "REQ-3"
+        "REQ-4"
       ],
       "version": 1
     }
   ],
   "new_feature_requests": [
     {
-      "id": "AR-1",
-      "summary": "Remove all goal-related fields everywhere in the app and show only monthly totals",
-      "reqIds": [],
+      "id": "AR-3",
+      "summary": "Harden actor initialization so it cannot hang indefinitely: wrap actor creation and `_initializeAccessControlWithSecret(...)` in a timeout and propagate timeout/initialization errors through `useActor()` so `useHabits()`/`BecomingView` can render an error instead of remaining stuck in a loading state.",
+      "reqIds": [
+        "REQ-3"
+      ],
       "status": "pending"
     }
   ],
-  "projectName": "Remove all goal-related UI and show only monthly totals",
+  "projectName": "Fix mobile app stuck on loading/skeleton after Version 18",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

@@ -1,42 +1,57 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-09T23:33:12.225Z",
-  "summary": "The diff clearly updates HabitRow to remove goal display and show only monthly totals, and updates HabitEditModal save logic to only persist volume for reps/time habits. However, the truncated HabitEditModal render section prevents confirming that goal/volume inputs are fully removed/hidden as required, and there is insufficient evidence of a global removal of goal-related copy across all habit screens/components.",
+  "generatedAt": "2026-02-09T23:44:01.395Z",
+  "summary": "Frontend adds a new actor-initialization hook with a 15s timeout, surfaces initialization/query errors to the main view via an ErrorBanner, and provides a Retry path. However, the backend-side hardening/timeout requirement is not evidenced, and the main view can still show an unbounded skeleton if Internet Identity initialization never resolves. Several unrelated UI/theming and feature changes appear in the diff summary.",
   "missing_requirements": [
     {
-      "id": "REQ-2",
-      "requirement": "Update the habit edit modal to remove goal-related UI: do not show any field labeled \"Monthly Goal\" and do not allow editing/storing a per-month goal value. The volume input should only appear for unit types \"reps\" and \"time\"; for all other unit types, hide the volume input entirely.",
-      "reason": "HabitEditModal.tsx is truncated before the JSX/UI portion that would show/hide inputs and labels. While save logic appears to restrict volume updates to reps/time, the diff summary does not provide evidence that (a) the modal no longer renders any \"Monthly Goal\" field/label, and (b) the volume input is completely hidden for non-reps/time unit types.",
+      "id": "REQ-3",
+      "requirement": "Harden actor initialization so it cannot hang indefinitely: wrap actor creation and `_initializeAccessControlWithSecret(...)` in a timeout and propagate timeout/initialization errors through `useActor()` so `useHabits()`/`BecomingView` can render an error instead of remaining stuck in a loading state.",
+      "reason": "The diff shows a frontend-only timeout wrapper (`useActorWithTimeout`) racing actor creation vs. a 15s timer, but there is no evidence of backend-side timeout/hardening for `_initializeAccessControlWithSecret(...)` or actor creation. The only backend change shown is additional/changed canister logic without any explicit timeout/initialization-hardening mechanism.",
       "evidence": [
-        "frontend/src/features/becoming/components/HabitEditModal.tsx (truncated)"
+        "frontend/src/hooks/useActorWithTimeout.ts",
+        "backend/main.mo"
       ]
     },
     {
-      "id": "REQ-3",
-      "requirement": "Ensure all habit-related screens/components contain no goal-related copy or UI remnants (e.g., \"Goal:\", \"Monthly Goal\"), including empty/zero values, and that monthly totals remain visible wherever currently shown.",
-      "reason": "Only HabitRow and (partially shown) HabitEditModal changes are evidenced. The diff summary does not demonstrate a global pass/removal of goal-related strings across all habit-related components, so compliance with 'no goal-related copy anywhere' cannot be verified from the provided changes.",
+      "id": "REQ-4",
+      "requirement": "Adjust the loading-state logic in the main view so that it does not rely on a condition that can remain true indefinitely and so that error states take precedence over skeleton rendering for authenticated users.",
+      "reason": "BecomingView still renders the skeleton whenever `isInitializing` is true. If Internet Identity initialization can hang indefinitely on mobile, the UI can still remain in the skeleton state without transitioning to an error/data state, contrary to the requirement to avoid unbounded conditions.",
       "evidence": [
-        "frontend/src/features/becoming/components/HabitRow.tsx (truncated)",
-        "frontend/src/features/becoming/components/HabitEditModal.tsx (truncated)",
-        "frontend-file-summaries.txt (truncated)"
+        "frontend/src/features/becoming/components/BecomingView.tsx"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Added/expanded time-string validation, parsing, normalization, and toast error handling in the habit edit save flow for time-based volume.",
-      "reason": "The BuildRequest focuses on removing goal-related UI and constraining when the volume input appears; it does not request changes to validation/normalization behavior for time inputs. This appears to be additional functionality beyond the specified requirements.",
+      "description": "Added/changed user profile endpoints and related authorization checks in the backend canister.",
+      "reason": "The BuildRequest is focused on fixing the loading/skeleton hang and adding retry/error handling; it does not request new backend user-profile APIs.",
       "evidence": [
-        "frontend/src/features/becoming/components/HabitEditModal.tsx (truncated)"
+        "backend/main.mo"
+      ]
+    },
+    {
+      "description": "Broad UI/theming and component behavior changes (e.g., new Cyber-Professional theme tokens, touch-optimized month tabs, header/footer/heart icon, toast notification usage).",
+      "reason": "These appear unrelated to the stated non-goal of avoiding new product features beyond fixing loading/skeleton and adding retry/error handling.",
+      "evidence": [
+        "frontend-file-summaries.txt",
+        "frontend/src/features/becoming/constants/months2026.ts",
+        "frontend/src/features/becoming/components/MonthTabs.tsx",
+        "frontend/src/App.tsx",
+        "frontend/src/index.css",
+        "frontend/tailwind.config.js",
+        "frontend/src/features/becoming/api/queries.ts"
       ]
     }
   ],
-  "confidence": 0.62,
+  "confidence": 0.66,
   "changed_files": [
+    "backend/main.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/features/becoming/components/HabitEditModal.tsx",
-    "frontend/src/features/becoming/components/HabitRow.tsx",
+    "frontend/src/features/becoming/api/queries.ts",
+    "frontend/src/features/becoming/components/BecomingView.tsx",
+    "frontend/src/features/becoming/components/ErrorBanner.tsx",
+    "frontend/src/hooks/useActorWithTimeout.ts",
     "project_state.json"
   ]
 }

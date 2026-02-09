@@ -5,10 +5,9 @@ import Nat "mo:core/Nat";
 import Principal "mo:core/Principal";
 import Iter "mo:core/Iter";
 import Runtime "mo:core/Runtime";
-
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
-
+import Text "mo:core/Text";
 
 actor {
   let accessControlState = AccessControl.initState();

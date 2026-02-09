@@ -2,10 +2,12 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-remove-all-goal-related-labels-and-values-from-each-habit-row-so-the-habit-info-cell-never-shows-a-goal-line-and-the-monthly-total-area-never-renders-a-goal-segment-only-show-the-monthly-total-value",
-      "featureTitle": "Remove all goal-related labels and values from each habit row so the habit info cell never shows a \"Goal\" line and the monthly total area never renders a \"/ Goal: …\" segment; only show the monthly total value.",
+      "featureId": "feature-prevent-the-app-from-staying-indefinitely-in-the-loading-skeleton-ui-on-mobile-by-ensuring-actor-initialization-failures-and-long-running-actor-initialization-are-surfaced-to-the-ui-as-an-error-state-instead-of-keeping-isfetching-isloading-true-forever",
+      "featureTitle": "Prevent the app from staying indefinitely in the loading/skeleton UI on mobile by ensuring actor initialization failures and long-running actor initialization are surfaced to the UI as an error state (instead of keeping `isFetching/isLoading` true forever).",
       "files": [
-        "frontend/src/features/becoming/components/HabitRow.tsx"
+        "frontend/src/features/becoming/api/queries.ts",
+        "frontend/src/features/becoming/components/BecomingView.tsx",
+        "frontend/src/hooks/useActorWithTimeout.ts"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -21,10 +23,12 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-update-the-habit-edit-modal-to-remove-goal-related-ui-do-not-show-any-field-labeled-monthly-goal-and-do-not-allow-editing-storing-a-per-month-goal-value-the-volume-input-should-only-appear-for-unit-types-that-use-per-completion-volume-reps-and-time-for-all-other-unit-types-hide-the-volume-input-entirely",
-      "featureTitle": "Update the habit edit modal to remove goal-related UI: do not show any field labeled \"Monthly Goal\" and do not allow editing/storing a per-month goal value. The volume input should only appear for unit types that use per-completion volume (\"reps\" and \"time\"); for all other unit types, hide the volume input entirely.",
+      "featureId": "feature-add-a-user-visible-recovery-path-when-loading-fails-provide-a-clear-error-ui-english-text-with-a-primary-action-to-retry-loading-refetch-recreate-actor-refetch-habits-without-requiring-the-user-to-close-the-tab",
+      "featureTitle": "Add a user-visible recovery path when loading fails: provide a clear error UI (English text) with a primary action to retry loading (refetch/recreate actor + refetch habits) without requiring the user to close the tab.",
       "files": [
-        "frontend/src/features/becoming/components/HabitEditModal.tsx"
+        "frontend/src/features/becoming/api/queries.ts",
+        "frontend/src/features/becoming/components/BecomingView.tsx",
+        "frontend/src/features/becoming/components/ErrorBanner.tsx"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -40,11 +44,10 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-ensure-all-habit-related-screens-components-in-the-app-contain-no-goal-related-copy-or-ui-remnants-e-g-goal-monthly-goal-including-empty-zero-values-and-that-monthly-totals-remain-visible-wherever-they-are-currently-shown",
-      "featureTitle": "Ensure all habit-related screens/components in the app contain no goal-related copy or UI remnants (e.g., \"Goal:\", \"Monthly Goal\"), including empty/zero values, and that monthly totals remain visible wherever they are currently shown.",
+      "featureId": "feature-adjust-the-loading-state-logic-in-the-main-view-so-that-it-does-not-rely-on-a-condition-that-can-remain-true-indefinitely-e-g-isinitializing-actor-fetching-and-so-that-error-states-take-precedence-over-skeleton-rendering-for-authenticated-users",
+      "featureTitle": "Adjust the loading-state logic in the main view so that it does not rely on a condition that can remain true indefinitely (e.g., `isInitializing`/actor fetching) and so that error states take precedence over skeleton rendering for authenticated users.",
       "files": [
-        "frontend/src/features/becoming/components/HabitEditModal.tsx",
-        "frontend/src/features/becoming/components/HabitRow.tsx"
+        "frontend/src/features/becoming/components/BecomingView.tsx"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -55,7 +58,7 @@
         "authorization@4.0.0"
       ],
       "testIds": [
-        "REQ-3"
+        "REQ-4"
       ],
       "confidence": "high"
     }

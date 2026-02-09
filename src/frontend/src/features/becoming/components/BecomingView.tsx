@@ -10,28 +10,27 @@ import { useInternetIdentity } from '../../../hooks/useInternetIdentity';
 
 export function BecomingView() {
   const [selectedMonth, setSelectedMonth] = useState(0);
-  const { data: habits, isLoading, error, isFetched } = useHabits();
+  const { data: habits, isLoading, error, isFetched, isError, retry } = useHabits();
   const { identity, isInitializing } = useInternetIdentity();
 
   const isAuthenticated = !!identity;
 
-  // Show loading skeleton while initializing or loading
+  // Show auth notice if not authenticated
+  if (!isAuthenticated && !isInitializing) {
+    return <AuthRequiredNotice />;
+  }
+
+  // Show error banner if backend call failed (actor init or habits query)
+  if (isAuthenticated && isError && error) {
+    return <ErrorBanner error={error as Error} onRetry={retry} />;
+  }
+
+  // Show loading skeleton while initializing or loading (bounded by timeout)
   if (isInitializing || (isAuthenticated && isLoading)) {
     return <GridSkeleton />;
   }
 
-  // Show auth notice if not authenticated
-  if (!isAuthenticated) {
-    return <AuthRequiredNotice />;
-  }
-
-  // Show error banner if backend call failed
-  if (error) {
-    return <ErrorBanner error={error as Error} />;
-  }
-
   // Only render the grid once we've definitively fetched data
-  // This prevents showing empty state while actor is still initializing
   const showGrid = isAuthenticated && isFetched;
 
   return (

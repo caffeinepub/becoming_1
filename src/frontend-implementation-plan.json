@@ -1,57 +1,75 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Remove goal UI and display monthly totals only",
+  "title": "Fix mobile loading skeleton hang by surfacing actor initialization errors + retry UI",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Remove all goal-related labels/values from habit rows and show only the monthly total value.",
+      "summary": "Ensure actor initialization failures/long-running initialization resolve to an error state within a bounded time instead of keeping the skeleton visible indefinitely on mobile.",
       "acceptanceCriteria": [
-        "In the habit row UI, there is no text \"Goal\" rendered anywhere (including \"Goal: 0\").",
-        "For non-reps/time habits, the monthly total section shows only \"Monthly total: <value>\" with no \"/\" and no secondary value.",
-        "For reps/time habits, the monthly total section continues to show only the monthly total (as it does today)."
+        "When loading the app on mobile and the backend/agent/actor initialization fails, the UI exits the skeleton state and shows an error banner/message within a bounded time (e.g., <= 15 seconds) rather than displaying the skeleton indefinitely.",
+        "If actor initialization succeeds, the skeleton transitions to the authenticated view and monthly totals/habit grid rendering without requiring a manual refresh."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/features/becoming/components/HabitRow.tsx",
+          "path": "frontend/src/hooks/useActorWithTimeout.ts",
+          "operation": "create",
+          "description": "Create a safe wrapper hook that initializes the backend actor with a hard timeout (e.g., 15s) and exposes deterministic error + retry state; mirror the existing actor creation behavior (authenticated + anonymous), while avoiding modifications to the immutable frontend/src/hooks/useActor.ts."
+        },
+        {
+          "path": "frontend/src/features/becoming/api/queries.ts",
           "operation": "modify",
-          "description": "Remove the goal-related line from the habit info cell for non-reps/time unit types (do not render any \"Goal\" label/value). Keep per-completion display only for reps/time if desired, but ensure it never uses goal copy. Update the monthly total area to always render only the monthly total value (remove the \"/\" separator and any \"/ Goal: …\" segment). Verify the component's usage instructions before implementing (shadcn-ui Checkbox/Popover are composed here)."
+          "description": "Switch habit queries to depend on the new useActorWithTimeout hook so actor initialization errors/timeouts propagate into React Query error state (instead of indefinite loading); keep retries disabled for the habits query and ensure loading reflects bounded actor initialization."
+        },
+        {
+          "path": "frontend/src/features/becoming/components/BecomingView.tsx",
+          "operation": "modify",
+          "description": "Update the main view to consume the new actor initialization error state (via useHabits or the actor wrapper) and render an error state when actor initialization fails/timeouts, ensuring skeleton rendering is only shown during an active, bounded attempt."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Remove goal-related UI from the habit edit modal; only show/save per-completion volume for reps/time habits.",
+      "summary": "Provide a user-visible error screen with a primary Retry action that re-attempts actor initialization and refetches habits without closing the tab.",
       "acceptanceCriteria": [
-        "When editing a habit with unit type not equal to \"reps\" or \"time\", the modal does not display the volume/goal input at all.",
-        "When editing a habit with unit type \"reps\" or \"time\", the modal continues to show the \"Volume per completion\" input and saves as before.",
-        "No UI text \"Monthly Goal\" appears anywhere in the app."
+        "When a loading error occurs, the screen shows an error message (not a skeleton) and a Retry button.",
+        "Tapping Retry triggers a new attempt to initialize the actor (if needed) and refetch habits, and the UI reflects success or failure accordingly."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/features/becoming/components/HabitEditModal.tsx",
+          "path": "frontend/src/features/becoming/components/ErrorBanner.tsx",
           "operation": "modify",
-          "description": "Remove the \"Monthly Goal\" label/copy and conditionally render the volume input block only when unit type is \"reps\" or \"time\". Adjust save logic so volume updates are only attempted for \"reps\"/\"time\" (no goal storage/editing path for other units). Keep time validation/parsing behavior intact for \"time\". Verify the component's usage instructions before implementing (shadcn-ui Dialog/Select/Input/Button/Label are composed here)."
+          "description": "Extend the error UI to include clear English recovery guidance and a primary Retry button (use shadcn-ui Button + Alert composition; verify the component's usage instructions before implementing). Accept an optional onRetry callback and render the action when provided."
+        },
+        {
+          "path": "frontend/src/features/becoming/api/queries.ts",
+          "operation": "modify",
+          "description": "Expose a retry/recovery function from useHabits (or a separate exported helper) that triggers actor re-initialization retry (via the wrapper hook) and refetches habits; ensure it can be called from the UI without requiring a full reload."
+        },
+        {
+          "path": "frontend/src/features/becoming/components/BecomingView.tsx",
+          "operation": "modify",
+          "description": "Wire the Retry action into the error UI shown during load failures so that tapping Retry re-attempts actor initialization and then refetches habits, updating the view to either data or error accordingly."
         }
       ]
     },
     {
-      "id": "REQ-3",
-      "summary": "Ensure no goal-related copy/UI remnants exist anywhere in the habit UI while keeping monthly totals visible.",
+      "id": "REQ-4",
+      "summary": "Refactor main view loading logic so error states take precedence and the skeleton is only shown during bounded loading attempts for authenticated users.",
       "acceptanceCriteria": [
-        "A global pass through the habit tracking UI confirms no goal-related strings are rendered anywhere.",
-        "Monthly totals still render correctly for all unit types across month tabs."
+        "For an authenticated user, if the habits query cannot run because actor initialization errored, the error UI is shown (not the auth notice and not the skeleton).",
+        "For an authenticated user, the skeleton is only shown during an active, bounded loading attempt; afterward the UI resolves to either data or an error UI."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/features/becoming/components/HabitRow.tsx",
+          "path": "frontend/src/features/becoming/components/BecomingView.tsx",
           "operation": "modify",
-          "description": "Audit and remove any remaining goal-related strings/branches (e.g., \"Goal:\") and ensure the monthly totals remain visible and unchanged in placement across unit types after REQ-1 changes. Verify the component's usage instructions before implementing (shadcn-ui Checkbox/Popover are composed here)."
+          "description": "Reorder and tighten conditional rendering: show AuthRequiredNotice only when unauthenticated; for authenticated users, show error UI first (actor init error or habits query error), then skeleton only while actively loading within the bounded window, and finally render the habit manager/grid when fetched."
         },
         {
-          "path": "frontend/src/features/becoming/components/HabitEditModal.tsx",
+          "path": "frontend/src/features/becoming/components/GridSkeleton.tsx",
           "operation": "modify",
-          "description": "Audit and remove any remaining goal-related copy (e.g., \"Monthly Goal\") and ensure the modal still supports reps/time volume-per-completion editing without exposing goal UI for other unit types. Verify the component's usage instructions before implementing (shadcn-ui Dialog/Select/Input/Button/Label are composed here)."
+          "description": "Adjust skeleton usage expectations (if needed) to ensure it is only used for active loading states and does not appear as a fallback for unresolved/unknown states; keep composition-only (do not edit files under frontend/src/components/ui)."
         }
       ]
     }

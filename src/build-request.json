@@ -1,75 +1,106 @@
 {
   "kind": "build_request",
-  "title": "Remove all goal-related UI and show only monthly totals",
-  "priority": "normal",
+  "title": "Fix mobile app stuck on loading/skeleton after Version 18",
+  "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Remove all goal-related labels and values from each habit row so the habit info cell never shows a \"Goal\" line and the monthly total area never renders a \"/ Goal: …\" segment; only show the monthly total value.",
-      "target": "frontend",
+      "text": "Prevent the app from staying indefinitely in the loading/skeleton UI on mobile by ensuring actor initialization failures and long-running actor initialization are surfaced to the UI as an error state (instead of keeping `isFetching/isLoading` true forever).",
+      "target": "both",
       "source": {
         "messageIds": [
-          "msg-5",
-          "msg-7"
+          "msg-6",
+          "msg-8",
+          "msg-10",
+          "msg-12",
+          "msg-14"
         ],
         "quotes": [
-          "Perfect - if you can just remove goal. There is no goal for this I just want monthly total to show",
-          "1. Yes \n2. Yes \n3. Yes remove all"
+          "App is not loading correctly (see attached). Can you make it so that it loads correctly?",
+          "Yes correct",
+          "Yes",
+          "Proceed"
         ]
       },
       "acceptanceCriteria": [
-        "In the habit row UI, there is no text \"Goal\" rendered anywhere (including \"Goal: 0\").",
-        "For non-reps/time habits, the monthly total section shows only \"Monthly total: <value>\" with no \"/\" and no secondary value.",
-        "For reps/time habits, the monthly total section continues to show only the monthly total (as it does today)."
+        "When loading the app on mobile and the backend/agent/actor initialization fails, the UI exits the skeleton state and shows an error banner/message within a bounded time (e.g., <= 15 seconds) rather than displaying the skeleton indefinitely.",
+        "If actor initialization succeeds, the skeleton transitions to the authenticated view and monthly totals/habit grid rendering without requiring a manual refresh."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Update the habit edit modal to remove goal-related UI: do not show any field labeled \"Monthly Goal\" and do not allow editing/storing a per-month goal value. The volume input should only appear for unit types that use per-completion volume (\"reps\" and \"time\"); for all other unit types, hide the volume input entirely.",
+      "text": "Add a user-visible recovery path when loading fails: provide a clear error UI (English text) with a primary action to retry loading (refetch/recreate actor + refetch habits) without requiring the user to close the tab.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-5",
-          "msg-7"
+          "msg-6",
+          "msg-8",
+          "msg-14"
         ],
         "quotes": [
-          "Perfect - if you can just remove goal. There is no goal for this I just want monthly total to show",
-          "1. Yes \n2. Yes \n3. Yes remove all"
+          "App is not loading correctly (see attached). Can you make it so that it loads correctly?",
+          "Yes correct",
+          "Proceed"
         ]
       },
       "acceptanceCriteria": [
-        "When editing a habit with unit type not equal to \"reps\" or \"time\", the modal does not display the volume/goal input at all.",
-        "When editing a habit with unit type \"reps\" or \"time\", the modal continues to show the \"Volume per completion\" input and saves as before.",
-        "No UI text \"Monthly Goal\" appears anywhere in the app."
+        "When a loading error occurs, the screen shows an error message (not a skeleton) and a Retry button.",
+        "Tapping Retry triggers a new attempt to initialize the actor (if needed) and refetch habits, and the UI reflects success or failure accordingly."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Ensure all habit-related screens/components in the app contain no goal-related copy or UI remnants (e.g., \"Goal:\", \"Monthly Goal\"), including empty/zero values, and that monthly totals remain visible wherever they are currently shown.",
-      "target": "frontend",
+      "text": "Harden actor initialization so it cannot hang indefinitely: wrap actor creation and `_initializeAccessControlWithSecret(...)` in a timeout and propagate timeout/initialization errors through `useActor()` so `useHabits()`/`BecomingView` can render an error instead of remaining stuck in a loading state.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-7"
+          "msg-6",
+          "msg-8",
+          "msg-10",
+          "msg-12",
+          "msg-14"
         ],
         "quotes": [
-          "Yes remove all"
+          "App is not loading correctly (see attached). Can you make it so that it loads correctly?",
+          "Yes correct",
+          "Happened on mobile but not sure",
+          "Yes",
+          "Proceed"
         ]
       },
       "acceptanceCriteria": [
-        "A global pass through the habit tracking UI confirms no goal-related strings are rendered anywhere.",
-        "Monthly totals still render correctly for all unit types across month tabs."
+        "If `_initializeAccessControlWithSecret` or actor creation does not complete within the timeout window, the frontend receives a deterministic error state and stops showing the skeleton.",
+        "No backend state migration is required to implement this change."
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Adjust the loading-state logic in the main view so that it does not rely on a condition that can remain true indefinitely (e.g., `isInitializing`/actor fetching) and so that error states take precedence over skeleton rendering for authenticated users.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-8",
+          "msg-14"
+        ],
+        "quotes": [
+          "Yes correct",
+          "Proceed"
+        ]
+      },
+      "acceptanceCriteria": [
+        "For an authenticated user, if the habits query cannot run because actor initialization errored, the error UI is shown (not the auth notice and not the skeleton).",
+        "For an authenticated user, the skeleton is only shown during an active, bounded loading attempt; afterward the UI resolves to either data or an error UI."
       ]
     }
   ],
   "constraints": [
-    "Do not edit files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or any files in frontend/src/components/ui (compose them instead).",
-    "Keep the backend single-actor architecture; do not introduce additional canisters/services.",
-    "Do not introduce external databases or third-party auth providers (Internet Identity only)."
+    "Do not edit files under `frontend/src/components/ui` (compose them instead).",
+    "Do not modify immutable paths listed in SYSTEM_CONTEXT (e.g., do not edit `frontend/src/hooks/useInternetIdentity.ts` or `frontend/src/hooks/useActor.ts` directly if they are considered immutable in this environment; apply fixes by adding safe wrappers/adapters or adjusting calling code where allowed).",
+    "Keep Motoko logic in the single main actor (`backend/main.mo`); only add `backend/migration.mo` if an actual state upgrade is required."
   ],
   "nonGoals": [
-    "Removing volume-per-completion functionality for \"reps\" and \"time\" habits.",
-    "Changing how monthly totals are calculated.",
-    "Backend schema/state migrations unless strictly required to remove goal UI (prefer no migration)."
+    "Adding new product features beyond fixing the loading/skeleton issue and providing retry/error handling.",
+    "Changing authentication providers (Internet Identity remains the only auth mechanism)."
   ],
   "imageRequirements": {
     "required": [],

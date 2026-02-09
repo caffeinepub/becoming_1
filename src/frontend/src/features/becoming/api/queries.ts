@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useActor } from '../../../hooks/useActor';
+import { useActorWithTimeout } from '../../../hooks/useActorWithTimeout';
 import { useInternetIdentity } from '../../../hooks/useInternetIdentity';
 import type { Habit, TimeVolumeEntry } from '../../../backend';
 import { buildCompletionMap, type HabitWithCompletion, computeCompoundedVolumeTracking } from '../state/habitModel';
@@ -10,7 +10,7 @@ function getHabitsQueryKey(principalText: string | null) {
 }
 
 export function useHabits() {
-  const { actor, isFetching: isActorFetching } = useActor();
+  const { actor, isFetching: isActorFetching, error: actorError, isError: isActorError, retry: retryActor } = useActorWithTimeout();
   const { identity } = useInternetIdentity();
 
   const isAuthenticated = !!identity;
@@ -27,16 +27,29 @@ export function useHabits() {
     retry: false,
   });
 
+  // Expose actor error if it exists
+  const error = isActorError ? actorError : query.error;
+  const isError = isActorError || query.isError;
+
   // Return custom state that properly reflects actor dependency
   return {
     ...query,
     isLoading: isActorFetching || query.isLoading,
     isFetched: !!actor && query.isFetched,
+    error,
+    isError,
+    retry: () => {
+      if (isActorError) {
+        retryActor();
+      } else {
+        query.refetch();
+      }
+    },
   };
 }
 
 export function useAddHabit() {
-  const { actor } = useActor();
+  const { actor } = useActorWithTimeout();
   const { identity } = useInternetIdentity();
   const queryClient = useQueryClient();
 
@@ -60,7 +73,7 @@ export function useAddHabit() {
 }
 
 export function useUpdateHabit() {
-  const { actor } = useActor();
+  const { actor } = useActorWithTimeout();
   const { identity } = useInternetIdentity();
   const queryClient = useQueryClient();
 
@@ -84,7 +97,7 @@ export function useUpdateHabit() {
 }
 
 export function useToggleCompletion() {
-  const { actor } = useActor();
+  const { actor } = useActorWithTimeout();
   const { identity } = useInternetIdentity();
   const queryClient = useQueryClient();
 
@@ -162,7 +175,7 @@ export function useToggleCompletion() {
 }
 
 export function useUpdateHabitUnitType() {
-  const { actor } = useActor();
+  const { actor } = useActorWithTimeout();
   const { identity } = useInternetIdentity();
   const queryClient = useQueryClient();
 
@@ -229,7 +242,7 @@ export function useUpdateHabitUnitType() {
 }
 
 export function useUpdateHabitVolume() {
-  const { actor } = useActor();
+  const { actor } = useActorWithTimeout();
   const { identity } = useInternetIdentity();
   const queryClient = useQueryClient();
 
