@@ -16,15 +16,23 @@ export function useHabits() {
   const isAuthenticated = !!identity;
   const principalText = identity?.getPrincipal().toString() || null;
 
-  return useQuery<HabitWithCompletion[]>({
+  const query = useQuery<HabitWithCompletion[]>({
     queryKey: getHabitsQueryKey(principalText),
     queryFn: async () => {
-      if (!actor) return [];
+      if (!actor) throw new Error('Actor not available');
       const habits = await actor.getHabits();
       return habits.map(buildCompletionMap);
     },
     enabled: !!actor && !isActorFetching && isAuthenticated,
+    retry: false,
   });
+
+  // Return custom state that properly reflects actor dependency
+  return {
+    ...query,
+    isLoading: isActorFetching || query.isLoading,
+    isFetched: !!actor && query.isFetched,
+  };
 }
 
 export function useAddHabit() {

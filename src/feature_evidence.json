@@ -2,11 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-fix-the-habit-tracker-grid-layout-so-each-day-number-in-the-header-row-is-perfectly-vertically-aligned-same-column-center-with-its-corresponding-daily-checkbox-for-all-months-on-both-mobile-and-desktop",
-      "featureTitle": "Fix the habit tracker grid layout so each day number in the header row is perfectly vertically aligned (same column center) with its corresponding daily checkbox for all months, on both mobile and desktop.",
+      "featureId": "feature-update-monthly-total-calculations-and-display-for-habits-whose-unit-type-is-neither-reps-nor-time-the-monthly-total-must-equal-the-number-of-selected-day-checkboxes-each-checked-day-counts-as-1-and-the-ui-must-show-both-the-monthly-total-and-the-goal-in-the-existing-monthly-totals-volumes-area-for-the-habit-row",
+      "featureTitle": "Update monthly total calculations and display for habits whose unit type is neither \"reps\" nor \"time\": the monthly total must equal the number of selected day checkboxes (each checked day counts as +1), and the UI must show both the monthly total and the goal in the existing monthly totals/volumes area for the habit row.",
       "files": [
-        "frontend/src/features/becoming/components/HabitGrid.tsx",
-        "frontend/src/features/becoming/components/HabitRow.tsx"
+        "frontend/src/features/becoming/components/HabitRow.tsx",
+        "frontend/src/features/becoming/state/habitModel.ts"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -22,13 +22,11 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-standardize-the-day-column-sizing-and-spacing-between-the-header-day-cells-and-the-checkbox-cells-by-using-the-same-fixed-column-width-and-internal-padding-strategy-across-both-header-habitgrid-and-rows-habitrow",
-      "featureTitle": "Standardize the day-column sizing and spacing between the header day cells and the checkbox cells by using the same fixed column width and internal padding strategy across both header (HabitGrid) and rows (HabitRow).",
+      "featureId": "feature-ensure-the-16-8-fasting-habit-follows-the-non-reps-time-monthly-total-behavior-monthly-total-increments-by-1-per-checked-day-and-displays-the-goal-alongside-the-monthly-total-in-the-existing-monthly-totals-volumes-area",
+      "featureTitle": "Ensure the \"16/8 fasting\" habit follows the non-(reps/time) monthly total behavior: monthly total increments by 1 per checked day and displays the goal alongside the monthly total in the existing monthly totals/volumes area.",
       "files": [
-        "frontend/src/features/becoming/components/GridSkeleton.tsx",
-        "frontend/src/features/becoming/components/HabitGrid.tsx",
         "frontend/src/features/becoming/components/HabitRow.tsx",
-        "frontend/src/features/becoming/components/habitGridLayout.ts"
+        "frontend/src/features/becoming/state/habitModel.ts"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -40,6 +38,27 @@
       ],
       "testIds": [
         "REQ-2"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-revise-the-habit-editing-ui-so-edit-controls-are-not-visible-on-the-main-grid-remove-the-always-hover-visible-inline-edit-buttons-for-name-unit-volume-from-the-habit-row-and-instead-make-clicking-tapping-a-habit-open-a-small-pop-up-with-a-single-edit-pen-action-selecting-the-pen-must-open-a-full-habit-edit-modal-that-allows-changing-all-habit-details-currently-editable-in-the-app-including-name-unit-type-and-the-selected-month-s-volume-goal",
+      "featureTitle": "Revise the habit editing UI so edit controls are not visible on the main grid: remove the always/hover-visible inline edit buttons for name/unit/volume from the habit row, and instead make clicking/tapping a habit open a small pop-up with a single edit-pen action; selecting the pen must open a full habit edit modal that allows changing all habit details currently editable in the app (including name, unit type, and the selected month’s volume/goal).",
+      "files": [
+        "frontend/src/features/becoming/components/HabitEditModal.tsx",
+        "frontend/src/features/becoming/components/HabitRow.tsx",
+        "frontend/src/features/becoming/components/HabitRowActionsPopover.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0"
+      ],
+      "testIds": [
+        "REQ-3"
       ],
       "confidence": "high"
     }

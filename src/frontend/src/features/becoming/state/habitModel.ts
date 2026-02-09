@@ -115,28 +115,38 @@ export function getVolumeDisplayString(habit: Habit, monthIndex: number): string
 /**
  * Computes the monthly total volume for a habit in a given month
  * Returns a formatted string based on unit type
+ * 
+ * For "reps": monthly total = (per-completion volume) × (completed days count)
+ * For "time": monthly total = (per-completion minutes) × (completed days count), formatted as M:SS
+ * For other units: monthly total = completed days count (each checked day = +1)
  */
 export function getMonthlyTotalVolume(habit: HabitWithCompletion, monthIndex: number): string {
   const completedDays = getCompletedDaysCount(habit, monthIndex);
-  if (completedDays === 0) {
-    const unitType = getUnitType(habit);
-    return unitType === 'time' ? '0:00' : '0';
-  }
-  
-  const entry = getVolumeEntryForMonth(habit, monthIndex);
-  if (!entry || entry.minutes === undefined || entry.minutes === null) {
-    const unitType = getUnitType(habit);
-    return unitType === 'time' ? '0:00' : '0';
-  }
-  
-  const perCompletionVolume = Number(entry.minutes);
-  const totalVolume = perCompletionVolume * completedDays;
-  
   const unitType = getUnitType(habit);
-  if (unitType === 'time') {
+  
+  if (unitType === 'reps') {
+    // For reps: multiply per-completion volume by completed days
+    if (completedDays === 0) return '0';
+    
+    const entry = getVolumeEntryForMonth(habit, monthIndex);
+    if (!entry || entry.minutes === undefined || entry.minutes === null) return '0';
+    
+    const perCompletionVolume = Number(entry.minutes);
+    const totalVolume = perCompletionVolume * completedDays;
+    return String(totalVolume);
+  } else if (unitType === 'time') {
+    // For time: multiply per-completion minutes by completed days, format as time
+    if (completedDays === 0) return '0:00';
+    
+    const entry = getVolumeEntryForMonth(habit, monthIndex);
+    if (!entry || entry.minutes === undefined || entry.minutes === null) return '0:00';
+    
+    const perCompletionVolume = Number(entry.minutes);
+    const totalVolume = perCompletionVolume * completedDays;
     return formatMinutesToTimeString(totalVolume);
   } else {
-    return String(totalVolume);
+    // For all other unit types: return completed days count (each checked day = +1)
+    return String(completedDays);
   }
 }
 

@@ -1,62 +1,76 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Habit grid header/checkbox column alignment (mobile + desktop)",
+  "title": "Monthly totals for non reps/time habits + simplified habit editing UX",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Ensure header day numbers and per-day checkboxes share identical columns and stay aligned during horizontal scroll on all viewports.",
+      "summary": "For non-(reps/time) habits, compute monthly totals as checked-days count and show Monthly total + Goal in the existing monthly totals/volumes area.",
       "acceptanceCriteria": [
-        "For any selected month (28–31 days), the day number text is centered directly above the checkbox in the same day column.",
-        "Alignment remains correct on small mobile viewports and on desktop viewports.",
-        "Horizontal scrolling (if present) keeps header day numbers and body checkboxes aligned (no drift/mismatch while scrolling)."
+        "For a habit with unitType not equal to \"reps\" and not equal to \"time\", checking N days in a given month results in a displayed monthly total of N for that month.",
+        "For a habit with unitType \"reps\", the monthly total continues to be calculated as (per-completion volume for the month) × (completed days count) and displayed as it is today.",
+        "For a habit with unitType \"time\", the monthly total continues to be calculated as (per-completion minutes for the month) × (completed days count) and displayed as it is today (formatted time string).",
+        "For non-(reps/time) habits, the goal shown in the monthly total/volume area is the habit’s configured monthly volume value for that selected month (i.e., the same value currently edited/displayed in the habit’s volume field for the month).",
+        "User-facing labels are in English (e.g., \"Monthly total\" and \"Goal\")."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/features/becoming/components/HabitGrid.tsx",
+          "path": "frontend/src/features/becoming/state/habitModel.ts",
           "operation": "modify",
-          "description": "Refactor the grid container so the header row and all habit rows live inside a single horizontal scrolling region and use the same computed grid column template for day columns (eliminating independent row scrolling that can drift)."
+          "description": "Adjust monthly total calculation logic: keep existing behavior for unitType \"reps\" and \"time\", but for all other unit types return the completed-days count (each checked day = +1). Also ensure helpers cleanly support retrieving the selected month’s configured volume/goal for display."
         },
         {
           "path": "frontend/src/features/becoming/components/HabitRow.tsx",
           "operation": "modify",
-          "description": "Update the day-checkbox area layout to rely on the shared grid column sizing (from HabitGrid) and remove per-row horizontal scrolling/gap-based spacing so each checkbox remains centered in its exact day column."
-        },
-        {
-          "path": "frontend/src/index.css",
-          "operation": "modify",
-          "description": "Add reusable CSS classes/variables for the habit grid day-column sizing and centering (e.g., a single day column width token and consistent cell alignment rules) to keep header and body rendering perfectly consistent across breakpoints."
+          "description": "Update the monthly totals/volumes display area to show both \"Monthly total\" and \"Goal\" for non-(reps/time) habits using the habit’s selected-month volume value as the goal, while preserving the existing display for \"reps\" and \"time\" habits."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Standardize day-column width and padding strategy between header cells (HabitGrid) and checkbox cells (HabitRow) using shared layout constants/classes.",
+      "summary": "Ensure the \"16/8 fasting\" habit follows the non-(reps/time) monthly total behavior and shows goal alongside monthly total in the existing totals area.",
       "acceptanceCriteria": [
-        "The header day cell width matches the checkbox cell width for every day column.",
-        "There is no extra inter-column gap in the checkbox row that would shift checkbox centers relative to header centers.",
-        "The visual alignment is consistent across all days in the month (not only the first few visible columns)."
+        "When the unit type for the \"16/8 fasting\" habit is set to anything other than \"reps\" or \"time\", its monthly total equals the number of checked days in the selected month.",
+        "The monthly total/goal display for the \"16/8 fasting\" habit uses the same layout as other habits and appears in the existing monthly total row area."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/features/becoming/components/habitGridLayout.ts",
-          "operation": "create",
-          "description": "Create shared layout helpers/constants (no JSX) for the habit grid (e.g., first-column width token, day-column width token, and a helper to build the grid column template for a given daysInMonth) so both HabitGrid and HabitRow use the same source of truth."
-        },
-        {
-          "path": "frontend/src/features/becoming/components/HabitGrid.tsx",
+          "path": "frontend/src/features/becoming/state/habitModel.ts",
           "operation": "modify",
-          "description": "Adopt the shared layout helpers/constants for header day cells (width, padding, and centering) so the header’s day columns exactly match the body day columns."
+          "description": "Ensure the non-(reps/time) unitType path is unitType-driven (not habit-name-driven) so that habits like \"16/8 fasting\" automatically use checked-days counting when their unitType is neither \"reps\" nor \"time\"."
         },
         {
           "path": "frontend/src/features/becoming/components/HabitRow.tsx",
           "operation": "modify",
-          "description": "Adopt the shared layout helpers/constants for checkbox day cells (width, internal padding strategy, and centering) and remove any residual spacing (e.g., flex gaps) that could shift checkbox centers relative to header centers across the full month width."
+          "description": "Confirm the monthly total/goal rendering is based on unitType and therefore applies consistently to \"16/8 fasting\" without any special-case layout, keeping it in the existing monthly total row area."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Hide inline edit controls from the main grid; replace with a habit click pop-up showing one edit pen that opens a full edit modal for all editable habit details.",
+      "acceptanceCriteria": [
+        "On the main habit grid, the per-field pencil/edit buttons for name/unit/volume are no longer shown (including on hover and on touch devices).",
+        "Clicking/tapping a habit row (or its habit-info cell) opens a contextual pop-up that displays a single pencil/edit action (not multiple edit icons).",
+        "Clicking/tapping the pencil/edit action opens a modal dialog where the user can edit: habit name, unit type, and the selected month’s volume/goal value (with the same validation rules currently used for time vs non-time volume input).",
+        "Saving changes from the modal updates the habit via the existing mutations and refresh/optimistically updates the grid accordingly.",
+        "Cancel/close leaves the habit unchanged and closes the modal."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/features/becoming/components/HabitEditModal.tsx",
+          "operation": "create",
+          "description": "Create a reusable full habit edit modal that supports editing habit name, unit type, and the selected month’s volume/goal, reusing the existing time vs non-time validation and save behaviors. Use shadcn-ui dialog-related components to provide the modal UI. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/features/becoming/components/GridSkeleton.tsx",
+          "path": "frontend/src/features/becoming/components/HabitRowActionsPopover.tsx",
+          "operation": "create",
+          "description": "Create a small contextual pop-up component that appears when the habit is clicked/tapped and shows a single pencil/edit action. Use shadcn-ui popover/dropdown-related components to provide the contextual pop-up behavior. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/features/becoming/components/HabitRow.tsx",
           "operation": "modify",
-          "description": "Adjust the loading skeleton layout to mimic the same fixed day-column sizing strategy as the real grid, preventing perceived misalignment when transitioning from skeleton to loaded content."
+          "description": "Remove the inline/hover edit buttons and per-field inline editing UI from the habit info cell. Make clicking/tapping the habit info area open the new contextual pop-up with a single edit pen action; wire that action to open HabitEditModal. Ensure save/cancel flows call the existing mutations (updateHabit, updateHabitUnitType, updateHabitVolume) and the grid reflects changes via existing React Query invalidation/optimistic updates. Use shadcn-ui button/icon affordances as needed without modifying files under frontend/src/components/ui. Verify the component's usage instructions before implementing."
         }
       ]
     }

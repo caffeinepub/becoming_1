@@ -1,17 +1,34 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-09T20:33:51.303Z",
-  "summary": "The diff implements shared day-column layout constants/classes and applies them to the habit grid header and skeleton, and (per the visible imports/usage) to HabitRow as well, which should align header day numbers with checkbox columns and standardize sizing/padding across header and rows within a single horizontal scroll container.",
-  "missing_requirements": [],
-  "hallucinated_features": [],
-  "confidence": 0.74,
+  "generatedAt": "2026-02-09T23:23:39.137Z",
+  "summary": "Diff implements non-(reps/time) monthly totals as checked-day counts and updates HabitRow UI to show Monthly total and Goal together for those habits. It also replaces inline row editing with a popover containing a single edit action that opens a new HabitEditModal for editing name/unit/volume. One potential gap is that the modal’s cancel/close behavior cannot be verified due to truncation.",
+  "missing_requirements": [
+    {
+      "id": "REQ-3",
+      "requirement": "Cancel/close leaves the habit unchanged and closes the modal.",
+      "reason": "HabitEditModal.tsx is truncated before showing the cancel/close handlers and footer buttons, so it’s not possible to confirm that cancel/close does not persist changes and that it closes the modal.",
+      "evidence": [
+        "frontend/src/features/becoming/components/HabitEditModal.tsx (truncated)"
+      ]
+    }
+  ],
+  "hallucinated_features": [
+    {
+      "description": "Preset unit list includes \"km\" and a custom-unit toggle mechanism in the edit modal.",
+      "reason": "The request only required editing existing fields (name, unit type, selected month’s volume/goal) and did not ask for adding preset units or custom-unit UI behavior.",
+      "evidence": [
+        "frontend/src/features/becoming/components/HabitEditModal.tsx (PRESET_UNITS = ['reps','time','km']; useCustomUnit state)"
+      ]
+    }
+  ],
+  "confidence": 0.62,
   "changed_files": [
     "frontend-file-summaries.txt",
-    "frontend/src/features/becoming/components/GridSkeleton.tsx",
-    "frontend/src/features/becoming/components/HabitGrid.tsx",
+    "frontend/src/features/becoming/components/HabitEditModal.tsx",
     "frontend/src/features/becoming/components/HabitRow.tsx",
-    "frontend/src/features/becoming/components/habitGridLayout.ts",
+    "frontend/src/features/becoming/components/HabitRowActionsPopover.tsx",
+    "frontend/src/features/becoming/state/habitModel.ts",
     "project_state.json"
   ]
 }

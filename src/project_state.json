@@ -1,26 +1,34 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "New project",
-  "architectural_notes": [],
-  "known_issues": [
-    "Dates and tick boxes in the habit tracker grid are slightly misaligned (mobile and desktop)."
+  "summary": "Habit tracking app with monthly volume/totals and habit editing UI.",
+  "architectural_notes": [
+    "Differentiate habit types: reps/time-based vs tick/checkbox-based; monthly totals for checkbox habits are computed as count of selected ticks (+1 per tick) and displayed alongside monthly volume/goal area."
   ],
-  "isFixRequest": true,
+  "known_issues": [],
+  "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-fix-the-habit-tracker-grid-layout-so-each-day-number-in-the-header-row-is-perfectly-vertically-aligned-same-column-center-with-its-corresponding-daily-checkbox-for-all-months-on-both-mobile-and-desktop",
-      "title": "Fix the habit tracker grid layout so each day number in the header row is perfectly vertically aligned (same column center) with its corresponding daily checkbox for all months, on both mobile and desktop.",
+      "id": "feature-update-monthly-total-calculations-and-display-for-habits-whose-unit-type-is-neither-reps-nor-time-the-monthly-total-must-equal-the-number-of-selected-day-checkboxes-each-checked-day-counts-as-1-and-the-ui-must-show-both-the-monthly-total-and-the-goal-in-the-existing-monthly-totals-volumes-area-for-the-habit-row",
+      "title": "Update monthly total calculations and display for habits whose unit type is neither \"reps\" nor \"time\": the monthly total must equal the number of selected day checkboxes (each checked day counts as +1), and the UI must show both the monthly total and the goal in the existing monthly totals/volumes area for the habit row.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-standardize-the-day-column-sizing-and-spacing-between-the-header-day-cells-and-the-checkbox-cells-by-using-the-same-fixed-column-width-and-internal-padding-strategy-across-both-header-habitgrid-and-rows-habitrow",
-      "title": "Standardize the day-column sizing and spacing between the header day cells and the checkbox cells by using the same fixed column width and internal padding strategy across both header (HabitGrid) and rows (HabitRow).",
+      "id": "feature-ensure-the-16-8-fasting-habit-follows-the-non-reps-time-monthly-total-behavior-monthly-total-increments-by-1-per-checked-day-and-displays-the-goal-alongside-the-monthly-total-in-the-existing-monthly-totals-volumes-area",
+      "title": "Ensure the \"16/8 fasting\" habit follows the non-(reps/time) monthly total behavior: monthly total increments by 1 per checked day and displays the goal alongside the monthly total in the existing monthly totals/volumes area.",
       "reqIds": [
         "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-revise-the-habit-editing-ui-so-edit-controls-are-not-visible-on-the-main-grid-remove-the-always-hover-visible-inline-edit-buttons-for-name-unit-volume-from-the-habit-row-and-instead-make-clicking-tapping-a-habit-open-a-small-pop-up-with-a-single-edit-pen-action-selecting-the-pen-must-open-a-full-habit-edit-modal-that-allows-changing-all-habit-details-currently-editable-in-the-app-including-name-unit-type-and-the-selected-month-s-volume-goal",
+      "title": "Revise the habit editing UI so edit controls are not visible on the main grid: remove the always/hover-visible inline edit buttons for name/unit/volume from the habit row, and instead make clicking/tapping a habit open a small pop-up with a single edit-pen action; selecting the pen must open a full habit edit modal that allows changing all habit details currently editable in the app (including name, unit type, and the selected month’s volume/goal).",
+      "reqIds": [
+        "REQ-3"
       ],
       "version": 1
     }
@@ -28,12 +36,18 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Fix UI alignment so each date number sits directly above its corresponding tick box for every month (mobile + desktop)",
+      "summary": "For non-reps/time habits (e.g., 16/8 fasting), count each tick box selection as +1 and show the monthly total/goal in the existing monthly volumes area.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Revise habit edit UI so edit options are hidden on the main screen; tapping a habit shows a single edit-pen popup/icon, which then opens the full habit edit screen.",
       "reqIds": [],
       "status": "pending"
     }
   ],
-  "projectName": "Align day numbers with tick boxes in habit grid (mobile + desktop)",
+  "projectName": "Count monthly totals for non reps/time habits and simplify habit editing UI",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }
