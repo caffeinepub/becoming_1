@@ -1,0 +1,47 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-fix-the-habit-tracker-grid-layout-so-each-day-number-in-the-header-row-is-perfectly-vertically-aligned-same-column-center-with-its-corresponding-daily-checkbox-for-all-months-on-both-mobile-and-desktop",
+      "featureTitle": "Fix the habit tracker grid layout so each day number in the header row is perfectly vertically aligned (same column center) with its corresponding daily checkbox for all months, on both mobile and desktop.",
+      "files": [
+        "frontend/src/features/becoming/components/HabitGrid.tsx",
+        "frontend/src/features/becoming/components/HabitRow.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0"
+      ],
+      "testIds": [
+        "REQ-1"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-standardize-the-day-column-sizing-and-spacing-between-the-header-day-cells-and-the-checkbox-cells-by-using-the-same-fixed-column-width-and-internal-padding-strategy-across-both-header-habitgrid-and-rows-habitrow",
+      "featureTitle": "Standardize the day-column sizing and spacing between the header day cells and the checkbox cells by using the same fixed column width and internal padding strategy across both header (HabitGrid) and rows (HabitRow).",
+      "files": [
+        "frontend/src/features/becoming/components/GridSkeleton.tsx",
+        "frontend/src/features/becoming/components/HabitGrid.tsx",
+        "frontend/src/features/becoming/components/HabitRow.tsx",
+        "frontend/src/features/becoming/components/habitGridLayout.ts"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0"
+      ],
+      "testIds": [
+        "REQ-2"
+      ],
+      "confidence": "high"
+    }
+  ]
+}

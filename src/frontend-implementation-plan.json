@@ -1,0 +1,64 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "Habit grid header/checkbox column alignment (mobile + desktop)",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "summary": "Ensure header day numbers and per-day checkboxes share identical columns and stay aligned during horizontal scroll on all viewports.",
+      "acceptanceCriteria": [
+        "For any selected month (28–31 days), the day number text is centered directly above the checkbox in the same day column.",
+        "Alignment remains correct on small mobile viewports and on desktop viewports.",
+        "Horizontal scrolling (if present) keeps header day numbers and body checkboxes aligned (no drift/mismatch while scrolling)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/features/becoming/components/HabitGrid.tsx",
+          "operation": "modify",
+          "description": "Refactor the grid container so the header row and all habit rows live inside a single horizontal scrolling region and use the same computed grid column template for day columns (eliminating independent row scrolling that can drift)."
+        },
+        {
+          "path": "frontend/src/features/becoming/components/HabitRow.tsx",
+          "operation": "modify",
+          "description": "Update the day-checkbox area layout to rely on the shared grid column sizing (from HabitGrid) and remove per-row horizontal scrolling/gap-based spacing so each checkbox remains centered in its exact day column."
+        },
+        {
+          "path": "frontend/src/index.css",
+          "operation": "modify",
+          "description": "Add reusable CSS classes/variables for the habit grid day-column sizing and centering (e.g., a single day column width token and consistent cell alignment rules) to keep header and body rendering perfectly consistent across breakpoints."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Standardize day-column width and padding strategy between header cells (HabitGrid) and checkbox cells (HabitRow) using shared layout constants/classes.",
+      "acceptanceCriteria": [
+        "The header day cell width matches the checkbox cell width for every day column.",
+        "There is no extra inter-column gap in the checkbox row that would shift checkbox centers relative to header centers.",
+        "The visual alignment is consistent across all days in the month (not only the first few visible columns)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/features/becoming/components/habitGridLayout.ts",
+          "operation": "create",
+          "description": "Create shared layout helpers/constants (no JSX) for the habit grid (e.g., first-column width token, day-column width token, and a helper to build the grid column template for a given daysInMonth) so both HabitGrid and HabitRow use the same source of truth."
+        },
+        {
+          "path": "frontend/src/features/becoming/components/HabitGrid.tsx",
+          "operation": "modify",
+          "description": "Adopt the shared layout helpers/constants for header day cells (width, padding, and centering) so the header’s day columns exactly match the body day columns."
+        },
+        {
+          "path": "frontend/src/features/becoming/components/HabitRow.tsx",
+          "operation": "modify",
+          "description": "Adopt the shared layout helpers/constants for checkbox day cells (width, internal padding strategy, and centering) and remove any residual spacing (e.g., flex gaps) that could shift checkbox centers relative to header centers across the full month width."
+        },
+        {
+          "path": "frontend/src/features/becoming/components/GridSkeleton.tsx",
+          "operation": "modify",
+          "description": "Adjust the loading skeleton layout to mimic the same fixed day-column sizing strategy as the real grid, preventing perceived misalignment when transitioning from skeleton to loaded content."
+        }
+      ]
+    }
+  ]
+}

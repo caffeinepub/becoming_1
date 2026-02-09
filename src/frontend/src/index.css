@@ -1,0 +1,127 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    :root {
+        --radius: 0.5rem;
+        
+        /* Light Cyber-Professional theme with blue accents */
+        /* Pure white background #FFFFFF */
+        --background: 1.0 0 0;
+        /* Deep charcoal text #1A1A1A */
+        --foreground: 0.15 0 0;
+        /* Light blue-tinted glass for cards */
+        --card: 0.98 0.01 240 / 0.6;
+        --card-foreground: 0.15 0 0;
+        --popover: 0.98 0.01 240 / 0.8;
+        --popover-foreground: 0.15 0 0;
+        /* Vibrant Blue #2563EB */
+        --primary: 0.55 0.20 260;
+        --primary-foreground: 0.98 0 0;
+        /* Light blue-gray surfaces */
+        --secondary: 0.95 0.01 240 / 0.5;
+        --secondary-foreground: 0.20 0 0;
+        --muted: 0.96 0.01 240 / 0.4;
+        --muted-foreground: 0.50 0.01 240;
+        /* Bright Blue accent #3B82F6 */
+        --accent: 0.60 0.18 255;
+        --accent-foreground: 0.98 0 0;
+        /* Destructive */
+        --destructive: 0.55 0.22 25;
+        --destructive-foreground: 0.98 0 0;
+        /* Light borders #E5E7EB */
+        --border: 0.92 0.01 240;
+        --input: 0.92 0.01 240;
+        /* Ring uses vibrant blue */
+        --ring: 0.60 0.18 255;
+        --chart-1: 0.55 0.20 260;
+        --chart-2: 0.60 0.18 255;
+        --chart-3: 0.65 0.16 250;
+        --chart-4: 0.58 0.19 265;
+        --chart-5: 0.62 0.17 245;
+    }
+
+    .dark {
+        /* Light theme only - dark mode disabled */
+        --background: 1.0 0 0;
+        --foreground: 0.15 0 0;
+        --card: 0.98 0.01 240 / 0.6;
+        --card-foreground: 0.15 0 0;
+        --popover: 0.98 0.01 240 / 0.8;
+        --popover-foreground: 0.15 0 0;
+        --primary: 0.55 0.20 260;
+        --primary-foreground: 0.98 0 0;
+        --secondary: 0.95 0.01 240 / 0.5;
+        --secondary-foreground: 0.20 0 0;
+        --muted: 0.96 0.01 240 / 0.4;
+        --muted-foreground: 0.50 0.01 240;
+        --accent: 0.60 0.18 255;
+        --accent-foreground: 0.98 0 0;
+        --destructive: 0.55 0.22 25;
+        --destructive-foreground: 0.98 0 0;
+        --border: 0.92 0.01 240;
+        --input: 0.92 0.01 240;
+        --ring: 0.60 0.18 255;
+        --chart-1: 0.55 0.20 260;
+        --chart-2: 0.60 0.18 255;
+        --chart-3: 0.65 0.16 250;
+        --chart-4: 0.58 0.19 265;
+        --chart-5: 0.62 0.17 245;
+    }
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+    body {
+        @apply bg-background text-foreground;
+    }
+}
+
+@layer components {
+    /* Glassmorphism surface utility - light blue tint */
+    .glass-surface {
+        background: oklch(var(--card));
+        border: 1px solid oklch(var(--border));
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+    }
+    
+    /* Primary action button glow - Vibrant Blue */
+    .cyber-primary-glow {
+        box-shadow: 0 0 8px 2px oklch(0.60 0.18 255 / 0.3);
+    }
+}
+
+/* Global touch optimizations for mobile devices */
+@media (hover: none) and (pointer: coarse) {
+    /* Remove 300ms tap delay on all interactive elements */
+    button,
+    a,
+    input,
+    textarea,
+    select,
+    [role="button"],
+    [role="checkbox"],
+    [role="tab"],
+    [tabindex]:not([tabindex="-1"]) {
+        touch-action: manipulation;
+    }
+
+    /* Make hover-only controls visible on touch devices */
+    .touch-visible-edit {
+        opacity: 1 !important;
+    }
+
+    /* Reduce tap highlight for cleaner UX */
+    * {
+        -webkit-tap-highlight-color: transparent;
+    }
+}
+
+/* Ensure touch-action is applied globally to common interactive patterns */
+.touch-optimized {
+    touch-action: manipulation;
+}

@@ -1,2 +1,3 @@
-# becoming_1
-Exported from Caffeine project: Align day numbers with tick boxes in habit grid (mobile + desktop)
+## 
+
+To run app build and run docker image: `docker build -t app . docker run -it --network host app`

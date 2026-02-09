@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 3,
+  "summary": "New project",
+  "architectural_notes": [],
+  "known_issues": [
+    "Dates and tick boxes in the habit tracker grid are slightly misaligned (mobile and desktop)."
+  ],
+  "isFixRequest": true,
+  "existing_features": [
+    {
+      "id": "feature-fix-the-habit-tracker-grid-layout-so-each-day-number-in-the-header-row-is-perfectly-vertically-aligned-same-column-center-with-its-corresponding-daily-checkbox-for-all-months-on-both-mobile-and-desktop",
+      "title": "Fix the habit tracker grid layout so each day number in the header row is perfectly vertically aligned (same column center) with its corresponding daily checkbox for all months, on both mobile and desktop.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-standardize-the-day-column-sizing-and-spacing-between-the-header-day-cells-and-the-checkbox-cells-by-using-the-same-fixed-column-width-and-internal-padding-strategy-across-both-header-habitgrid-and-rows-habitrow",
+      "title": "Standardize the day-column sizing and spacing between the header day cells and the checkbox cells by using the same fixed column width and internal padding strategy across both header (HabitGrid) and rows (HabitRow).",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Fix UI alignment so each date number sits directly above its corresponding tick box for every month (mobile + desktop)",
+      "reqIds": [],
+      "status": "pending"
+    }
+  ],
+  "projectName": "Align day numbers with tick boxes in habit grid (mobile + desktop)",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}

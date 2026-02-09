@@ -1,0 +1,55 @@
+{
+  "kind": "build_request",
+  "title": "Align day numbers with tick boxes in habit grid (mobile + desktop)",
+  "priority": "normal",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "text": "Fix the habit tracker grid layout so each day number in the header row is perfectly vertically aligned (same column center) with its corresponding daily checkbox for all months, on both mobile and desktop.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Just ensure the tick boxes are aligned with the dates for every month"
+        ]
+      },
+      "acceptanceCriteria": [
+        "For any selected month (28–31 days), the day number text is centered directly above the checkbox in the same day column.",
+        "Alignment remains correct on small mobile viewports and on desktop viewports.",
+        "Horizontal scrolling (if present) keeps header day numbers and body checkboxes aligned (no drift/mismatch while scrolling)."
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Standardize the day-column sizing and spacing between the header day cells and the checkbox cells by using the same fixed column width and internal padding strategy across both header (HabitGrid) and rows (HabitRow).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Yes correct"
+        ]
+      },
+      "acceptanceCriteria": [
+        "The header day cell width matches the checkbox cell width for every day column.",
+        "There is no extra inter-column gap in the checkbox row that would shift checkbox centers relative to header centers.",
+        "The visual alignment is consistent across all days in the month (not only the first few visible columns)."
+      ]
+    }
+  ],
+  "constraints": [
+    "Do not modify files under frontend/immutablePaths (e.g., frontend/src/components/ui/* and auth/identity hooks).",
+    "Keep the backend unchanged; this is a UI-only layout fix."
+  ],
+  "nonGoals": [
+    "Adding new habit features (e.g., weekly totals) or changing habit data models.",
+    "Changing authentication behavior or Internet Identity flows."
+  ],
+  "imageRequirements": {
+    "required": [],
+    "edits": []
+  }
+}
