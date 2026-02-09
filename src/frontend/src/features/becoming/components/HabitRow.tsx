@@ -46,8 +46,8 @@ export function HabitRow({ habit, selectedMonth, daysInMonth, disabled = false }
     setIsEditModalOpen(true);
   };
 
-  // Determine if this is a non-reps/time habit
-  const isNonRepsTimeHabit = currentUnit !== 'reps' && currentUnit !== 'time';
+  // Determine if this is a reps/time habit (shows volume per completion)
+  const isRepsOrTimeHabit = currentUnit === 'reps' || currentUnit === 'time';
 
   return (
     <>
@@ -74,29 +74,18 @@ export function HabitRow({ habit, selectedMonth, daysInMonth, disabled = false }
                 <span className="text-xs">{currentUnit}</span>
               </div>
 
-              {/* Volume/Goal display */}
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs text-muted-foreground w-10">
-                  {currentUnit === 'reps' || currentUnit === 'time' ? 'Volume:' : 'Goal:'}
-                </span>
-                <span className="text-xs">{currentVolumeDisplay}</span>
-              </div>
+              {/* Volume display - only for reps/time habits */}
+              {isRepsOrTimeHabit && (
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xs text-muted-foreground w-10">Volume:</span>
+                  <span className="text-xs">{currentVolumeDisplay}</span>
+                </div>
+              )}
 
               {/* Monthly total display */}
               <div className="flex items-center gap-2 text-xs text-muted-foreground mt-2 pt-2 border-t border-border/50">
-                {isNonRepsTimeHabit ? (
-                  <>
-                    <span className="font-medium">Monthly total:</span>
-                    <span>{monthlyTotal}</span>
-                    <span className="mx-1">/</span>
-                    <span>Goal: {currentVolumeDisplay}</span>
-                  </>
-                ) : (
-                  <>
-                    <span className="font-medium">Monthly total:</span>
-                    <span>{monthlyTotal}</span>
-                  </>
-                )}
+                <span className="font-medium">Monthly total:</span>
+                <span>{monthlyTotal}</span>
               </div>
             </div>
           </HabitRowActionsPopover>

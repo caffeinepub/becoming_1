@@ -1,90 +1,78 @@
 {
   "kind": "build_request",
-  "title": "Count monthly totals for non reps/time habits and simplify habit editing UI",
+  "title": "Remove all goal-related UI and show only monthly totals",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Update monthly total calculations and display for habits whose unit type is neither \"reps\" nor \"time\": the monthly total must equal the number of selected day checkboxes (each checked day counts as +1), and the UI must show both the monthly total and the goal in the existing monthly totals/volumes area for the habit row.",
+      "text": "Remove all goal-related labels and values from each habit row so the habit info cell never shows a \"Goal\" line and the monthly total area never renders a \"/ Goal: …\" segment; only show the monthly total value.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-6"
+          "msg-5",
+          "msg-7"
         ],
         "quotes": [
-          "For the monthly totals: yes but only change the habits that are not reps and time - provide the goal where the monthly volumes are on the app"
+          "Perfect - if you can just remove goal. There is no goal for this I just want monthly total to show",
+          "1. Yes \n2. Yes \n3. Yes remove all"
         ]
       },
       "acceptanceCriteria": [
-        "For a habit with unitType not equal to \"reps\" and not equal to \"time\", checking N days in a given month results in a displayed monthly total of N for that month.",
-        "For a habit with unitType \"reps\", the monthly total continues to be calculated as (per-completion volume for the month) × (completed days count) and displayed as it is today.",
-        "For a habit with unitType \"time\", the monthly total continues to be calculated as (per-completion minutes for the month) × (completed days count) and displayed as it is today (formatted time string).",
-        "For non-(reps/time) habits, the goal shown in the monthly total/volume area is the habit’s configured monthly volume value for that selected month (i.e., the same value currently edited/displayed in the habit’s volume field for the month).",
-        "User-facing labels are in English (e.g., \"Monthly total\" and \"Goal\")."
+        "In the habit row UI, there is no text \"Goal\" rendered anywhere (including \"Goal: 0\").",
+        "For non-reps/time habits, the monthly total section shows only \"Monthly total: <value>\" with no \"/\" and no secondary value.",
+        "For reps/time habits, the monthly total section continues to show only the monthly total (as it does today)."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Ensure the \"16/8 fasting\" habit follows the non-(reps/time) monthly total behavior: monthly total increments by 1 per checked day and displays the goal alongside the monthly total in the existing monthly totals/volumes area.",
+      "text": "Update the habit edit modal to remove goal-related UI: do not show any field labeled \"Monthly Goal\" and do not allow editing/storing a per-month goal value. The volume input should only appear for unit types that use per-completion volume (\"reps\" and \"time\"); for all other unit types, hide the volume input entirely.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-6"
+          "msg-5",
+          "msg-7"
         ],
         "quotes": [
-          "16/8 fasting"
+          "Perfect - if you can just remove goal. There is no goal for this I just want monthly total to show",
+          "1. Yes \n2. Yes \n3. Yes remove all"
         ]
       },
       "acceptanceCriteria": [
-        "When the unit type for the \"16/8 fasting\" habit is set to anything other than \"reps\" or \"time\", its monthly total equals the number of checked days in the selected month.",
-        "The monthly total/goal display for the \"16/8 fasting\" habit uses the same layout as other habits and appears in the existing monthly total row area."
+        "When editing a habit with unit type not equal to \"reps\" or \"time\", the modal does not display the volume/goal input at all.",
+        "When editing a habit with unit type \"reps\" or \"time\", the modal continues to show the \"Volume per completion\" input and saves as before.",
+        "No UI text \"Monthly Goal\" appears anywhere in the app."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Revise the habit editing UI so edit controls are not visible on the main grid: remove the always/hover-visible inline edit buttons for name/unit/volume from the habit row, and instead make clicking/tapping a habit open a small pop-up with a single edit-pen action; selecting the pen must open a full habit edit modal that allows changing all habit details currently editable in the app (including name, unit type, and the selected month’s volume/goal).",
+      "text": "Ensure all habit-related screens/components in the app contain no goal-related copy or UI remnants (e.g., \"Goal:\", \"Monthly Goal\"), including empty/zero values, and that monthly totals remain visible wherever they are currently shown.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4",
-          "msg-6"
+          "msg-7"
         ],
         "quotes": [
-          "Can you change the edit options on the attached so they aren’t as obvious on the main screen? Have it that when I click on the habit then it pops up one edit pen and from there it allows me to change all details of the habit.",
-          "Yes correct"
+          "Yes remove all"
         ]
       },
       "acceptanceCriteria": [
-        "On the main habit grid, the per-field pencil/edit buttons for name/unit/volume are no longer shown (including on hover and on touch devices).",
-        "Clicking/tapping a habit row (or its habit-info cell) opens a contextual pop-up that displays a single pencil/edit action (not multiple edit icons).",
-        "Clicking/tapping the pencil/edit action opens a modal dialog where the user can edit: habit name, unit type, and the selected month’s volume/goal value (with the same validation rules currently used for time vs non-time volume input).",
-        "Saving changes from the modal updates the habit via the existing mutations and refresh/optimistically updates the grid accordingly.",
-        "Cancel/close leaves the habit unchanged and closes the modal."
+        "A global pass through the habit tracking UI confirms no goal-related strings are rendered anywhere.",
+        "Monthly totals still render correctly for all unit types across month tabs."
       ]
     }
   ],
   "constraints": [
-    "Backend remains single-actor (all Motoko logic in backend/main.mo).",
-    "Do not edit files under frontend/src/components/ui or any immutable paths listed in SYSTEM_CONTEXT.",
-    "Use English for all user-facing text."
+    "Do not edit files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or any files in frontend/src/components/ui (compose them instead).",
+    "Keep the backend single-actor architecture; do not introduce additional canisters/services.",
+    "Do not introduce external databases or third-party auth providers (Internet Identity only)."
   ],
   "nonGoals": [
-    "Adding new backend data fields or changing the Motoko habit schema.",
-    "Implementing third-party authentication (only Internet Identity remains).",
-    "Adding new habit types beyond using the existing unitType mechanism."
+    "Removing volume-per-completion functionality for \"reps\" and \"time\" habits.",
+    "Changing how monthly totals are calculated.",
+    "Backend schema/state migrations unless strictly required to remove goal UI (prefer no migration)."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [],
-    "goalsToRemove": [],
-    "preferencesToAdd": [],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
   }
 }

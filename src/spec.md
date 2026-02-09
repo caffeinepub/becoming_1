@@ -1,14 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Fix monthly total calculations for non-reps/time habits (showing totals and goals) and simplify habit editing so edit controls aren’t visible on the main grid.
+**Goal:** Remove all goal-related UI from habit tracking and editing so the app shows only monthly totals (no goals).
 
 **Planned changes:**
-- Update monthly total calculation for habits with unitType not equal to "reps" and not equal to "time" so the monthly total equals the count of checked days for the selected month.
-- In the existing monthly totals/volumes area for each habit row, display both "Monthly total" and "Goal" for non-(reps/time) habits, where the goal is the configured monthly volume value for the selected month.
-- Ensure the "16/8 fasting" habit follows the same non-(reps/time) monthly total behavior when its unitType is not "reps" or "time".
-- Remove inline per-field edit buttons (name/unit/volume) from the main habit grid (including hover/touch behavior).
-- Make clicking/tapping a habit row open a small contextual pop-up with a single pencil/edit action.
-- Open a full habit edit modal from that pencil action, allowing edits to all currently editable habit details (including name, unit type, and the selected month’s volume/goal), using existing save/cancel behavior and validations.
+- Update habit row rendering to remove any “Goal” line from the habit info cell and remove the “/ Goal: …” segment from the monthly total area (monthly total shows only its value).
+- Update the habit edit modal to remove any “Monthly Goal” UI and prevent editing/storing a per-month goal value via the UI.
+- Adjust modal inputs so “Volume per completion” is shown only for unit types “reps” and “time”, and hidden for all other unit types.
+- Perform a pass across habit-related screens/components to ensure no goal-related copy (e.g., “Goal:”, “Monthly Goal”) renders anywhere, including empty/zero values, while keeping monthly totals visible as they are today.
 
-**User-visible outcome:** Monthly totals for checkbox-style habits (including 16/8 fasting when not reps/time) match the number of checked days and show the goal next to the total; editing is cleaner, with a single edit entry point via a pop-up and a full edit modal instead of multiple inline edit buttons.
+**User-visible outcome:** Habit rows and month views display only “Monthly total: <value>” with no goal labels/values, and the habit edit modal contains no goal fields (while still supporting volume per completion for reps/time habits).

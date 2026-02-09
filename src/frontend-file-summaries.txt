@@ -7,7 +7,7 @@
   "frontend/src/features/becoming/components/MonthTabs.tsx": "Renders 12 month tabs (Jan-Dec) using shadcn Tabs component with yellow theme styling, active state indication, and touch-optimized interaction handling for instant month switching on mobile.",
   "frontend/src/features/becoming/components/HabitManager.tsx": "Habit creation UI with add/cancel controls, cyan accent on Plus icon, and cyber-primary-glow applied to the primary Add button.",
   "frontend/src/features/becoming/components/HabitGrid.tsx": "Spreadsheet-like grid component that renders day headers and habit rows using shared layout constants to ensure perfect vertical alignment between day numbers and checkboxes.",
-  "frontend/src/features/becoming/components/HabitRow.tsx": "Individual habit row with clickable habit-info area that opens a contextual popover with edit action, displays monthly total and goal for non-reps/time habits, and uses HabitEditModal for all editing operations.",
+  "frontend/src/features/becoming/components/HabitRow.tsx": "Individual habit row with clickable habit-info area that opens a contextual popover with edit action, displays monthly total only (no goal), and conditionally shows volume-per-completion for reps/time habits only.",
   "frontend/src/features/becoming/components/GridSkeleton.tsx": "Loading skeleton component that mirrors the exact layout structure of the habit grid using shared layout constants to prevent perceived misalignment during the loading-to-loaded transition.",
   "frontend/src/features/becoming/components/ErrorBanner.tsx": "Error display component using shadcn Alert with glassmorphic styling to show user-friendly error messages when backend operations fail.",
   "frontend/src/index.css": "Global styles with OKLCH-based light Cyber-Professional theme (white background, vibrant blue primary, bright blue accents, light blue-tinted glassmorphism surfaces), including cyber-primary-glow utility for blue button glow and glass-surface utility for translucent containers.",
@@ -18,6 +18,6 @@
   "frontend/src/features/becoming/utils/timeVolume.ts": "Utility functions for validating, parsing, and formatting time strings that accept both M (minutes) and M:SS (minutes:seconds) formats, normalizing all inputs to M:SS display format, with sanitization helpers for input and paste events.",
   "frontend/index.html": "HTML entry point with removed dark mode class to enable light theme by default.",
   "frontend/src/features/becoming/components/habitGridLayout.ts": "Shared layout constants and helper functions for the habit grid, ensuring consistent day-column widths and alignment between header numbers and checkboxes across all viewports.",
-  "frontend/src/features/becoming/components/HabitEditModal.tsx": "Full-featured modal dialog for editing all habit properties (name, unit type, and monthly volume/goal) with validation for time vs non-time inputs, using shadcn Dialog component.",
+  "frontend/src/features/becoming/components/HabitEditModal.tsx": "Full-featured modal dialog for editing habit name and unit type, with volume-per-completion input shown only for reps/time habits (no goal UI for other unit types).",
   "frontend/src/features/becoming/components/HabitRowActionsPopover.tsx": "Contextual popover component that displays a single edit action when a habit is clicked, using shadcn Popover component."
 }

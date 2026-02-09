@@ -2,11 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-update-monthly-total-calculations-and-display-for-habits-whose-unit-type-is-neither-reps-nor-time-the-monthly-total-must-equal-the-number-of-selected-day-checkboxes-each-checked-day-counts-as-1-and-the-ui-must-show-both-the-monthly-total-and-the-goal-in-the-existing-monthly-totals-volumes-area-for-the-habit-row",
-      "featureTitle": "Update monthly total calculations and display for habits whose unit type is neither \"reps\" nor \"time\": the monthly total must equal the number of selected day checkboxes (each checked day counts as +1), and the UI must show both the monthly total and the goal in the existing monthly totals/volumes area for the habit row.",
+      "featureId": "feature-remove-all-goal-related-labels-and-values-from-each-habit-row-so-the-habit-info-cell-never-shows-a-goal-line-and-the-monthly-total-area-never-renders-a-goal-segment-only-show-the-monthly-total-value",
+      "featureTitle": "Remove all goal-related labels and values from each habit row so the habit info cell never shows a \"Goal\" line and the monthly total area never renders a \"/ Goal: …\" segment; only show the monthly total value.",
       "files": [
-        "frontend/src/features/becoming/components/HabitRow.tsx",
-        "frontend/src/features/becoming/state/habitModel.ts"
+        "frontend/src/features/becoming/components/HabitRow.tsx"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -22,11 +21,10 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-ensure-the-16-8-fasting-habit-follows-the-non-reps-time-monthly-total-behavior-monthly-total-increments-by-1-per-checked-day-and-displays-the-goal-alongside-the-monthly-total-in-the-existing-monthly-totals-volumes-area",
-      "featureTitle": "Ensure the \"16/8 fasting\" habit follows the non-(reps/time) monthly total behavior: monthly total increments by 1 per checked day and displays the goal alongside the monthly total in the existing monthly totals/volumes area.",
+      "featureId": "feature-update-the-habit-edit-modal-to-remove-goal-related-ui-do-not-show-any-field-labeled-monthly-goal-and-do-not-allow-editing-storing-a-per-month-goal-value-the-volume-input-should-only-appear-for-unit-types-that-use-per-completion-volume-reps-and-time-for-all-other-unit-types-hide-the-volume-input-entirely",
+      "featureTitle": "Update the habit edit modal to remove goal-related UI: do not show any field labeled \"Monthly Goal\" and do not allow editing/storing a per-month goal value. The volume input should only appear for unit types that use per-completion volume (\"reps\" and \"time\"); for all other unit types, hide the volume input entirely.",
       "files": [
-        "frontend/src/features/becoming/components/HabitRow.tsx",
-        "frontend/src/features/becoming/state/habitModel.ts"
+        "frontend/src/features/becoming/components/HabitEditModal.tsx"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -42,12 +40,11 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-revise-the-habit-editing-ui-so-edit-controls-are-not-visible-on-the-main-grid-remove-the-always-hover-visible-inline-edit-buttons-for-name-unit-volume-from-the-habit-row-and-instead-make-clicking-tapping-a-habit-open-a-small-pop-up-with-a-single-edit-pen-action-selecting-the-pen-must-open-a-full-habit-edit-modal-that-allows-changing-all-habit-details-currently-editable-in-the-app-including-name-unit-type-and-the-selected-month-s-volume-goal",
-      "featureTitle": "Revise the habit editing UI so edit controls are not visible on the main grid: remove the always/hover-visible inline edit buttons for name/unit/volume from the habit row, and instead make clicking/tapping a habit open a small pop-up with a single edit-pen action; selecting the pen must open a full habit edit modal that allows changing all habit details currently editable in the app (including name, unit type, and the selected month’s volume/goal).",
+      "featureId": "feature-ensure-all-habit-related-screens-components-in-the-app-contain-no-goal-related-copy-or-ui-remnants-e-g-goal-monthly-goal-including-empty-zero-values-and-that-monthly-totals-remain-visible-wherever-they-are-currently-shown",
+      "featureTitle": "Ensure all habit-related screens/components in the app contain no goal-related copy or UI remnants (e.g., \"Goal:\", \"Monthly Goal\"), including empty/zero values, and that monthly totals remain visible wherever they are currently shown.",
       "files": [
         "frontend/src/features/becoming/components/HabitEditModal.tsx",
-        "frontend/src/features/becoming/components/HabitRow.tsx",
-        "frontend/src/features/becoming/components/HabitRowActionsPopover.tsx"
+        "frontend/src/features/becoming/components/HabitRow.tsx"
       ],
       "components": [
         "core-infrastructure@1.0.2",

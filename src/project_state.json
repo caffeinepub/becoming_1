@@ -1,32 +1,30 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Habit tracking app with monthly volume/totals and habit editing UI.",
-  "architectural_notes": [
-    "Differentiate habit types: reps/time-based vs tick/checkbox-based; monthly totals for checkbox habits are computed as count of selected ticks (+1 per tick) and displayed alongside monthly volume/goal area."
-  ],
+  "summary": "App should display monthly totals and remove all goal-related fields across the entire UI.",
+  "architectural_notes": [],
   "known_issues": [],
   "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-update-monthly-total-calculations-and-display-for-habits-whose-unit-type-is-neither-reps-nor-time-the-monthly-total-must-equal-the-number-of-selected-day-checkboxes-each-checked-day-counts-as-1-and-the-ui-must-show-both-the-monthly-total-and-the-goal-in-the-existing-monthly-totals-volumes-area-for-the-habit-row",
-      "title": "Update monthly total calculations and display for habits whose unit type is neither \"reps\" nor \"time\": the monthly total must equal the number of selected day checkboxes (each checked day counts as +1), and the UI must show both the monthly total and the goal in the existing monthly totals/volumes area for the habit row.",
+      "id": "feature-remove-all-goal-related-labels-and-values-from-each-habit-row-so-the-habit-info-cell-never-shows-a-goal-line-and-the-monthly-total-area-never-renders-a-goal-segment-only-show-the-monthly-total-value",
+      "title": "Remove all goal-related labels and values from each habit row so the habit info cell never shows a \"Goal\" line and the monthly total area never renders a \"/ Goal: …\" segment; only show the monthly total value.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-ensure-the-16-8-fasting-habit-follows-the-non-reps-time-monthly-total-behavior-monthly-total-increments-by-1-per-checked-day-and-displays-the-goal-alongside-the-monthly-total-in-the-existing-monthly-totals-volumes-area",
-      "title": "Ensure the \"16/8 fasting\" habit follows the non-(reps/time) monthly total behavior: monthly total increments by 1 per checked day and displays the goal alongside the monthly total in the existing monthly totals/volumes area.",
+      "id": "feature-update-the-habit-edit-modal-to-remove-goal-related-ui-do-not-show-any-field-labeled-monthly-goal-and-do-not-allow-editing-storing-a-per-month-goal-value-the-volume-input-should-only-appear-for-unit-types-that-use-per-completion-volume-reps-and-time-for-all-other-unit-types-hide-the-volume-input-entirely",
+      "title": "Update the habit edit modal to remove goal-related UI: do not show any field labeled \"Monthly Goal\" and do not allow editing/storing a per-month goal value. The volume input should only appear for unit types that use per-completion volume (\"reps\" and \"time\"); for all other unit types, hide the volume input entirely.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-revise-the-habit-editing-ui-so-edit-controls-are-not-visible-on-the-main-grid-remove-the-always-hover-visible-inline-edit-buttons-for-name-unit-volume-from-the-habit-row-and-instead-make-clicking-tapping-a-habit-open-a-small-pop-up-with-a-single-edit-pen-action-selecting-the-pen-must-open-a-full-habit-edit-modal-that-allows-changing-all-habit-details-currently-editable-in-the-app-including-name-unit-type-and-the-selected-month-s-volume-goal",
-      "title": "Revise the habit editing UI so edit controls are not visible on the main grid: remove the always/hover-visible inline edit buttons for name/unit/volume from the habit row, and instead make clicking/tapping a habit open a small pop-up with a single edit-pen action; selecting the pen must open a full habit edit modal that allows changing all habit details currently editable in the app (including name, unit type, and the selected month’s volume/goal).",
+      "id": "feature-ensure-all-habit-related-screens-components-in-the-app-contain-no-goal-related-copy-or-ui-remnants-e-g-goal-monthly-goal-including-empty-zero-values-and-that-monthly-totals-remain-visible-wherever-they-are-currently-shown",
+      "title": "Ensure all habit-related screens/components in the app contain no goal-related copy or UI remnants (e.g., \"Goal:\", \"Monthly Goal\"), including empty/zero values, and that monthly totals remain visible wherever they are currently shown.",
       "reqIds": [
         "REQ-3"
       ],
@@ -36,18 +34,12 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "For non-reps/time habits (e.g., 16/8 fasting), count each tick box selection as +1 and show the monthly total/goal in the existing monthly volumes area.",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-2",
-      "summary": "Revise habit edit UI so edit options are hidden on the main screen; tapping a habit shows a single edit-pen popup/icon, which then opens the full habit edit screen.",
+      "summary": "Remove all goal-related fields everywhere in the app and show only monthly totals",
       "reqIds": [],
       "status": "pending"
     }
   ],
-  "projectName": "Count monthly totals for non reps/time habits and simplify habit editing UI",
+  "projectName": "Remove all goal-related UI and show only monthly totals",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

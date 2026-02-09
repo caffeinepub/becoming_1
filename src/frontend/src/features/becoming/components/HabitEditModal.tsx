@@ -73,47 +73,49 @@ export function HabitEditModal({ habit, selectedMonth, open, onOpenChange }: Hab
         });
       }
 
-      // Update volume if changed
-      const currentVolumeDisplay = getVolumeDisplayString(habit, selectedMonth);
-      if (editedVolume !== currentVolumeDisplay) {
-        if (editedUnit === 'time') {
-          // Validate and parse time string (accepts M or M:SS)
-          if (!isValidTimeString(editedVolume)) {
-            toast.error(getTimeValidationError(editedVolume));
-            setIsSaving(false);
-            return;
+      // Update volume only for reps/time habits
+      if (editedUnit === 'reps' || editedUnit === 'time') {
+        const currentVolumeDisplay = getVolumeDisplayString(habit, selectedMonth);
+        if (editedVolume !== currentVolumeDisplay) {
+          if (editedUnit === 'time') {
+            // Validate and parse time string (accepts M or M:SS)
+            if (!isValidTimeString(editedVolume)) {
+              toast.error(getTimeValidationError(editedVolume));
+              setIsSaving(false);
+              return;
+            }
+            
+            const minutes = parseTimeStringToMinutes(editedVolume);
+            if (minutes === null) {
+              toast.error('Invalid time format');
+              setIsSaving(false);
+              return;
+            }
+            
+            // Normalize to M:SS format for storage
+            const normalizedTimeString = normalizeTimeString(editedVolume);
+            
+            await updateVolumeMutation.mutateAsync({
+              habitId: habit.id,
+              monthIndex: selectedMonth,
+              minutes,
+              timeString: normalizedTimeString,
+            });
+          } else {
+            // Handle numeric volume for reps
+            const volumeNum = parseInt(editedVolume, 10);
+            if (isNaN(volumeNum) || volumeNum < 0) {
+              toast.error('Please enter a valid number');
+              setIsSaving(false);
+              return;
+            }
+            
+            await updateVolumeMutation.mutateAsync({
+              habitId: habit.id,
+              monthIndex: selectedMonth,
+              minutes: volumeNum,
+            });
           }
-          
-          const minutes = parseTimeStringToMinutes(editedVolume);
-          if (minutes === null) {
-            toast.error('Invalid time format');
-            setIsSaving(false);
-            return;
-          }
-          
-          // Normalize to M:SS format for storage
-          const normalizedTimeString = normalizeTimeString(editedVolume);
-          
-          await updateVolumeMutation.mutateAsync({
-            habitId: habit.id,
-            monthIndex: selectedMonth,
-            minutes,
-            timeString: normalizedTimeString,
-          });
-        } else {
-          // Handle numeric volume for non-time units
-          const volumeNum = parseInt(editedVolume, 10);
-          if (isNaN(volumeNum) || volumeNum < 0) {
-            toast.error('Please enter a valid number');
-            setIsSaving(false);
-            return;
-          }
-          
-          await updateVolumeMutation.mutateAsync({
-            habitId: habit.id,
-            monthIndex: selectedMonth,
-            minutes: volumeNum,
-          });
         }
       }
 
@@ -165,6 +167,9 @@ export function HabitEditModal({ habit, selectedMonth, open, onOpenChange }: Hab
     }
   };
 
+  // Only show volume input for reps/time habits
+  const showVolumeInput = editedUnit === 'reps' || editedUnit === 'time';
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
@@ -206,18 +211,18 @@ export function HabitEditModal({ habit, selectedMonth, open, onOpenChange }: Hab
               </Select>
             )}
           </div>
-          <div className="grid gap-2">
-            <Label htmlFor="volume">
-              {editedUnit === 'reps' || editedUnit === 'time' ? 'Volume per completion' : 'Monthly Goal'}
-            </Label>
-            <Input
-              id="volume"
-              value={editedVolume}
-              onChange={handleVolumeChange}
-              onPaste={handleVolumePaste}
-              placeholder={editedUnit === 'time' ? 'M:SS or M' : '0'}
-            />
-          </div>
+          {showVolumeInput && (
+            <div className="grid gap-2">
+              <Label htmlFor="volume">Volume per completion</Label>
+              <Input
+                id="volume"
+                value={editedVolume}
+                onChange={handleVolumeChange}
+                onPaste={handleVolumePaste}
+                placeholder={editedUnit === 'time' ? 'M:SS or M' : '0'}
+              />
+            </div>
+          )}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={handleCancel} disabled={isSaving}>
