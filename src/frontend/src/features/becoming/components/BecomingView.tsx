@@ -22,7 +22,7 @@ export function BecomingView() {
 
   // Show error banner if backend call failed (actor init or habits query)
   if (isAuthenticated && isError && error) {
-    return <ErrorBanner error={error as Error} onRetry={retry} />;
+    return <ErrorBanner error={error} onRetry={retry} />;
   }
 
   // Show loading skeleton while initializing or loading (bounded by timeout)

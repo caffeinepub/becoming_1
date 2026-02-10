@@ -2,12 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-prevent-the-app-from-staying-indefinitely-in-the-loading-skeleton-ui-on-mobile-by-ensuring-actor-initialization-failures-and-long-running-actor-initialization-are-surfaced-to-the-ui-as-an-error-state-instead-of-keeping-isfetching-isloading-true-forever",
-      "featureTitle": "Prevent the app from staying indefinitely in the loading/skeleton UI on mobile by ensuring actor initialization failures and long-running actor initialization are surfaced to the UI as an error state (instead of keeping `isFetching/isLoading` true forever).",
+      "featureId": "feature-ensure-the-frontend-volume-display-continues-to-show-seconds-accurate-values-for-plank-across-months-e-g-1-15-1-30-based-on-values-returned-from-the-backend-and-that-squash-displays-the-same-time-e-g-45-00-for-each-month-do-not-change-the-behavior-of-other-habits",
+      "featureTitle": "Ensure the frontend volume display continues to show seconds-accurate values for Plank across months (e.g., 1:15, 1:30, …) based on values returned from the backend, and that Squash displays the same time (e.g., 45:00) for each month. Do not change the behavior of other habits.",
       "files": [
         "frontend/src/features/becoming/api/queries.ts",
-        "frontend/src/features/becoming/components/BecomingView.tsx",
-        "frontend/src/hooks/useActorWithTimeout.ts"
+        "frontend/src/features/becoming/state/habitModel.ts"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -18,47 +17,7 @@
         "authorization@4.0.0"
       ],
       "testIds": [
-        "REQ-1"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-add-a-user-visible-recovery-path-when-loading-fails-provide-a-clear-error-ui-english-text-with-a-primary-action-to-retry-loading-refetch-recreate-actor-refetch-habits-without-requiring-the-user-to-close-the-tab",
-      "featureTitle": "Add a user-visible recovery path when loading fails: provide a clear error UI (English text) with a primary action to retry loading (refetch/recreate actor + refetch habits) without requiring the user to close the tab.",
-      "files": [
-        "frontend/src/features/becoming/api/queries.ts",
-        "frontend/src/features/becoming/components/BecomingView.tsx",
-        "frontend/src/features/becoming/components/ErrorBanner.tsx"
-      ],
-      "components": [
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "authorization@4.0.0"
-      ],
-      "testIds": [
-        "REQ-2"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-adjust-the-loading-state-logic-in-the-main-view-so-that-it-does-not-rely-on-a-condition-that-can-remain-true-indefinitely-e-g-isinitializing-actor-fetching-and-so-that-error-states-take-precedence-over-skeleton-rendering-for-authenticated-users",
-      "featureTitle": "Adjust the loading-state logic in the main view so that it does not rely on a condition that can remain true indefinitely (e.g., `isInitializing`/actor fetching) and so that error states take precedence over skeleton rendering for authenticated users.",
-      "files": [
-        "frontend/src/features/becoming/components/BecomingView.tsx"
-      ],
-      "components": [
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "authorization@4.0.0"
-      ],
-      "testIds": [
-        "REQ-4"
+        "REQ-3"
       ],
       "confidence": "high"
     }

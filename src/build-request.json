@@ -1,109 +1,91 @@
 {
   "kind": "build_request",
-  "title": "Fix mobile app stuck on loading/skeleton after Version 18",
-  "priority": "high",
+  "title": "Fix monthly progression rules: Plank +15 seconds/month; Squash constant; others unchanged",
+  "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Prevent the app from staying indefinitely in the loading/skeleton UI on mobile by ensuring actor initialization failures and long-running actor initialization are surfaced to the UI as an error state (instead of keeping `isFetching/isLoading` true forever).",
-      "target": "both",
+      "text": "Update backend monthly compounding so the habit named \"Plank\" (unitType = \"time\") increases by exactly +15 seconds per month (e.g., if January is 1:00 then February is 1:15), while the habit named \"Squash\" (unitType = \"time\") remains constant across all future months (e.g., 45:00 every month). All other habits must keep the existing compounding behavior unchanged.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-6",
-          "msg-8",
-          "msg-10",
-          "msg-12",
-          "msg-14"
+          "recent-5"
         ],
         "quotes": [
-          "App is not loading correctly (see attached). Can you make it so that it loads correctly?",
-          "Yes correct",
-          "Yes",
-          "Proceed"
+          "Plank should go up by 15 seconds each month",
+          "Also squash just remains 45 mins every month",
+          "yes apply but leave all other habits as they are as they are correct"
         ]
       },
       "acceptanceCriteria": [
-        "When loading the app on mobile and the backend/agent/actor initialization fails, the UI exits the skeleton state and shows an error banner/message within a bounded time (e.g., <= 15 seconds) rather than displaying the skeleton indefinitely.",
-        "If actor initialization succeeds, the skeleton transitions to the authenticated view and monthly totals/habit grid rendering without requiring a manual refresh."
+        "When updating volume for habit name \"Plank\" with unitType=\"time\", backend compounds future months by +15 seconds each month (not +15 minutes).",
+        "When updating volume for habit name \"Squash\" with unitType=\"time\", backend sets all future months to exactly the same per-completion value as the edited month (no increases).",
+        "Backend compounding for all other habits remains identical to current behavior (e.g., time habits other than Plank/Squash continue the existing increment; reps continue the existing increment).",
+        "Backend compounding uses seconds-accurate storage for Plank: the compounded entry preserves seconds (via timeString) and stores minutes consistent with the compounded seconds (floor(totalSeconds/60)).",
+        "Regression check: calling updateHabitVolume for non-time habits still works and returns the same compounded results as before."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Add a user-visible recovery path when loading fails: provide a clear error UI (English text) with a primary action to retry loading (refetch/recreate actor + refetch habits) without requiring the user to close the tab.",
-      "target": "frontend",
+      "text": "Fix backend unitType initialization during volume updates so that time-based edits do not accidentally compound using the default \"reps\" rules. If a habit has no existing volumeTracking and the incoming volume entry includes a timeString (time input), initialize volumeTracking.unitType to \"time\" (otherwise keep existing behavior).",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-6",
-          "msg-8",
-          "msg-14"
+          "recent-5"
         ],
         "quotes": [
-          "App is not loading correctly (see attached). Can you make it so that it loads correctly?",
-          "Yes correct",
-          "Proceed"
+          "Also squash just remains 45 mins every month"
         ]
       },
       "acceptanceCriteria": [
-        "When a loading error occurs, the screen shows an error message (not a skeleton) and a Retry button.",
-        "Tapping Retry triggers a new attempt to initialize the actor (if needed) and refetch habits, and the UI reflects success or failure accordingly."
+        "If habit.volumeTracking is null and updateHabitVolume is called with entry.timeString set, the newly created volumeTracking.unitType is \"time\".",
+        "After this change, Squash does not increase across months due to being compounded as reps when first setting its time volume."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Harden actor initialization so it cannot hang indefinitely: wrap actor creation and `_initializeAccessControlWithSecret(...)` in a timeout and propagate timeout/initialization errors through `useActor()` so `useHabits()`/`BecomingView` can render an error instead of remaining stuck in a loading state.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-6",
-          "msg-8",
-          "msg-10",
-          "msg-12",
-          "msg-14"
-        ],
-        "quotes": [
-          "App is not loading correctly (see attached). Can you make it so that it loads correctly?",
-          "Yes correct",
-          "Happened on mobile but not sure",
-          "Yes",
-          "Proceed"
-        ]
-      },
-      "acceptanceCriteria": [
-        "If `_initializeAccessControlWithSecret` or actor creation does not complete within the timeout window, the frontend receives a deterministic error state and stops showing the skeleton.",
-        "No backend state migration is required to implement this change."
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "text": "Adjust the loading-state logic in the main view so that it does not rely on a condition that can remain true indefinitely (e.g., `isInitializing`/actor fetching) and so that error states take precedence over skeleton rendering for authenticated users.",
+      "text": "Ensure the frontend volume display continues to show seconds-accurate values for Plank across months (e.g., 1:15, 1:30, …) based on values returned from the backend, and that Squash displays the same time (e.g., 45:00) for each month. Do not change the behavior of other habits.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-8",
-          "msg-14"
+          "recent-5"
         ],
         "quotes": [
-          "Yes correct",
-          "Proceed"
+          "February is 1:15.",
+          "Also squash just remains 45 mins every month",
+          "leave all other habits as they are as they are correct"
         ]
       },
       "acceptanceCriteria": [
-        "For an authenticated user, if the habits query cannot run because actor initialization errored, the error UI is shown (not the auth notice and not the skeleton).",
-        "For an authenticated user, the skeleton is only shown during an active, bounded loading attempt; afterward the UI resolves to either data or an error UI."
+        "After saving January volume for Plank as 1:00 (time), switching month tabs shows Feb=1:15, Mar=1:30, etc., matching backend-returned values.",
+        "After saving Squash volume as 45:00 (time), switching month tabs shows 45:00 for all months.",
+        "No UI regressions for editing volumes of other habits; their display and progression remain unchanged."
       ]
     }
   ],
   "constraints": [
-    "Do not edit files under `frontend/src/components/ui` (compose them instead).",
-    "Do not modify immutable paths listed in SYSTEM_CONTEXT (e.g., do not edit `frontend/src/hooks/useInternetIdentity.ts` or `frontend/src/hooks/useActor.ts` directly if they are considered immutable in this environment; apply fixes by adding safe wrappers/adapters or adjusting calling code where allowed).",
-    "Keep Motoko logic in the single main actor (`backend/main.mo`); only add `backend/migration.mo` if an actual state upgrade is required."
+    "Backend must remain a single Motoko actor in backend/main.mo.",
+    "Do not modify any files under frontend/src/components/ui or other immutablePaths listed in SYSTEM_CONTEXT.",
+    "Do not introduce new backend services or external databases.",
+    "Use English for any user-facing text."
   ],
   "nonGoals": [
-    "Adding new product features beyond fixing the loading/skeleton issue and providing retry/error handling.",
-    "Changing authentication providers (Internet Identity remains the only auth mechanism)."
+    "Adding new habits, new unit types, or a configurable progression-rule editor UI.",
+    "Changing the app theme or layout beyond what is required to reflect the corrected progression values.",
+    "Migrating or rewriting persisted data beyond the runtime compounding logic changes."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }

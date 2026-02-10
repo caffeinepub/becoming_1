@@ -1,75 +1,26 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix mobile loading skeleton hang by surfacing actor initialization errors + retry UI",
+  "title": "Frontend: seconds-accurate time volume display for Plank and constant Squash across months",
   "requirements": [
     {
-      "id": "REQ-1",
-      "summary": "Ensure actor initialization failures/long-running initialization resolve to an error state within a bounded time instead of keeping the skeleton visible indefinitely on mobile.",
+      "id": "REQ-3",
+      "summary": "Ensure month-to-month volume display reflects backend-returned seconds-accurate values for Plank and constant values for Squash, without changing other habits’ behavior.",
       "acceptanceCriteria": [
-        "When loading the app on mobile and the backend/agent/actor initialization fails, the UI exits the skeleton state and shows an error banner/message within a bounded time (e.g., <= 15 seconds) rather than displaying the skeleton indefinitely.",
-        "If actor initialization succeeds, the skeleton transitions to the authenticated view and monthly totals/habit grid rendering without requiring a manual refresh."
+        "After saving January volume for Plank as 1:00 (time), switching month tabs shows Feb=1:15, Mar=1:30, etc., matching backend-returned values.",
+        "After saving Squash volume as 45:00 (time), switching month tabs shows 45:00 for all months.",
+        "No UI regressions for editing volumes of other habits; their display and progression remain unchanged."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/useActorWithTimeout.ts",
-          "operation": "create",
-          "description": "Create a safe wrapper hook that initializes the backend actor with a hard timeout (e.g., 15s) and exposes deterministic error + retry state; mirror the existing actor creation behavior (authenticated + anonymous), while avoiding modifications to the immutable frontend/src/hooks/useActor.ts."
+          "path": "frontend/src/features/becoming/state/habitModel.ts",
+          "operation": "modify",
+          "description": "Update optimistic compounding/unit inference so time-based volume edits (timeString provided) initialize and compound as unitType=\"time\" when volumeTracking is missing, preventing temporary reps-based progression in the UI. Keep existing display logic that prefers entry.timeString (seconds-accurate) so Plank renders 1:15, 1:30, etc., and Squash remains constant when backend returns constant values."
         },
         {
           "path": "frontend/src/features/becoming/api/queries.ts",
           "operation": "modify",
-          "description": "Switch habit queries to depend on the new useActorWithTimeout hook so actor initialization errors/timeouts propagate into React Query error state (instead of indefinite loading); keep retries disabled for the habits query and ensure loading reflects bounded actor initialization."
-        },
-        {
-          "path": "frontend/src/features/becoming/components/BecomingView.tsx",
-          "operation": "modify",
-          "description": "Update the main view to consume the new actor initialization error state (via useHabits or the actor wrapper) and render an error state when actor initialization fails/timeouts, ensuring skeleton rendering is only shown during an active, bounded attempt."
-        }
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "summary": "Provide a user-visible error screen with a primary Retry action that re-attempts actor initialization and refetches habits without closing the tab.",
-      "acceptanceCriteria": [
-        "When a loading error occurs, the screen shows an error message (not a skeleton) and a Retry button.",
-        "Tapping Retry triggers a new attempt to initialize the actor (if needed) and refetch habits, and the UI reflects success or failure accordingly."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/features/becoming/components/ErrorBanner.tsx",
-          "operation": "modify",
-          "description": "Extend the error UI to include clear English recovery guidance and a primary Retry button (use shadcn-ui Button + Alert composition; verify the component's usage instructions before implementing). Accept an optional onRetry callback and render the action when provided."
-        },
-        {
-          "path": "frontend/src/features/becoming/api/queries.ts",
-          "operation": "modify",
-          "description": "Expose a retry/recovery function from useHabits (or a separate exported helper) that triggers actor re-initialization retry (via the wrapper hook) and refetches habits; ensure it can be called from the UI without requiring a full reload."
-        },
-        {
-          "path": "frontend/src/features/becoming/components/BecomingView.tsx",
-          "operation": "modify",
-          "description": "Wire the Retry action into the error UI shown during load failures so that tapping Retry re-attempts actor initialization and then refetches habits, updating the view to either data or error accordingly."
-        }
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "summary": "Refactor main view loading logic so error states take precedence and the skeleton is only shown during bounded loading attempts for authenticated users.",
-      "acceptanceCriteria": [
-        "For an authenticated user, if the habits query cannot run because actor initialization errored, the error UI is shown (not the auth notice and not the skeleton).",
-        "For an authenticated user, the skeleton is only shown during an active, bounded loading attempt; afterward the UI resolves to either data or an error UI."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/features/becoming/components/BecomingView.tsx",
-          "operation": "modify",
-          "description": "Reorder and tighten conditional rendering: show AuthRequiredNotice only when unauthenticated; for authenticated users, show error UI first (actor init error or habits query error), then skeleton only while actively loading within the bounded window, and finally render the habit manager/grid when fetched."
-        },
-        {
-          "path": "frontend/src/features/becoming/components/GridSkeleton.tsx",
-          "operation": "modify",
-          "description": "Adjust skeleton usage expectations (if needed) to ensure it is only used for active loading states and does not appear as a fallback for unresolved/unknown states; keep composition-only (do not edit files under frontend/src/components/ui)."
+          "description": "Verify optimistic volume update wiring continues to pass timeString through to computeCompoundedVolumeTracking so the UI immediately reflects seconds-accurate Plank compounding and constant Squash values across month tabs, while preserving existing behavior for other habits."
         }
       ]
     }

@@ -68,6 +68,46 @@ export function parseTimeStringToMinutes(timeString: string): number | null {
 }
 
 /**
+ * Parses a time string in M:SS or M format to total seconds
+ * @param timeString - The time string to parse (e.g., "1:15" or "45")
+ * @returns Total seconds, or null if invalid
+ */
+export function parseTimeStringToSeconds(timeString: string): number | null {
+  if (!isValidTimeString(timeString)) return null;
+  
+  const trimmed = timeString.trim();
+  const parts = trimmed.split(':');
+  
+  if (parts.length === 2) {
+    // M:SS format
+    const [minutesStr, secondsStr] = parts;
+    const minutes = parseInt(minutesStr, 10);
+    const seconds = parseInt(secondsStr, 10);
+    
+    return minutes * 60 + seconds;
+  } else {
+    // M format - treat as minutes
+    const minutes = parseInt(trimmed, 10);
+    return minutes * 60;
+  }
+}
+
+/**
+ * Formats total seconds to M:SS string
+ * @param totalSeconds - Total seconds
+ * @returns Formatted time string (e.g., "5:00" or "1:15")
+ */
+export function formatSecondsToTimeString(totalSeconds: number): string {
+  if (totalSeconds < 0) totalSeconds = 0;
+  
+  const mins = Math.floor(totalSeconds / 60);
+  const secs = totalSeconds % 60;
+  const secsStr = secs.toString().padStart(2, '0');
+  
+  return `${mins}:${secsStr}`;
+}
+
+/**
  * Formats minutes to M:SS string
  * @param minutes - Total minutes
  * @returns Formatted time string (e.g., "45:00")

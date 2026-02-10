@@ -1,5 +1,5 @@
 import type { Habit, CompletionState, DayEntries, VolumeTracking, TimeVolumeEntry } from '../../../backend';
-import { formatMinutesToTimeString, normalizeTimeString } from '../utils/timeVolume';
+import { formatMinutesToTimeString, normalizeTimeString, parseTimeStringToSeconds, formatSecondsToTimeString } from '../utils/timeVolume';
 
 export interface HabitWithCompletion extends Habit {
   completionMap: Map<number, Map<number, boolean>>;
@@ -118,6 +118,7 @@ export function getVolumeDisplayString(habit: Habit, monthIndex: number): string
  * 
  * For "reps": monthly total = (per-completion volume) × (completed days count)
  * For "time": monthly total = (per-completion minutes) × (completed days count), formatted as M:SS
+ *   - Special case for "Plank": uses seconds-accurate multiplication (M:SS × count)
  * For other units: monthly total = completed days count (each checked day = +1)
  */
 export function getMonthlyTotalVolume(habit: HabitWithCompletion, monthIndex: number): string {
@@ -135,15 +136,32 @@ export function getMonthlyTotalVolume(habit: HabitWithCompletion, monthIndex: nu
     const totalVolume = perCompletionVolume * completedDays;
     return String(totalVolume);
   } else if (unitType === 'time') {
-    // For time: multiply per-completion minutes by completed days, format as time
+    // For time: multiply per-completion by completed days
     if (completedDays === 0) return '0:00';
     
     const entry = getVolumeEntryForMonth(habit, monthIndex);
     if (!entry || entry.minutes === undefined || entry.minutes === null) return '0:00';
     
-    const perCompletionVolume = Number(entry.minutes);
-    const totalVolume = perCompletionVolume * completedDays;
-    return formatMinutesToTimeString(totalVolume);
+    // Special case: "Plank" habit uses seconds-accurate multiplication
+    if (habit.name === 'Plank') {
+      // Try to parse timeString first (if available), otherwise fall back to minutes
+      let perCompletionSeconds = 0;
+      
+      if (entry.timeString) {
+        const parsed = parseTimeStringToSeconds(entry.timeString);
+        perCompletionSeconds = parsed !== null ? parsed : Number(entry.minutes) * 60;
+      } else {
+        perCompletionSeconds = Number(entry.minutes) * 60;
+      }
+      
+      const totalSeconds = perCompletionSeconds * completedDays;
+      return formatSecondsToTimeString(totalSeconds);
+    } else {
+      // All other time habits: use minutes-only multiplication
+      const perCompletionVolume = Number(entry.minutes);
+      const totalVolume = perCompletionVolume * completedDays;
+      return formatMinutesToTimeString(totalVolume);
+    }
   } else {
     // For all other unit types: return completed days count (each checked day = +1)
     return String(completedDays);
@@ -184,42 +202,74 @@ export function getDefaultVolumeTracking(): VolumeTracking {
 }
 
 /**
- * Get the increment value for a given unit type
+ * Get the increment value for a given habit name and unit type
+ * Applies habit-specific progression rules:
+ * - Squash: 0 (constant volume)
+ * - Plank (time): 15 seconds
+ * - Other time habits: 30 minutes
+ * - Reps: 5
  */
-function getMonthIncrement(unitType: string): number {
-  switch (unitType) {
-    case 'reps':
-      return 5;
-    case 'time':
-      return 15;
-    default:
-      return 0;
+function getMonthIncrement(habitName: string, unitType: string): { minutes: number; seconds: number } {
+  const normalizedName = habitName.toLowerCase().trim();
+  
+  if (normalizedName === 'squash') {
+    // Squash: no increment (constant volume)
+    return { minutes: 0, seconds: 0 };
+  } else if (normalizedName === 'plank' && unitType === 'time') {
+    // Plank: +15 seconds per month
+    return { minutes: 0, seconds: 15 };
+  } else if (unitType === 'time') {
+    // Other time habits: +30 minutes per month
+    return { minutes: 30, seconds: 0 };
+  } else if (unitType === 'reps') {
+    // Reps: +5 per month
+    return { minutes: 5, seconds: 0 };
+  } else {
+    // Default: no increment
+    return { minutes: 0, seconds: 0 };
   }
 }
 
 /**
  * Compute optimistic volume tracking with auto-compounding for future months.
  * Sets the selected month to the user-entered value, and auto-generates all future months
- * with increment +5 for unitType "reps", +15 for "time", +0 otherwise.
+ * with habit-specific progression rules:
+ * - Squash: constant volume (no increment)
+ * - Plank (time): +15 seconds per month
+ * - Other time habits: +30 minutes per month
+ * - Reps: +5 per month
  * Preserves earlier months as-is when volumeTracking exists.
  */
 export function computeCompoundedVolumeTracking(
   existingVolumeTracking: VolumeTracking | undefined,
   monthIndex: number,
   minutes: number,
+  habitName: string,
   timeString?: string
 ): VolumeTracking {
-  const unitType = existingVolumeTracking?.unitType || 'reps';
-  const increment = getMonthIncrement(unitType);
+  // Infer unitType: if timeString is provided, it's "time", otherwise use existing or default to "reps"
+  const unitType = existingVolumeTracking?.unitType || (timeString ? 'time' : 'reps');
+  const increment = getMonthIncrement(habitName, unitType);
   
   // Start with existing values or defaults
   const baseTracking = existingVolumeTracking || getDefaultVolumeTracking();
   
   // Build the new volume tracking object
-  const newTracking: VolumeTracking = { ...baseTracking };
+  const newTracking: VolumeTracking = { ...baseTracking, unitType };
   
   // Normalize timeString to M:SS format if provided
   const normalizedTimeString = timeString ? normalizeTimeString(timeString) : undefined;
+  
+  // For Plank, parse the initial timeString to seconds for accurate compounding
+  let baseSeconds = 0;
+  if (habitName.toLowerCase().trim() === 'plank' && unitType === 'time') {
+    if (normalizedTimeString) {
+      const parsed = parseTimeStringToSeconds(normalizedTimeString);
+      baseSeconds = parsed !== null ? parsed : minutes * 60;
+    } else {
+      baseSeconds = minutes * 60;
+    }
+  }
   
   // Update the selected month and all future months
   for (let i = 0; i < 12; i++) {
@@ -232,13 +282,27 @@ export function computeCompoundedVolumeTracking(
         timeString: unitType === 'time' && normalizedTimeString ? normalizedTimeString : undefined,
       };
     } else if (i > monthIndex) {
-      // Auto-generate future months with compounding
+      // Auto-generate future months with habit-specific compounding
       const k = i - monthIndex;
-      const compoundedMinutes = Math.max(0, minutes + (k * increment));
-      newTracking[monthKey] = {
-        minutes: BigInt(compoundedMinutes),
-        timeString: unitType === 'time' ? formatMinutesToTimeString(compoundedMinutes) : undefined,
-      };
+      
+      if (habitName.toLowerCase().trim() === 'plank' && unitType === 'time') {
+        // Plank: compound using seconds (+15 seconds per month)
+        const compoundedSeconds = baseSeconds + (k * increment.seconds);
+        const compoundedMinutes = Math.floor(compoundedSeconds / 60);
+        const compoundedTimeString = formatSecondsToTimeString(compoundedSeconds);
+        
+        newTracking[monthKey] = {
+          minutes: BigInt(compoundedMinutes),
+          timeString: compoundedTimeString,
+        };
+      } else {
+        // All other habits: compound using minutes
+        const compoundedMinutes = Math.max(0, minutes + (k * increment.minutes));
+        newTracking[monthKey] = {
+          minutes: BigInt(compoundedMinutes),
+          timeString: unitType === 'time' ? formatMinutesToTimeString(compoundedMinutes) : undefined,
+        };
+      }
     }
     // else: preserve earlier months (i < monthIndex) as-is
   }

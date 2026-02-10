@@ -4,6 +4,7 @@ import { useInternetIdentity } from '../../../hooks/useInternetIdentity';
 import type { Habit, TimeVolumeEntry } from '../../../backend';
 import { buildCompletionMap, type HabitWithCompletion, computeCompoundedVolumeTracking } from '../state/habitModel';
 import { toast } from 'sonner';
+import { normalizeError } from '../../../utils/icErrors';
 
 function getHabitsQueryKey(principalText: string | null) {
   return ['habits', principalText];
@@ -20,15 +21,24 @@ export function useHabits() {
     queryKey: getHabitsQueryKey(principalText),
     queryFn: async () => {
       if (!actor) throw new Error('Actor not available');
-      const habits = await actor.getHabits();
-      return habits.map(buildCompletionMap);
+      try {
+        const habits = await actor.getHabits();
+        return habits.map(buildCompletionMap);
+      } catch (error) {
+        // Normalize errors from backend calls
+        throw normalizeError(error);
+      }
     },
     enabled: !!actor && !isActorFetching && isAuthenticated,
     retry: false,
   });
 
-  // Expose actor error if it exists
-  const error = isActorError ? actorError : query.error;
+  // Normalize and expose actor error if it exists, otherwise query error
+  const error = isActorError 
+    ? normalizeError(actorError) 
+    : query.error 
+      ? normalizeError(query.error) 
+      : null;
   const isError = isActorError || query.isError;
 
   // Return custom state that properly reflects actor dependency
@@ -201,7 +211,7 @@ export function useUpdateHabitUnitType() {
         if (!old) return old;
         return old.map((habit) => {
           if (habit.id === habitId) {
-            return {
+            const updatedHabit: Habit = {
               ...habit,
               volumeTracking: habit.volumeTracking
                 ? { ...habit.volumeTracking, unitType }
@@ -221,6 +231,7 @@ export function useUpdateHabitUnitType() {
                     december: defaultEntry,
                   },
             };
+            return buildCompletionMap(updatedHabit);
           }
           return habit;
         });
@@ -234,9 +245,10 @@ export function useUpdateHabitUnitType() {
       }
       toast.error('Failed to update unit type: ' + error.message);
     },
-    onSettled: () => {
-      const principalText = identity?.getPrincipal().toString() || null;
-      queryClient.invalidateQueries({ queryKey: getHabitsQueryKey(principalText) });
+    onSettled: (data, error, variables, context) => {
+      if (context?.queryKey) {
+        queryClient.invalidateQueries({ queryKey: context.queryKey });
+      }
     },
   });
 }
@@ -282,18 +294,20 @@ export function useUpdateHabitVolume() {
         if (!old) return old;
         return old.map((habit) => {
           if (habit.id === habitId) {
-            // Apply the same compounding rules as the backend
-            const compoundedVolumeTracking = computeCompoundedVolumeTracking(
+            // Compute compounded volume tracking with habit-specific progression rules
+            const updatedVolumeTracking = computeCompoundedVolumeTracking(
               habit.volumeTracking,
               monthIndex,
               minutes,
+              habit.name,
               timeString
             );
             
-            return {
+            const updatedHabit: Habit = {
               ...habit,
-              volumeTracking: compoundedVolumeTracking,
+              volumeTracking: updatedVolumeTracking,
             };
+            return buildCompletionMap(updatedHabit);
           }
           return habit;
         });
@@ -307,9 +321,10 @@ export function useUpdateHabitVolume() {
       }
       toast.error('Failed to update volume: ' + error.message);
     },
-    onSettled: () => {
-      const principalText = identity?.getPrincipal().toString() || null;
-      queryClient.invalidateQueries({ queryKey: getHabitsQueryKey(principalText) });
+    onSettled: (data, error, variables, context) => {
+      if (context?.queryKey) {
+        queryClient.invalidateQueries({ queryKey: context.queryKey });
+      }
     },
   });
 }

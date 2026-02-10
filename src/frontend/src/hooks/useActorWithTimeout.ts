@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { type backendInterface } from '../backend';
 import { createActorWithConfig } from '../config';
 import { getSecretParameter } from '../utils/urlParams';
+import { normalizeError } from '../utils/icErrors';
 
 const ACTOR_QUERY_KEY = 'actor-with-timeout';
 const ACTOR_TIMEOUT_MS = 15000; // 15 seconds
@@ -25,23 +26,36 @@ export function useActorWithTimeout() {
         }, ACTOR_TIMEOUT_MS);
       });
 
-      // Create the actor initialization promise
+      // Create the actor initialization promise with error normalization
       const actorPromise = (async () => {
-        if (!isAuthenticated) {
-          // Return anonymous actor if not authenticated
-          return await createActorWithConfig();
-        }
-
-        const actorOptions = {
-          agentOptions: {
-            identity
+        try {
+          if (!isAuthenticated) {
+            // Return anonymous actor if not authenticated
+            return await createActorWithConfig();
           }
-        };
 
-        const actor = await createActorWithConfig(actorOptions);
-        const adminToken = getSecretParameter('caffeineAdminToken') || '';
-        await actor._initializeAccessControlWithSecret(adminToken);
-        return actor;
+          const actorOptions = {
+            agentOptions: {
+              identity
+            }
+          };
+
+          const actor = await createActorWithConfig(actorOptions);
+          const adminToken = getSecretParameter('caffeineAdminToken') || '';
+          
+          // Wrap initialization call to catch and normalize errors
+          try {
+            await actor._initializeAccessControlWithSecret(adminToken);
+          } catch (initError) {
+            // Normalize and rethrow initialization errors
+            throw normalizeError(initError);
+          }
+          
+          return actor;
+        } catch (error) {
+          // Normalize any error from actor creation or initialization
+          throw normalizeError(error);
+        }
       })();
 
       // Race between timeout and actor initialization
