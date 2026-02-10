@@ -1,55 +1,74 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Correct monthly total volume calculations and add monthly aggregate summary",
+  "title": "Fix monthly habit volumes: Plank Feb-based +15s progression, Squash fixed 45:00, and ticked-day monthly totals",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Correct per-habit monthly total volume calculations for numeric workout volumes, reps, and time (seconds-accurate when timeString exists) for the selected month.",
+      "summary": "Adjust frontend optimistic compounding so Plank uses February as the base month (e.g., Feb 1:15) and applies +15 seconds per month after February without minutes/seconds drift.",
       "acceptanceCriteria": [
-        "Given a habit with unitType = \"reps\" and a per-completion volume of 10, and 3 completed days in the selected month, the UI shows a monthly total of 30 for that habit.",
-        "Given a habit with a numeric per-completion volume (e.g., workouts volume already expressed as weight×reps×sets per completion) and 4 completed days, the UI shows monthly total = per-completion volume × 4 for that habit.",
-        "Given a time-based habit with per-completion value stored as timeString \"1:15\" and 2 completed days, the UI shows monthly total \"2:30\" (seconds-accurate).",
-        "Given a time-based habit without timeString but with minutes stored, the UI still computes a correct monthly total and formats it as M:SS.",
-        "Monthly totals are correct immediately after toggling completion checkboxes (i.e., after React Query updates and re-render)."
+        "When the stored/edited Plank value for February is 1:15, the computed/stored values for March and April are 1:30 and 1:45 respectively (and continue +15s for subsequent months).",
+        "The app no longer produces Plank monthly values like 16:00 or 31:00 as a result of the +15 increment (i.e., no minutes-vs-seconds bug).",
+        "Plank volume entries retain a seconds-accurate representation (e.g., timeString \"1:15\") so monthly totals can compute correctly at second granularity.",
+        "This progression rule is applied consistently in both backend compounding (Motoko) and frontend optimistic compounding (TypeScript) so values don’t ‘snap back’ after refresh."
       ],
       "file_operations": [
         {
           "path": "frontend/src/features/becoming/state/habitModel.ts",
           "operation": "modify",
-          "description": "Update getMonthlyTotalVolume() to remove the habit-name special casing and consistently compute monthly totals as (per-completion value × completed-days count) for reps, time, and numeric workout-style units. For time, compute per-completion in seconds when timeString is available (fallback to minutes×60 when not), multiply seconds by completed-days count, then format back to M:SS. For non-time, non-reps units, treat entry.minutes as the per-completion numeric volume and multiply by completed-days count (returning \"0\" when missing). Ensure the function relies only on the habit’s completionMap so optimistic React Query checkbox toggles immediately reflect updated totals."
+          "description": "Update Plank-specific logic in computeCompoundedVolumeTracking to treat February (month index 1) as the base month for time targets and apply +15 seconds to months after February (Mar–Dec), while avoiding any minutes-vs-seconds conversion errors and keeping timeString seconds-accurate."
         },
         {
-          "path": "frontend/src/features/becoming/components/HabitRow.tsx",
+          "path": "frontend/src/features/becoming/api/queries.ts",
           "operation": "modify",
-          "description": "Ensure the per-habit \"Monthly total\" display continues to use the corrected getMonthlyTotalVolume() output for all habits in the selected month, so totals visibly update immediately after completion checkbox toggles."
+          "description": "Ensure the optimistic update path for volume updates (useUpdateHabitVolume onMutate) continues to use the updated Plank compounding rule from habitModel so the UI does not 'snap back' after refresh/re-fetch."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Add a selected-month aggregate summary that totals monthly volumes across all habits by category (reps, time, workout-style numeric).",
+      "summary": "Ensure Squash remains a fixed 45:00 daily target across all months in the UI compounding logic and is used consistently in monthly totals calculations from ticked days.",
       "acceptanceCriteria": [
-        "When multiple reps habits exist, the aggregate reps total equals the sum of each reps habit’s monthly total for the selected month.",
-        "When multiple time habits exist, the aggregate time total equals the sum of each time habit’s monthly total for the selected month, computed seconds-accurately when timeString is available.",
-        "If no habits exist for a category (e.g., no time habits), the aggregate summary displays 0 (or 0:00 for time) for that category.",
-        "Changing the selected month updates the aggregate totals to reflect the newly selected month."
+        "For the Squash habit, the per-day volume displays as 45:00 for every month tab (Jan–Dec) once set, with no auto-increase.",
+        "If N days are ticked completed for Squash in a selected month, the Monthly total for Squash equals N × 45:00 (formatted correctly as time).",
+        "Backend persistence for Squash does not introduce future-month drift (e.g., later months remain 45:00 after refresh)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/features/becoming/components/MonthlyVolumeSummary.tsx",
-          "operation": "create",
-          "description": "Create a small summary component rendered for the selected month that iterates over the provided habits and computes: (1) total reps (sum of each reps habit’s monthly total as a number), (2) total time (sum of time totals in seconds then format as M:SS), and (3) total workout-style numeric volume (sum of non-time, non-reps numeric monthly totals). Display English labels and show 0 / 0:00 when categories are empty."
+          "path": "frontend/src/features/becoming/state/habitModel.ts",
+          "operation": "modify",
+          "description": "Harden Squash handling in computeCompoundedVolumeTracking so the constant-volume rule is always applied (all months mirror the same entry), ensuring the timeString is normalized (M:SS) and never compounded month-to-month."
         },
+        {
+          "path": "frontend/src/features/becoming/components/HabitRow.tsx",
+          "operation": "modify",
+          "description": "Verify the row display always reads the selected month's per-day volume via getVolumeDisplayString and monthly total via getMonthlyTotalVolume so Squash remains 45:00 on all month tabs and totals reflect ticked-day × 45:00."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Compute and display monthly totals for all habits as (ticked days in selected month) × (per-day target for selected month), updating live on checkbox toggles and aggregating correctly in the Monthly Volume Summary.",
+      "acceptanceCriteria": [
+        "Toggling a day checkbox for any habit updates that habit’s displayed “Monthly total” to reflect the new completed-days count × per-day volume for the selected month.",
+        "For time-based habits, monthly totals are computed with seconds accuracy when a timeString exists and are formatted as M:SS.",
+        "The Monthly Volume Summary aggregates totals using these same computed monthly totals (reps summed as numbers; time summed as seconds and formatted as M:SS)."
+      ],
+      "file_operations": [
         {
           "path": "frontend/src/features/becoming/state/habitModel.ts",
           "operation": "modify",
-          "description": "Add or export reusable helpers needed by the aggregate summary to avoid duplicating logic (e.g., a helper that returns per-habit monthly totals in a raw numeric form: reps/workout as number, time as seconds), ensuring the aggregate summary matches the corrected per-habit computations from REQ-1."
+          "description": "Fix monthly total calculations to always use the selected month’s per-day target and completed-day count, and for time-based habits compute totals in seconds using timeString when available even if minutes is missing; keep formatting as M:SS."
         },
         {
-          "path": "frontend/src/features/becoming/components/BecomingView.tsx",
+          "path": "frontend/src/features/becoming/components/MonthlyVolumeSummary.tsx",
           "operation": "modify",
-          "description": "Wire the new MonthlyVolumeSummary component into the existing view (within the existing BecomingView layout near the MonthTabs/grid) and pass it the currently fetched habits plus selectedMonth so changing months or toggling completion immediately updates the aggregate totals."
+          "description": "Confirm summary aggregation relies on getMonthlyTotalRaw (seconds for time, numbers for reps/numeric) and formats time totals as M:SS; ensure it reflects live updates after completion toggles."
+        },
+        {
+          "path": "frontend/src/features/becoming/api/queries.ts",
+          "operation": "modify",
+          "description": "Validate the completion-toggle optimistic update preserves immutability so HabitRow and MonthlyVolumeSummary re-render immediately, making monthly totals update live as (ticked days × per-day target)."
         }
       ]
     }

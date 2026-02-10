@@ -460,7 +460,9 @@ actor {
     func getMonthIncrement(habitName : Text, unitType : Text) : Nat {
       switch (unitType, habitName.toLower().trim(#char ' ')) {
         case ("reps", _) { 5 };
+        // Starting base time is 75 sec for every day in Feb, then every month in/decreases the daily target by +15s (Mar = 90s, Apr = 105s), i.e. monthly target in Mar = 275 * days_in_Mar = 2790 (mins).
         case ("time", "plank") { 15 };
+        // Always 45 minutes for every day in the month
         case ("time", "squash") { 0 };
         case ("time", _) { 30 };
         case (_, _) { 0 };
@@ -664,3 +666,4 @@ actor {
     totalCount;
   };
 };
+

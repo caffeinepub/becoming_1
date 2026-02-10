@@ -1,28 +1,34 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Workout tracking app where \"volume\" totals should correctly aggregate across workouts, rep-based exercises, and time-based exercises.",
-  "architectural_notes": [
-    "Volume definitions: workouts volume = sum(weight × reps × sets); reps-only volume = total reps; time-based volume = total time (seconds/minutes). Total volume display should aggregate across all categories."
-  ],
+  "summary": "Habit tracker needs correct monthly volume totals by summing ticked/completed days, with per-habit per-month target values (Plank increases +15s each month after February; Squash fixed at 45 minutes).",
+  "architectural_notes": [],
   "known_issues": [
-    "Total volume display is incorrect across workouts/reps/time (reported after Version 24)."
+    "Plank and Squash habit volumes are not currently adding up correctly when days are ticked/completed."
   ],
   "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-fix-the-monthly-total-volume-calculation-so-it-correctly-reflects-total-volume-for-each-habit-in-the-selected-month-using-these-formulas-1-for-workout-style-numeric-volumes-monthly-total-per-completion-volume-number-of-completed-days-2-for-reps-only-habits-monthly-total-per-completion-reps-number-of-completed-days-3-for-time-based-habits-monthly-total-per-completion-time-number-of-completed-days-computed-in-seconds-when-a-time-string-is-available-then-formatted-back-to-m-ss-ensure-this-works-consistently-for-all-time-based-habits-not-only-a-special-cased-habit-name",
-      "title": "Fix the monthly total volume calculation so it correctly reflects total volume for each habit in the selected month using these formulas: (1) for workout-style numeric volumes, monthly total = (per-completion volume) × (number of completed days); (2) for reps-only habits, monthly total = (per-completion reps) × (number of completed days); (3) for time-based habits, monthly total = (per-completion time) × (number of completed days) computed in seconds when a time string is available, then formatted back to M:SS. Ensure this works consistently for all time-based habits (not only a special-cased habit name).",
+      "id": "feature-fix-plank-time-progression-so-that-february-is-the-base-month-at-1-15-and-each-month-after-february-increases-the-daily-plank-target-by-15-seconds-e-g-mar-1-30-apr-1-45-without-incorrectly-treating-the-increment-as-minutes",
+      "title": "Fix Plank time progression so that February is the base month at 1:15, and each month after February increases the *daily* Plank target by +15 seconds (e.g., Mar = 1:30, Apr = 1:45), without incorrectly treating the increment as minutes.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-add-a-selected-month-aggregate-total-volume-summary-that-sums-volumes-across-all-habits-for-the-selected-month-and-displays-separate-totals-at-minimum-for-total-reps-sum-of-per-habit-monthly-totals-for-unittype-reps-total-time-sum-of-per-habit-monthly-totals-for-unittype-time-in-seconds-formatted-as-m-ss-and-total-workouts-numeric-volume-sum-of-per-habit-monthly-totals-for-workout-style-numeric-unit-types-if-present-the-summary-must-match-the-corrected-per-habit-totals-from-req-1",
-      "title": "Add a selected-month aggregate total volume summary that sums volumes across all habits for the selected month and displays separate totals at minimum for: total reps (sum of per-habit monthly totals for unitType \"reps\"), total time (sum of per-habit monthly totals for unitType \"time\" in seconds, formatted as M:SS), and total workouts numeric volume (sum of per-habit monthly totals for workout-style numeric unit types if present). The summary must match the corrected per-habit totals from REQ-1.",
+      "id": "feature-keep-squash-daily-target-fixed-at-45-00-across-all-months-no-month-to-month-compounding-and-ensure-that-this-fixed-value-is-used-when-calculating-monthly-totals-from-completed-ticked-days",
+      "title": "Keep Squash daily target fixed at 45:00 across all months (no month-to-month compounding), and ensure that this fixed value is used when calculating monthly totals from completed/ticked days.",
       "reqIds": [
         "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-monthly-totals-for-all-habits-including-plank-and-squash-are-calculated-as-number-of-ticked-completed-days-in-the-selected-month-that-habit-s-per-day-target-for-the-selected-month-and-displayed-correctly-in-each-habit-row-and-in-the-monthly-volume-summary",
+      "title": "Ensure monthly totals for all habits (including Plank and Squash) are calculated as: (number of ticked/completed days in the selected month) × (that habit’s per-day target for the selected month), and displayed correctly in each habit row and in the Monthly Volume Summary.",
+      "reqIds": [
+        "REQ-3"
       ],
       "version": 1
     }
@@ -30,12 +36,24 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Fix total volume calculation/display to correctly sum volume across workouts, reps-only exercises, and time-based exercises",
+      "summary": "Auto-calculate monthly volume totals by summing values for days marked ticked/completed (for Plank and other habits)",
       "reqIds": [],
-      "status": "in_progress"
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Support month-based Plank daily target that increases by +15 seconds each month after February (e.g., Feb 1:15, Mar 1:30, Apr 1:45) and use it in monthly volume calculation",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Keep Squash daily value fixed at 45 minutes and include it in monthly volume calculation based on ticked/completed days",
+      "reqIds": [],
+      "status": "pending"
     }
   ],
-  "projectName": "Fix monthly total volume calculations across workout, reps, and time habits",
+  "projectName": "Fix Plank & Squash monthly volumes: sum ticked days and apply correct month-based targets (Plank +15s after Feb, Squash fixed 45:00)",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

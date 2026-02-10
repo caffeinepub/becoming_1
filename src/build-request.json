@@ -1,57 +1,78 @@
 {
   "kind": "build_request",
-  "title": "Fix monthly total volume calculations across workout, reps, and time habits",
-  "priority": "high",
+  "title": "Fix Plank & Squash monthly volumes: sum ticked days and apply correct month-based targets (Plank +15s after Feb, Squash fixed 45:00)",
+  "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Fix the monthly total volume calculation so it correctly reflects total volume for each habit in the selected month using these formulas: (1) for workout-style numeric volumes, monthly total = (per-completion volume) × (number of completed days); (2) for reps-only habits, monthly total = (per-completion reps) × (number of completed days); (3) for time-based habits, monthly total = (per-completion time) × (number of completed days) computed in seconds when a time string is available, then formatted back to M:SS. Ensure this works consistently for all time-based habits (not only a special-cased habit name).",
-      "target": "frontend",
+      "text": "Fix Plank time progression so that February is the base month at 1:15, and each month after February increases the *daily* Plank target by +15 seconds (e.g., Mar = 1:30, Apr = 1:45), without incorrectly treating the increment as minutes.",
+      "target": "both",
       "source": {
         "messageIds": [
-          "recent-messages"
+          "msg-10"
         ],
         "quotes": [
-          "The volume of workouts/ reps / time etc \nIt should display the total volume of all the reps and time \nYes",
-          "All correct"
+          "I mean for the habit plank in February I do 1:15. In march I want to increase it to 1:30 and April 1:45.",
+          "Correct add 15 seconds to plank which is what I will be aiming to hit everyday"
         ]
       },
       "acceptanceCriteria": [
-        "Given a habit with unitType = \"reps\" and a per-completion volume of 10, and 3 completed days in the selected month, the UI shows a monthly total of 30 for that habit.",
-        "Given a habit with a numeric per-completion volume (e.g., workouts volume already expressed as weight×reps×sets per completion) and 4 completed days, the UI shows monthly total = per-completion volume × 4 for that habit.",
-        "Given a time-based habit with per-completion value stored as timeString \"1:15\" and 2 completed days, the UI shows monthly total \"2:30\" (seconds-accurate).",
-        "Given a time-based habit without timeString but with minutes stored, the UI still computes a correct monthly total and formats it as M:SS.",
-        "Monthly totals are correct immediately after toggling completion checkboxes (i.e., after React Query updates and re-render)."
+        "When the stored/edited Plank value for February is 1:15, the computed/stored values for March and April are 1:30 and 1:45 respectively (and continue +15s for subsequent months).",
+        "The app no longer produces Plank monthly values like 16:00 or 31:00 as a result of the +15 increment (i.e., no minutes-vs-seconds bug).",
+        "Plank volume entries retain a seconds-accurate representation (e.g., timeString \"1:15\") so monthly totals can compute correctly at second granularity.",
+        "This progression rule is applied consistently in both backend compounding (Motoko) and frontend optimistic compounding (TypeScript) so values don’t ‘snap back’ after refresh."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Add a selected-month aggregate total volume summary that sums volumes across all habits for the selected month and displays separate totals at minimum for: total reps (sum of per-habit monthly totals for unitType \"reps\"), total time (sum of per-habit monthly totals for unitType \"time\" in seconds, formatted as M:SS), and total workouts numeric volume (sum of per-habit monthly totals for workout-style numeric unit types if present). The summary must match the corrected per-habit totals from REQ-1.",
-      "target": "frontend",
+      "text": "Keep Squash daily target fixed at 45:00 across all months (no month-to-month compounding), and ensure that this fixed value is used when calculating monthly totals from completed/ticked days.",
+      "target": "both",
       "source": {
         "messageIds": [
-          "recent-messages"
+          "msg-8",
+          "msg-10"
         ],
         "quotes": [
-          "It should display the total volume of all the reps and time"
+          "can you make it so every month after February adds 15 seconds to the plank and that squash stays at 45 minutes",
+          "I want you to calculate the volume of plank across the month as normal along with the same for the other habits."
         ]
       },
       "acceptanceCriteria": [
-        "When multiple reps habits exist, the aggregate reps total equals the sum of each reps habit’s monthly total for the selected month.",
-        "When multiple time habits exist, the aggregate time total equals the sum of each time habit’s monthly total for the selected month, computed seconds-accurately when timeString is available.",
-        "If no habits exist for a category (e.g., no time habits), the aggregate summary displays 0 (or 0:00 for time) for that category.",
-        "Changing the selected month updates the aggregate totals to reflect the newly selected month."
+        "For the Squash habit, the per-day volume displays as 45:00 for every month tab (Jan–Dec) once set, with no auto-increase.",
+        "If N days are ticked completed for Squash in a selected month, the Monthly total for Squash equals N × 45:00 (formatted correctly as time).",
+        "Backend persistence for Squash does not introduce future-month drift (e.g., later months remain 45:00 after refresh)."
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Ensure monthly totals for all habits (including Plank and Squash) are calculated as: (number of ticked/completed days in the selected month) × (that habit’s per-day target for the selected month), and displayed correctly in each habit row and in the Monthly Volume Summary.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-5",
+          "msg-10"
+        ],
+        "quotes": [
+          "Looks good. Can you get the volumes to add up when selected/ ticked completed?",
+          "I want you to calculate the volume of plank across the month as normal along with the same for the other habits."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Toggling a day checkbox for any habit updates that habit’s displayed “Monthly total” to reflect the new completed-days count × per-day volume for the selected month.",
+        "For time-based habits, monthly totals are computed with seconds accuracy when a timeString exists and are formatted as M:SS.",
+        "The Monthly Volume Summary aggregates totals using these same computed monthly totals (reps summed as numbers; time summed as seconds and formatted as M:SS)."
       ]
     }
   ],
   "constraints": [
-    "Use English for all user-facing text.",
-    "Do not edit files under frontend/src/components/ui or any path listed in frontend.immutablePaths in SYSTEM_CONTEXT."
+    "Backend must remain a single Motoko actor in backend/main.mo (no additional backend services).",
+    "Do not modify any files under frontend/src/components/ui or any paths listed in SYSTEM_CONTEXT.frontend.immutablePaths.",
+    "Use English for any user-facing text."
   ],
   "nonGoals": [
-    "Do not change the monthly progression/compounding rules for Plank/Squash or other habits beyond what is necessary to compute correct totals.",
-    "Do not introduce new backend canisters, external databases, or third-party integrations.",
-    "Do not change authentication behavior (Internet Identity)."
+    "Adding new habit types, analytics dashboards, streak logic, reminders, or notifications.",
+    "Introducing external databases or third-party auth providers (Internet Identity only).",
+    "Real-time syncing or WebSocket-based updates."
   ],
   "imageRequirements": {
     "required": [],

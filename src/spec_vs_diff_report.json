@@ -1,40 +1,32 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-10T19:50:18.404Z",
-  "summary": "REQ-1 and REQ-2 appear largely implemented via updated monthly total computation helpers in habitModel and a new MonthlyVolumeSummary component rendered in BecomingView. However, the aggregate summary UI conditionally hides categories instead of showing 0/0:00 when a category is absent, which conflicts with REQ-2 acceptance criteria. Several additional, unrelated behavior changes (auth/error/loading prioritization, query behavior changes) are present in the diff summary but were not requested.",
+  "generatedAt": "2026-02-10T21:09:22.134Z",
+  "summary": "Frontend habit model adds utilities to count completed days and compute monthly totals using per-day targets with seconds-accurate time handling. However, the diff evidence is insufficient to confirm the required backend (Motoko) compounding/persistence rules for Plank/Squash, or the frontend optimistic-compounding consistency (not shown in modified files).",
   "missing_requirements": [
     {
-      "id": "REQ-2",
-      "requirement": "If no habits exist for a category (e.g., no time habits), the aggregate summary displays 0 (or 0:00 for time) for that category.",
-      "reason": "MonthlyVolumeSummary only renders a category block when `hasReps`/`hasTime`/`hasNumeric` is true; if a category has no habits it is omitted rather than displayed as 0/0:00.",
+      "id": "REQ-1",
+      "requirement": "Apply the February-based Plank +15 seconds/month daily-target progression consistently in both backend (Motoko) and frontend optimistic compounding so values don’t snap back after refresh.",
+      "reason": "The provided diff evidence only shows frontend calculation helpers in habitModel.ts; backend/main.mo is truncated before any Plank-specific progression logic is shown, and no frontend optimistic-update/compounding code is present in the listed modified files.",
       "evidence": [
-        "frontend/src/features/becoming/components/MonthlyVolumeSummary.tsx"
-      ]
-    }
-  ],
-  "hallucinated_features": [
-    {
-      "description": "Changed BecomingView behavior to prioritize error states over loading states and added/altered auth gating and skeleton rendering logic beyond adding the monthly volume summary.",
-      "reason": "REQ-1/REQ-2 only request volume calculation fixes and an aggregate summary; they do not request changes to authentication/error/loading state handling.",
-      "evidence": [
-        "frontend/src/features/becoming/components/BecomingView.tsx"
+        "backend/main.mo (truncated; no Plank progression shown in excerpt)",
+        "frontend/src/features/becoming/state/habitModel.ts (shows time parsing/formatting utilities and mentions Plank logic, but not backend persistence or optimistic compounding)"
       ]
     },
     {
-      "description": "React Query behavior changes including principal-scoped query keys, immutable optimistic updates for completion toggles, and actor initialization error normalization.",
-      "reason": "Not requested by REQ-1/REQ-2 and could be considered scope expansion beyond volume total calculations and the new summary.",
+      "id": "REQ-2",
+      "requirement": "Keep Squash daily target fixed at 45:00 across all months (no compounding) and ensure backend persistence does not introduce future-month drift.",
+      "reason": "No Squash-specific fixed-target enforcement is visible in the backend/main.mo excerpt, and the diff does not include any backend logic demonstrating prevention of month-to-month drift for Squash after refresh.",
       "evidence": [
-        "frontend/src/features/becoming/api/queries.ts (described in frontend-file-summaries.txt)",
-        "frontend-file-summaries.txt"
+        "backend/main.mo (truncated; no Squash fixed-target/persistence logic shown in excerpt)"
       ]
     }
   ],
-  "confidence": 0.72,
+  "hallucinated_features": [],
+  "confidence": 0.58,
   "changed_files": [
+    "backend/main.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/features/becoming/components/BecomingView.tsx",
-    "frontend/src/features/becoming/components/MonthlyVolumeSummary.tsx",
     "frontend/src/features/becoming/state/habitModel.ts",
     "project_state.json"
   ]

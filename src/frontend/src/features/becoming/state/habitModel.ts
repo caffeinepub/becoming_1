@@ -239,7 +239,7 @@ export function getDefaultVolumeTracking(): VolumeTracking {
  * Get the increment value for a given habit name and unit type
  * Applies habit-specific progression rules:
  * - Squash: 0 (constant volume)
- * - Plank (time): 15 seconds
+ * - Plank (time): 15 seconds per month after February
  * - Other time habits: 30 minutes
  * - Reps: 5
  */
@@ -250,7 +250,7 @@ function getMonthIncrement(habitName: string, unitType: string): { minutes: numb
     // Squash: no increment (constant volume)
     return { minutes: 0, seconds: 0 };
   } else if (normalizedName === 'plank' && unitType === 'time') {
-    // Plank: +15 seconds per month
+    // Plank: +15 seconds per month after February
     return { minutes: 0, seconds: 15 };
   } else if (unitType === 'time') {
     // Other time habits: +30 minutes per month
@@ -269,13 +269,13 @@ function getMonthIncrement(habitName: string, unitType: string): { minutes: numb
  * 
  * Habit-specific progression rules:
  * - Squash: constant volume across ALL 12 months (Jan-Dec)
- * - Plank (time): +15 seconds per calendar month from January
- *   (Jan = base, Feb = base+15s, Mar = base+30s, etc.)
+ * - Plank (time): February is the base month; +15 seconds per month after February
+ *   (Feb = base, Mar = base+15s, Apr = base+30s, etc.)
  * - Other time habits: +30 minutes per calendar month from the edited month
  * - Reps: +5 per calendar month from the edited month
  * 
  * For Squash: all months are set to the same value
- * For Plank: progression is based on absolute calendar month position
+ * For Plank: February (month index 1) is the base; progression applies to months after February
  * For others: only future months (after edited month) are updated
  */
 export function computeCompoundedVolumeTracking(
@@ -315,7 +315,7 @@ export function computeCompoundedVolumeTracking(
     return newTracking;
   }
   
-  // Special case: Plank - progression based on calendar month position
+  // Special case: Plank - February (month index 1) is the base month
   if (normalizedName === 'plank' && unitType === 'time') {
     // Parse the edited month's value to seconds
     let editedMonthSeconds = 0;
@@ -326,14 +326,40 @@ export function computeCompoundedVolumeTracking(
       editedMonthSeconds = minutes * 60;
     }
     
-    // Calculate what January's value should be based on the edited month
-    // If editing February (index 1), and it's 1:15 (75s), then January should be 75 - 15 = 60s (1:00)
-    const januarySeconds = editedMonthSeconds - (monthIndex * increment.seconds);
+    // Calculate what February's value should be based on the edited month
+    // February is month index 1 (the base month)
+    const februaryIndex = 1;
+    let februarySeconds: number;
     
-    // Now set all 12 months based on calendar position from January
+    if (monthIndex === februaryIndex) {
+      // If editing February directly, use that value as the base
+      februarySeconds = editedMonthSeconds;
+    } else if (monthIndex < februaryIndex) {
+      // If editing a month before February (e.g., January)
+      // February should be editedValue + (Feb - editedMonth) * 15s
+      februarySeconds = editedMonthSeconds + ((februaryIndex - monthIndex) * increment.seconds);
+    } else {
+      // If editing a month after February (e.g., March, April)
+      // February should be editedValue - (editedMonth - Feb) * 15s
+      februarySeconds = editedMonthSeconds - ((monthIndex - februaryIndex) * increment.seconds);
+    }
+    
+    // Now set all 12 months based on their position relative to February
     for (let i = 0; i < 12; i++) {
       const monthKey = MONTH_KEYS[i];
-      const monthSeconds = januarySeconds + (i * increment.seconds);
+      let monthSeconds: number;
+      
+      if (i <= februaryIndex) {
+        // For months up to and including February, calculate backwards from February
+        monthSeconds = februarySeconds - ((februaryIndex - i) * increment.seconds);
+      } else {
+        // For months after February, add 15s per month
+        monthSeconds = februarySeconds + ((i - februaryIndex) * increment.seconds);
+      }
+      
+      // Ensure non-negative values
+      monthSeconds = Math.max(0, monthSeconds);
+      
       const monthMinutes = Math.floor(monthSeconds / 60);
       const monthTimeString = formatSecondsToTimeString(monthSeconds);
       

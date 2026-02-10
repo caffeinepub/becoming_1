@@ -2,8 +2,8 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-fix-the-monthly-total-volume-calculation-so-it-correctly-reflects-total-volume-for-each-habit-in-the-selected-month-using-these-formulas-1-for-workout-style-numeric-volumes-monthly-total-per-completion-volume-number-of-completed-days-2-for-reps-only-habits-monthly-total-per-completion-reps-number-of-completed-days-3-for-time-based-habits-monthly-total-per-completion-time-number-of-completed-days-computed-in-seconds-when-a-time-string-is-available-then-formatted-back-to-m-ss-ensure-this-works-consistently-for-all-time-based-habits-not-only-a-special-cased-habit-name",
-      "featureTitle": "Fix the monthly total volume calculation so it correctly reflects total volume for each habit in the selected month using these formulas: (1) for workout-style numeric volumes, monthly total = (per-completion volume) × (number of completed days); (2) for reps-only habits, monthly total = (per-completion reps) × (number of completed days); (3) for time-based habits, monthly total = (per-completion time) × (number of completed days) computed in seconds when a time string is available, then formatted back to M:SS. Ensure this works consistently for all time-based habits (not only a special-cased habit name).",
+      "featureId": "feature-fix-plank-time-progression-so-that-february-is-the-base-month-at-1-15-and-each-month-after-february-increases-the-daily-plank-target-by-15-seconds-e-g-mar-1-30-apr-1-45-without-incorrectly-treating-the-increment-as-minutes",
+      "featureTitle": "Fix Plank time progression so that February is the base month at 1:15, and each month after February increases the *daily* Plank target by +15 seconds (e.g., Mar = 1:30, Apr = 1:45), without incorrectly treating the increment as minutes.",
       "files": [
         "frontend/src/features/becoming/state/habitModel.ts"
       ],
@@ -21,11 +21,9 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-add-a-selected-month-aggregate-total-volume-summary-that-sums-volumes-across-all-habits-for-the-selected-month-and-displays-separate-totals-at-minimum-for-total-reps-sum-of-per-habit-monthly-totals-for-unittype-reps-total-time-sum-of-per-habit-monthly-totals-for-unittype-time-in-seconds-formatted-as-m-ss-and-total-workouts-numeric-volume-sum-of-per-habit-monthly-totals-for-workout-style-numeric-unit-types-if-present-the-summary-must-match-the-corrected-per-habit-totals-from-req-1",
-      "featureTitle": "Add a selected-month aggregate total volume summary that sums volumes across all habits for the selected month and displays separate totals at minimum for: total reps (sum of per-habit monthly totals for unitType \"reps\"), total time (sum of per-habit monthly totals for unitType \"time\" in seconds, formatted as M:SS), and total workouts numeric volume (sum of per-habit monthly totals for workout-style numeric unit types if present). The summary must match the corrected per-habit totals from REQ-1.",
+      "featureId": "feature-keep-squash-daily-target-fixed-at-45-00-across-all-months-no-month-to-month-compounding-and-ensure-that-this-fixed-value-is-used-when-calculating-monthly-totals-from-completed-ticked-days",
+      "featureTitle": "Keep Squash daily target fixed at 45:00 across all months (no month-to-month compounding), and ensure that this fixed value is used when calculating monthly totals from completed/ticked days.",
       "files": [
-        "frontend/src/features/becoming/components/BecomingView.tsx",
-        "frontend/src/features/becoming/components/MonthlyVolumeSummary.tsx",
         "frontend/src/features/becoming/state/habitModel.ts"
       ],
       "components": [
@@ -38,6 +36,25 @@
       ],
       "testIds": [
         "REQ-2"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-ensure-monthly-totals-for-all-habits-including-plank-and-squash-are-calculated-as-number-of-ticked-completed-days-in-the-selected-month-that-habit-s-per-day-target-for-the-selected-month-and-displayed-correctly-in-each-habit-row-and-in-the-monthly-volume-summary",
+      "featureTitle": "Ensure monthly totals for all habits (including Plank and Squash) are calculated as: (number of ticked/completed days in the selected month) × (that habit’s per-day target for the selected month), and displayed correctly in each habit row and in the Monthly Volume Summary.",
+      "files": [
+        "frontend/src/features/becoming/state/habitModel.ts"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0"
+      ],
+      "testIds": [
+        "REQ-3"
       ],
       "confidence": "high"
     }
