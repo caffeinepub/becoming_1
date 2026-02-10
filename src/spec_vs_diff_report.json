@@ -1,63 +1,48 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-10T19:12:16.959Z",
-  "summary": "The diff shows substantial frontend changes, including client-side habit-name-aware volume compounding/progression rules, but it does not provide clear evidence that the required backend compounding and backend unitType initialization fixes (Plank +15 seconds/month; Squash constant; correct unitType='time' when timeString is provided) were implemented in backend/main.mo. Several additional UI/UX and styling-related changes appear to be introduced beyond the requested scope.",
+  "generatedAt": "2026-02-10T19:31:03.432Z",
+  "summary": "Diff adds a backend migration and new VolumeTracking/TimeVolumeEntry structures, and updates frontend habit model utilities (and per summaries, optimistic compounding) to support timeString formatting and special Plank/Squash rules. However, the diff summary does not provide clear evidence that the backend monthly progression and time-unit initialization/update logic required by REQ-1/REQ-2 is implemented.",
   "missing_requirements": [
     {
       "id": "REQ-1",
-      "requirement": "Update backend monthly compounding so Plank (unitType=\"time\") increases by exactly +15 seconds per month, Squash (unitType=\"time\") remains constant, and all other habits keep existing compounding behavior (including seconds-accurate storage for Plank).",
-      "reason": "backend/main.mo is truncated and the shown portions do not include any updateHabitVolume/monthly compounding logic or any explicit Plank/Squash-specific backend rules; the only explicit progression-rule evidence is in frontend summaries (client-side).",
+      "requirement": "Backend monthly progression logic: Plank increases by +15 seconds per calendar month; Squash remains constant at 45:00 for every calendar month; other habits unchanged; persisted/reloaded correctly.",
+      "reason": "backend/main.mo is truncated before any monthly progression/compounding logic is shown. The diff summary provides no explicit evidence of Plank/Squash month-to-month backend computation changes or persistence behavior changes that meet the acceptance criteria.",
       "evidence": [
-        "backend/main.mo (truncated)",
-        "frontend-file-summaries.txt (habitModel.ts and queries.ts summaries describe progression rules on the frontend)"
+        "backend/main.mo (truncated)"
       ]
     },
     {
       "id": "REQ-2",
-      "requirement": "Fix backend unitType initialization during volume updates: if habit.volumeTracking is null and updateHabitVolume is called with entry.timeString set, initialize volumeTracking.unitType to \"time\".",
-      "reason": "No visible evidence in backend/main.mo excerpt of unitType initialization during volume updates; the only explicit mention of inferring unitType=\"time\" from timeString appears in the frontend summary rather than backend implementation.",
+      "requirement": "Ensure updateHabitVolume preserves/initializes volumeTracking.unitType as \"time\" when a timeString is provided, preventing fallback to \"reps\" compounding.",
+      "reason": "The diff summary shows new types for time tracking, but does not show the updateHabitVolume implementation or any unitType initialization/preservation logic. Therefore it cannot be verified as implemented from the provided diff summary.",
       "evidence": [
-        "backend/main.mo (truncated)",
-        "frontend-file-summaries.txt (habitModel.ts summary: \"now correctly inferring unitType=\\\"time\\\" when timeString is provided\")"
+        "backend/main.mo (truncated)"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Client-side habit-name-aware monthly volume compounding/progression rules (Squash constant, Plank +15 seconds, others +5 reps or +30 minutes) implemented in frontend state/model and/or query layer.",
-      "reason": "The BuildRequest requires backend monthly compounding fixes; it does not request moving/duplicating compounding logic into the frontend.",
+      "description": "Stable-state migration that remaps volumeTracking and initializes every month’s minutes to 0 and timeString to null (potentially wiping existing per-month volume data).",
+      "reason": "BuildRequest only asked to fix Plank/Squash progression and ensure correct time unit handling; it did not request a schema reset/migration that overwrites stored monthly values.",
       "evidence": [
-        "frontend-file-summaries.txt (habitModel.ts summary: \"habit-specific monthly progression rules (Squash constant, Plank +15 seconds, others +5 reps or +30 minutes)\")",
-        "frontend-file-summaries.txt (queries.ts summary: \"habit-name-aware volume compounding that applies Squash/Plank-specific progression rules\")",
-        "frontend/src/features/becoming/api/queries.ts (imports computeCompoundedVolumeTracking)",
-        "frontend/src/features/becoming/state/habitModel.ts (mentions computeCompoundedVolumeTracking in imports shown in queries.ts; time parsing/formatting utilities imported here)"
+        "backend/migration.mo"
       ]
     },
     {
-      "description": "Frontend error-handling UX additions (ErrorBanner with retry, AuthRequiredNotice flow changes, bounded loading attempts with GridSkeleton).",
-      "reason": "Not requested; scope is specifically about correcting progression values and ensuring display remains correct, not adding new error UX patterns.",
+      "description": "Backend actor-level migration wiring via `(with migration = Migration.run)` and importing Migration.",
+      "reason": "Not explicitly requested by the BuildRequest; only allowed if an actual stable-state upgrade is required. The diff summary does not establish that such a breaking stable schema change is necessary for the requested progression fixes.",
       "evidence": [
-        "frontend-file-summaries.txt (BecomingView.tsx summary: \"prioritizes error states... ErrorBanner with retry... GridSkeleton only during bounded loading attempts\")",
-        "frontend-file-summaries.txt (ErrorBanner.tsx summary)"
-      ]
-    },
-    {
-      "description": "Theme/styling changes (\"Cyber-Professional\" theme, OKLCH tokens, glassmorphism, glow utilities, tab styling changes).",
-      "reason": "Non-goals include changing app theme/layout beyond what is required; these appear to be broader stylistic changes not necessary for progression-rule fixes.",
-      "evidence": [
-        "frontend-file-summaries.txt (frontend/src/index.css summary: \"light Cyber-Professional theme... glassmorphism surfaces\")",
-        "frontend-file-summaries.txt (frontend/tailwind.config.js summary: \"Cyber-Professional blue-forward color tokens\")",
-        "frontend-file-summaries.txt (MonthTabs.tsx summary: \"yellow theme styling\")",
-        "frontend-file-summaries.txt (LoginButton.tsx summary: \"cyber-primary-glow\")"
+        "backend/main.mo (truncated)",
+        "backend/migration.mo"
       ]
     }
   ],
-  "confidence": 0.68,
+  "confidence": 0.63,
   "changed_files": [
     "backend/main.mo",
+    "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/features/becoming/api/queries.ts",
     "frontend/src/features/becoming/state/habitModel.ts",
     "project_state.json"
   ]

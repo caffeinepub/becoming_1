@@ -231,14 +231,18 @@ function getMonthIncrement(habitName: string, unitType: string): { minutes: numb
 }
 
 /**
- * Compute optimistic volume tracking with auto-compounding for future months.
- * Sets the selected month to the user-entered value, and auto-generates all future months
- * with habit-specific progression rules:
- * - Squash: constant volume (no increment)
- * - Plank (time): +15 seconds per month
- * - Other time habits: +30 minutes per month
- * - Reps: +5 per month
- * Preserves earlier months as-is when volumeTracking exists.
+ * Compute optimistic volume tracking with auto-compounding based on calendar months.
+ * 
+ * Habit-specific progression rules:
+ * - Squash: constant volume across ALL 12 months (Jan-Dec)
+ * - Plank (time): +15 seconds per calendar month from January
+ *   (Jan = base, Feb = base+15s, Mar = base+30s, etc.)
+ * - Other time habits: +30 minutes per calendar month from the edited month
+ * - Reps: +5 per calendar month from the edited month
+ * 
+ * For Squash: all months are set to the same value
+ * For Plank: progression is based on absolute calendar month position
+ * For others: only future months (after edited month) are updated
  */
 export function computeCompoundedVolumeTracking(
   existingVolumeTracking: VolumeTracking | undefined,
@@ -260,18 +264,55 @@ export function computeCompoundedVolumeTracking(
   // Normalize timeString to M:SS format if provided
   const normalizedTimeString = timeString ? normalizeTimeString(timeString) : undefined;
   
-  // For Plank, parse the initial timeString to seconds for accurate compounding
-  let baseSeconds = 0;
-  if (habitName.toLowerCase().trim() === 'plank' && unitType === 'time') {
-    if (normalizedTimeString) {
-      const parsed = parseTimeStringToSeconds(normalizedTimeString);
-      baseSeconds = parsed !== null ? parsed : minutes * 60;
-    } else {
-      baseSeconds = minutes * 60;
+  const normalizedName = habitName.toLowerCase().trim();
+  
+  // Special case: Squash - set ALL months to the same value
+  if (normalizedName === 'squash') {
+    const constantEntry: TimeVolumeEntry = {
+      minutes: BigInt(minutes),
+      timeString: unitType === 'time' && normalizedTimeString ? normalizedTimeString : undefined,
+    };
+    
+    for (let i = 0; i < 12; i++) {
+      const monthKey = MONTH_KEYS[i];
+      newTracking[monthKey] = constantEntry;
     }
+    
+    return newTracking;
   }
   
-  // Update the selected month and all future months
+  // Special case: Plank - progression based on calendar month position
+  if (normalizedName === 'plank' && unitType === 'time') {
+    // Parse the edited month's value to seconds
+    let editedMonthSeconds = 0;
+    if (normalizedTimeString) {
+      const parsed = parseTimeStringToSeconds(normalizedTimeString);
+      editedMonthSeconds = parsed !== null ? parsed : minutes * 60;
+    } else {
+      editedMonthSeconds = minutes * 60;
+    }
+    
+    // Calculate what January's value should be based on the edited month
+    // If editing February (index 1), and it's 1:15 (75s), then January should be 75 - 15 = 60s (1:00)
+    const januarySeconds = editedMonthSeconds - (monthIndex * increment.seconds);
+    
+    // Now set all 12 months based on calendar position from January
+    for (let i = 0; i < 12; i++) {
+      const monthKey = MONTH_KEYS[i];
+      const monthSeconds = januarySeconds + (i * increment.seconds);
+      const monthMinutes = Math.floor(monthSeconds / 60);
+      const monthTimeString = formatSecondsToTimeString(monthSeconds);
+      
+      newTracking[monthKey] = {
+        minutes: BigInt(monthMinutes),
+        timeString: monthTimeString,
+      };
+    }
+    
+    return newTracking;
+  }
+  
+  // Default behavior for other habits: update selected month and future months only
   for (let i = 0; i < 12; i++) {
     const monthKey = MONTH_KEYS[i];
     
@@ -284,25 +325,12 @@ export function computeCompoundedVolumeTracking(
     } else if (i > monthIndex) {
       // Auto-generate future months with habit-specific compounding
       const k = i - monthIndex;
+      const compoundedMinutes = Math.max(0, minutes + (k * increment.minutes));
       
-      if (habitName.toLowerCase().trim() === 'plank' && unitType === 'time') {
-        // Plank: compound using seconds (+15 seconds per month)
-        const compoundedSeconds = baseSeconds + (k * increment.seconds);
-        const compoundedMinutes = Math.floor(compoundedSeconds / 60);
-        const compoundedTimeString = formatSecondsToTimeString(compoundedSeconds);
-        
-        newTracking[monthKey] = {
-          minutes: BigInt(compoundedMinutes),
-          timeString: compoundedTimeString,
-        };
-      } else {
-        // All other habits: compound using minutes
-        const compoundedMinutes = Math.max(0, minutes + (k * increment.minutes));
-        newTracking[monthKey] = {
-          minutes: BigInt(compoundedMinutes),
-          timeString: unitType === 'time' ? formatMinutesToTimeString(compoundedMinutes) : undefined,
-        };
-      }
+      newTracking[monthKey] = {
+        minutes: BigInt(compoundedMinutes),
+        timeString: unitType === 'time' ? formatMinutesToTimeString(compoundedMinutes) : undefined,
+      };
     }
     // else: preserve earlier months (i < monthIndex) as-is
   }

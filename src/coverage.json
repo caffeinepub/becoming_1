@@ -1,51 +1,54 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-10T19:12:16.962Z",
+  "generatedAt": "2026-02-10T19:31:03.435Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
     "total": 3,
-    "implemented": 1,
+    "implemented": 2,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Update backend monthly compounding so the habit named \"Plank\" (unitType = \"time\") increases by exactly +15 seconds per month (e.g., if January is 1:00 then February is 1:15), while the habit named \"Squash\" (unitType = \"time\") remains constant across all future months (e.g., 45:00 every month). All other habits must keep the existing compounding behavior unchanged.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
+        "summary": "Fix the monthly progression logic so that the habit named \"Plank\" (time unit) increases by exactly +15 seconds per calendar month (e.g., February 1:15, March 1:30, April 1:45), and the habit named \"Squash\" (time unit) remains constant at 45:00 for every calendar month. Do not change progression behavior for other habits.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/features/becoming/state/habitModel.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/features/becoming/state/habitModel.ts"
+        ]
       },
       {
         "id": "REQ-2",
-        "summary": "Fix backend unitType initialization during volume updates so that time-based edits do not accidentally compound using the default \"reps\" rules. If a habit has no existing volumeTracking and the incoming volume entry includes a timeString (time input), initialize volumeTracking.unitType to \"time\" (otherwise keep existing behavior).",
+        "summary": "Ensure time-based volume updates correctly preserve and/or initialize unit type as \"time\" so that time habits (including Plank and Squash) never compound using the default \"reps\" rules when a timeString is provided during an update.",
         "status": "unknown",
         "plannedFiles": [],
         "matchedFiles": []
       },
       {
         "id": "REQ-3",
-        "summary": "Ensure the frontend volume display continues to show seconds-accurate values for Plank across months (e.g., 1:15, 1:30, …) based on values returned from the backend, and that Squash displays the same time (e.g., 45:00) for each month. Do not change the behavior of other habits.",
+        "summary": "Update the frontend’s optimistic volume compounding (used during volume edits) to match the corrected calendar-month rules for Plank (+15 seconds/month) and Squash (constant 45:00 across all months), while leaving other habits unchanged.",
         "status": "implemented",
         "plannedFiles": [
           "frontend/src/features/becoming/state/habitModel.ts",
           "frontend/src/features/becoming/api/queries.ts"
         ],
         "matchedFiles": [
-          "frontend/src/features/becoming/state/habitModel.ts",
-          "frontend/src/features/becoming/api/queries.ts"
+          "frontend/src/features/becoming/state/habitModel.ts"
         ]
       }
     ]
   },
   "changedFiles": [
     "backend/main.mo",
+    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/features/becoming/api/queries.ts",
     "frontend/src/features/becoming/state/habitModel.ts",
     "project_state.json",
     "scratch/component-selection.json",

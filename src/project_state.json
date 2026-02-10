@@ -1,14 +1,29 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Project tracks monthly progression values for habits; update logic so Plank increases by +15 seconds per month starting from 1:00 in January (Feb 1:15), Squash remains fixed at 45:00 every month, and all other habits remain unchanged.",
-  "architectural_notes": [],
-  "known_issues": [],
+  "summary": "New project",
+  "architectural_notes": [
+    "Time values for exercises should be calculated based on calendar months (not user progression months).",
+    "Plank time should increase by +15 seconds each calendar month from a defined base (e.g., Feb 1:15, Mar 1:30, Apr 1:45).",
+    "Squash time should remain fixed at 45 minutes for every calendar month (no increments)."
+  ],
+  "known_issues": [
+    "Bug: Plank time is displaying/calculating incorrectly (March is much higher than February; should increase by exactly +15 seconds per calendar month).",
+    "Bug: Squash time is not staying constant at 45 minutes each calendar month."
+  ],
   "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-ensure-the-frontend-volume-display-continues-to-show-seconds-accurate-values-for-plank-across-months-e-g-1-15-1-30-based-on-values-returned-from-the-backend-and-that-squash-displays-the-same-time-e-g-45-00-for-each-month-do-not-change-the-behavior-of-other-habits",
-      "title": "Ensure the frontend volume display continues to show seconds-accurate values for Plank across months (e.g., 1:15, 1:30, …) based on values returned from the backend, and that Squash displays the same time (e.g., 45:00) for each month. Do not change the behavior of other habits.",
+      "id": "feature-fix-the-monthly-progression-logic-so-that-the-habit-named-plank-time-unit-increases-by-exactly-15-seconds-per-calendar-month-e-g-february-1-15-march-1-30-april-1-45-and-the-habit-named-squash-time-unit-remains-constant-at-45-00-for-every-calendar-month-do-not-change-progression-behavior-for-other-habits",
+      "title": "Fix the monthly progression logic so that the habit named \"Plank\" (time unit) increases by exactly +15 seconds per calendar month (e.g., February 1:15, March 1:30, April 1:45), and the habit named \"Squash\" (time unit) remains constant at 45:00 for every calendar month. Do not change progression behavior for other habits.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-frontend-s-optimistic-volume-compounding-used-during-volume-edits-to-match-the-corrected-calendar-month-rules-for-plank-15-seconds-month-and-squash-constant-45-00-across-all-months-while-leaving-other-habits-unchanged",
+      "title": "Update the frontend’s optimistic volume compounding (used during volume edits) to match the corrected calendar-month rules for Plank (+15 seconds/month) and Squash (constant 45:00 across all months), while leaving other habits unchanged.",
       "reqIds": [
         "REQ-3"
       ],
@@ -17,29 +32,15 @@
   ],
   "new_feature_requests": [
     {
-      "id": "AR-1",
-      "summary": "Amend monthly progression: Plank +15 seconds each month starting Jan 1:00 (Feb 1:15); Squash fixed at 45:00 monthly; leave all other habits unchanged",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
       "id": "AR-2",
-      "summary": "Update backend monthly compounding so the habit named \"Plank\" (unitType = \"time\") increases by exactly +15 seconds per month (e.g., if January is 1:00 then February is 1:15), while the habit named \"Squash\" (unitType = \"time\") remains constant across all future months (e.g., 45:00 every month). All other habits must keep the existing compounding behavior unchanged.",
-      "reqIds": [
-        "REQ-1"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-3",
-      "summary": "Fix backend unitType initialization during volume updates so that time-based edits do not accidentally compound using the default \"reps\" rules. If a habit has no existing volumeTracking and the incoming volume entry includes a timeString (time input), initialize volumeTracking.unitType to \"time\" (otherwise keep existing behavior).",
+      "summary": "Ensure time-based volume updates correctly preserve and/or initialize unit type as \"time\" so that time habits (including Plank and Squash) never compound using the default \"reps\" rules when a timeString is provided during an update.",
       "reqIds": [
         "REQ-2"
       ],
       "status": "pending"
     }
   ],
-  "projectName": "Fix monthly progression rules: Plank +15 seconds/month; Squash constant; others unchanged",
+  "projectName": "Fix monthly time progression: Plank +15s per calendar month; Squash constant 45:00",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

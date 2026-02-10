@@ -2,10 +2,28 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-ensure-the-frontend-volume-display-continues-to-show-seconds-accurate-values-for-plank-across-months-e-g-1-15-1-30-based-on-values-returned-from-the-backend-and-that-squash-displays-the-same-time-e-g-45-00-for-each-month-do-not-change-the-behavior-of-other-habits",
-      "featureTitle": "Ensure the frontend volume display continues to show seconds-accurate values for Plank across months (e.g., 1:15, 1:30, …) based on values returned from the backend, and that Squash displays the same time (e.g., 45:00) for each month. Do not change the behavior of other habits.",
+      "featureId": "feature-fix-the-monthly-progression-logic-so-that-the-habit-named-plank-time-unit-increases-by-exactly-15-seconds-per-calendar-month-e-g-february-1-15-march-1-30-april-1-45-and-the-habit-named-squash-time-unit-remains-constant-at-45-00-for-every-calendar-month-do-not-change-progression-behavior-for-other-habits",
+      "featureTitle": "Fix the monthly progression logic so that the habit named \"Plank\" (time unit) increases by exactly +15 seconds per calendar month (e.g., February 1:15, March 1:30, April 1:45), and the habit named \"Squash\" (time unit) remains constant at 45:00 for every calendar month. Do not change progression behavior for other habits.",
       "files": [
-        "frontend/src/features/becoming/api/queries.ts",
+        "frontend/src/features/becoming/state/habitModel.ts"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0"
+      ],
+      "testIds": [
+        "REQ-1"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-the-frontend-s-optimistic-volume-compounding-used-during-volume-edits-to-match-the-corrected-calendar-month-rules-for-plank-15-seconds-month-and-squash-constant-45-00-across-all-months-while-leaving-other-habits-unchanged",
+      "featureTitle": "Update the frontend’s optimistic volume compounding (used during volume edits) to match the corrected calendar-month rules for Plank (+15 seconds/month) and Squash (constant 45:00 across all months), while leaving other habits unchanged.",
+      "files": [
         "frontend/src/features/becoming/state/habitModel.ts"
       ],
       "components": [

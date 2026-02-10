@@ -3,12 +3,13 @@ import Time "mo:core/Time";
 import Array "mo:core/Array";
 import Nat "mo:core/Nat";
 import Principal "mo:core/Principal";
-import Iter "mo:core/Iter";
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
 import Text "mo:core/Text";
 import Runtime "mo:core/Runtime";
+import Migration "migration";
 
+(with migration = Migration.run)
 actor {
   var _initialized : Bool = false;
   var accessControlState : AccessControl.AccessControlState = AccessControl.initState();
@@ -260,15 +261,119 @@ actor {
       { habit with volumeTracking = ?updatedVolumeTracking };
     };
 
+    func updateForTimeUnit(
+      habit : Habit,
+      monthIndex : Nat,
+      entry : TimeVolumeEntry,
+      compound : Bool,
+    ) : Habit {
+      let updatedHabit = if (habit.volumeTracking == null) {
+        let baseVolumeTracking = {
+          unitType = "time";
+          january = if (monthIndex == 0) { entry } else { defaultVolumeEntry() };
+          february = if (monthIndex == 1) { entry } else { defaultVolumeEntry() };
+          march = if (monthIndex == 2) { entry } else { defaultVolumeEntry() };
+          april = if (monthIndex == 3) { entry } else { defaultVolumeEntry() };
+          may = if (monthIndex == 4) { entry } else { defaultVolumeEntry() };
+          june = if (monthIndex == 5) { entry } else { defaultVolumeEntry() };
+          july = if (monthIndex == 6) { entry } else { defaultVolumeEntry() };
+          august = if (monthIndex == 7) { entry } else { defaultVolumeEntry() };
+          september = if (monthIndex == 8) { entry } else { defaultVolumeEntry() };
+          october = if (monthIndex == 9) { entry } else { defaultVolumeEntry() };
+          november = if (monthIndex == 10) { entry } else { defaultVolumeEntry() };
+          december = if (monthIndex == 11) { entry } else { defaultVolumeEntry() };
+        };
+        { habit with volumeTracking = ?baseVolumeTracking };
+      } else {
+        habit;
+      };
+
+      let newVolumeTracking = switch (updatedHabit.volumeTracking) {
+        case (null) { defaultVolumeTracking() };
+        case (?volumeTracking) {
+          if (compound) {
+            compoundVolumesFromMonthIndex(volumeTracking, updatedHabit.name, monthIndex, entry, "time");
+          } else {
+            updateMonthEntry(volumeTracking, monthIndex, entry);
+          };
+        };
+      };
+
+      { updatedHabit with volumeTracking = ?newVolumeTracking };
+    };
+
+    func getUnderlyingUnitType(habit : Habit, entry : TimeVolumeEntry) : Text {
+      switch (habit.volumeTracking, entry.timeString) {
+        case (null, null) { "reps" };
+        case (null, ?_value) { "time" };
+        case (?volumeTracking, _) { volumeTracking.unitType };
+      };
+    };
+
     public func updateAndCompoundVolumeTracking(
       habit : Habit,
       monthIndex : Nat,
       entry : TimeVolumeEntry,
     ) : Habit {
+      let unitType = getUnderlyingUnitType(habit, entry);
+      switch (unitType, entry.timeString) {
+        case ("time", ?_value) {
+          updateForTimeUnit(
+            habit,
+            monthIndex,
+            entry,
+            true,
+          );
+        };
+        case ("time", _) {
+          updateForTimeUnit(
+            habit,
+            monthIndex,
+            entry,
+            false,
+          );
+        };
+        case (_, _) {
+          let updatedVolumeTracking = switch (habit.volumeTracking) {
+            case (null) {
+              let baseVolumeTracking = {
+                unitType;
+                january = if (monthIndex == 0) { entry } else { defaultVolumeEntry() };
+                february = if (monthIndex == 1) { entry } else { defaultVolumeEntry() };
+                march = if (monthIndex == 2) { entry } else { defaultVolumeEntry() };
+                april = if (monthIndex == 3) { entry } else { defaultVolumeEntry() };
+                may = if (monthIndex == 4) { entry } else { defaultVolumeEntry() };
+                june = if (monthIndex == 5) { entry } else { defaultVolumeEntry() };
+                july = if (monthIndex == 6) { entry } else { defaultVolumeEntry() };
+                august = if (monthIndex == 7) { entry } else { defaultVolumeEntry() };
+                september = if (monthIndex == 8) { entry } else { defaultVolumeEntry() };
+                october = if (monthIndex == 9) { entry } else { defaultVolumeEntry() };
+                november = if (monthIndex == 10) { entry } else { defaultVolumeEntry() };
+                december = if (monthIndex == 11) { entry } else { defaultVolumeEntry() };
+              };
+              compoundVolumesFromMonthIndex(baseVolumeTracking, habit.name, monthIndex, entry, unitType);
+            };
+            case (?existingVolumeTracking) {
+              let noCompoundingVolumeTracking = updateMonthEntry(existingVolumeTracking, monthIndex, entry);
+              compoundVolumesFromMonthIndex(
+                noCompoundingVolumeTracking,
+                habit.name,
+                monthIndex,
+                entry,
+                unitType,
+              );
+            };
+          };
+          { habit with volumeTracking = ?updatedVolumeTracking };
+        };
+      };
+    };
+
+    func updateMonthOnly(habit : Habit, monthIndex : Nat, entry : TimeVolumeEntry) : Habit {
       let updatedVolumeTracking = switch (habit.volumeTracking) {
         case (null) {
           let baseVolumeTracking = {
-            unitType = determineUnitType(entry);
+            unitType = "time";
             january = if (monthIndex == 0) { entry } else { defaultVolumeEntry() };
             february = if (monthIndex == 1) { entry } else { defaultVolumeEntry() };
             march = if (monthIndex == 2) { entry } else { defaultVolumeEntry() };
@@ -282,27 +387,11 @@ actor {
             november = if (monthIndex == 10) { entry } else { defaultVolumeEntry() };
             december = if (monthIndex == 11) { entry } else { defaultVolumeEntry() };
           };
-          compoundVolumesFromMonthIndex(baseVolumeTracking, habit.name, monthIndex, entry, baseVolumeTracking.unitType);
+          baseVolumeTracking;
         };
-        case (?existingVolumeTracking) {
-          let noCompoundingVolumeTracking = updateMonthEntry(existingVolumeTracking, monthIndex, entry);
-          compoundVolumesFromMonthIndex(
-            noCompoundingVolumeTracking,
-            habit.name,
-            monthIndex,
-            entry,
-            existingVolumeTracking.unitType,
-          );
-        };
+        case (?existingVolumeTracking) { updateMonthEntry(existingVolumeTracking, monthIndex, entry) };
       };
       { habit with volumeTracking = ?updatedVolumeTracking };
-    };
-
-    func determineUnitType(entry : TimeVolumeEntry) : Text {
-      switch (entry.timeString) {
-        case (null) { "reps" };
-        case (?_value) { "time" };
-      };
     };
 
     func compoundVolumesFromMonthIndex(
@@ -334,11 +423,11 @@ actor {
             case (null) {
               monthsArray[i];
             };
-            case (?minutesValue) {
+            case (?minutes_value) {
               if (i == startIndex) {
                 startEntry;
               } else if (i > startIndex) {
-                let compoundedMinutes = Nat.max(0, minutesValue) + (i - startIndex) * increment;
+                let compoundedMinutes = Nat.max(0, minutes_value) + (i - startIndex) * increment;
                 {
                   timeString = null;
                   minutes = ?compoundedMinutes;
@@ -380,6 +469,24 @@ actor {
 
     func defaultVolumeEntry() : TimeVolumeEntry {
       { timeString = null; minutes = ?0 };
+    };
+
+    func defaultVolumeTracking() : VolumeTracking {
+      {
+        unitType = "reps";
+        january = defaultVolumeEntry();
+        february = defaultVolumeEntry();
+        march = defaultVolumeEntry();
+        april = defaultVolumeEntry();
+        may = defaultVolumeEntry();
+        june = defaultVolumeEntry();
+        july = defaultVolumeEntry();
+        august = defaultVolumeEntry();
+        september = defaultVolumeEntry();
+        october = defaultVolumeEntry();
+        november = defaultVolumeEntry();
+        december = defaultVolumeEntry();
+      };
     };
   };
 
