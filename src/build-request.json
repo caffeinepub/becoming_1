@@ -1,81 +1,48 @@
 {
   "kind": "build_request",
-  "title": "Fix Plank & Squash monthly volumes: sum ticked days and apply correct month-based targets (Plank +15s after Feb, Squash fixed 45:00)",
+  "title": "Remove Total Volume row from Monthly Volume Summary",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Fix Plank time progression so that February is the base month at 1:15, and each month after February increases the *daily* Plank target by +15 seconds (e.g., Mar = 1:30, Apr = 1:45), without incorrectly treating the increment as minutes.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-10"
-        ],
-        "quotes": [
-          "I mean for the habit plank in February I do 1:15. In march I want to increase it to 1:30 and April 1:45.",
-          "Correct add 15 seconds to plank which is what I will be aiming to hit everyday"
-        ]
-      },
-      "acceptanceCriteria": [
-        "When the stored/edited Plank value for February is 1:15, the computed/stored values for March and April are 1:30 and 1:45 respectively (and continue +15s for subsequent months).",
-        "The app no longer produces Plank monthly values like 16:00 or 31:00 as a result of the +15 increment (i.e., no minutes-vs-seconds bug).",
-        "Plank volume entries retain a seconds-accurate representation (e.g., timeString \"1:15\") so monthly totals can compute correctly at second granularity.",
-        "This progression rule is applied consistently in both backend compounding (Motoko) and frontend optimistic compounding (TypeScript) so values don’t ‘snap back’ after refresh."
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "text": "Keep Squash daily target fixed at 45:00 across all months (no month-to-month compounding), and ensure that this fixed value is used when calculating monthly totals from completed/ticked days.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-8",
-          "msg-10"
-        ],
-        "quotes": [
-          "can you make it so every month after February adds 15 seconds to the plank and that squash stays at 45 minutes",
-          "I want you to calculate the volume of plank across the month as normal along with the same for the other habits."
-        ]
-      },
-      "acceptanceCriteria": [
-        "For the Squash habit, the per-day volume displays as 45:00 for every month tab (Jan–Dec) once set, with no auto-increase.",
-        "If N days are ticked completed for Squash in a selected month, the Monthly total for Squash equals N × 45:00 (formatted correctly as time).",
-        "Backend persistence for Squash does not introduce future-month drift (e.g., later months remain 45:00 after refresh)."
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "text": "Ensure monthly totals for all habits (including Plank and Squash) are calculated as: (number of ticked/completed days in the selected month) × (that habit’s per-day target for the selected month), and displayed correctly in each habit row and in the Monthly Volume Summary.",
+      "text": "Remove the entire “Total Volume” tile/row (label + value) from the Monthly Volume Summary section only, so that Monthly Volume Summary shows only Total Reps and/or Total Time when applicable and never renders a Total Volume item.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-5",
-          "msg-10"
+          "msg-user-1"
         ],
         "quotes": [
-          "Looks good. Can you get the volumes to add up when selected/ ticked completed?",
-          "I want you to calculate the volume of plank across the month as normal along with the same for the other habits."
+          "1. Remove row",
+          "2. Only in the monthly volume summary section"
         ]
       },
       "acceptanceCriteria": [
-        "Toggling a day checkbox for any habit updates that habit’s displayed “Monthly total” to reflect the new completed-days count × per-day volume for the selected month.",
-        "For time-based habits, monthly totals are computed with seconds accuracy when a timeString exists and are formatted as M:SS.",
-        "The Monthly Volume Summary aggregates totals using these same computed monthly totals (reps summed as numbers; time summed as seconds and formatted as M:SS)."
+        "In frontend/src/features/becoming/components/MonthlyVolumeSummary.tsx, the UI no longer renders the block with label “Total Volume”, regardless of whether numeric-volume habits exist.",
+        "Monthly Volume Summary continues to correctly render “Total Reps” when reps-based habits exist and “Total Time” when time-based habits exist.",
+        "No other part of the app (e.g., habit rows, edit modal, or any other summaries) is changed as part of this update."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in backend/main.mo (no additional backend services).",
-    "Do not modify any files under frontend/src/components/ui or any paths listed in SYSTEM_CONTEXT.frontend.immutablePaths.",
-    "Use English for any user-facing text."
+    "Frontend immutable paths (frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui) must not be edited.",
+    "Do not change backend logic or Motoko state/schema for this UI-only removal."
   ],
   "nonGoals": [
-    "Adding new habit types, analytics dashboards, streak logic, reminders, or notifications.",
-    "Introducing external databases or third-party auth providers (Internet Identity only).",
-    "Real-time syncing or WebSocket-based updates."
+    "Do not hide or remove numeric volume tracking elsewhere in the app.",
+    "Do not change how monthly totals are computed; only remove the display of the Total Volume item in Monthly Volume Summary."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }

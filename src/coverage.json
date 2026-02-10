@@ -1,61 +1,34 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-10T21:09:22.137Z",
+  "generatedAt": "2026-02-10T21:47:27.148Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 3,
-    "implemented": 3,
+    "total": 1,
+    "implemented": 1,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Fix Plank time progression so that February is the base month at 1:15, and each month after February increases the *daily* Plank target by +15 seconds (e.g., Mar = 1:30, Apr = 1:45), without incorrectly treating the increment as minutes.",
+        "summary": "Remove the entire “Total Volume” tile/row (label + value) from the Monthly Volume Summary section only, so that Monthly Volume Summary shows only Total Reps and/or Total Time when applicable and never renders a Total Volume item.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/features/becoming/state/habitModel.ts",
-          "frontend/src/features/becoming/api/queries.ts"
+          "frontend/src/features/becoming/components/MonthlyVolumeSummary.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/features/becoming/state/habitModel.ts"
-        ]
-      },
-      {
-        "id": "REQ-2",
-        "summary": "Keep Squash daily target fixed at 45:00 across all months (no month-to-month compounding), and ensure that this fixed value is used when calculating monthly totals from completed/ticked days.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/features/becoming/state/habitModel.ts",
-          "frontend/src/features/becoming/components/HabitRow.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/features/becoming/state/habitModel.ts"
-        ]
-      },
-      {
-        "id": "REQ-3",
-        "summary": "Ensure monthly totals for all habits (including Plank and Squash) are calculated as: (number of ticked/completed days in the selected month) × (that habit’s per-day target for the selected month), and displayed correctly in each habit row and in the Monthly Volume Summary.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/features/becoming/state/habitModel.ts",
-          "frontend/src/features/becoming/components/MonthlyVolumeSummary.tsx",
-          "frontend/src/features/becoming/api/queries.ts"
-        ],
-        "matchedFiles": [
-          "frontend/src/features/becoming/state/habitModel.ts"
+          "frontend/src/features/becoming/components/MonthlyVolumeSummary.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
-    "backend/main.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/features/becoming/state/habitModel.ts",
+    "frontend/src/features/becoming/components/MonthlyVolumeSummary.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

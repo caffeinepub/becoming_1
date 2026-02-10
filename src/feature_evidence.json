@@ -2,10 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-fix-plank-time-progression-so-that-february-is-the-base-month-at-1-15-and-each-month-after-february-increases-the-daily-plank-target-by-15-seconds-e-g-mar-1-30-apr-1-45-without-incorrectly-treating-the-increment-as-minutes",
-      "featureTitle": "Fix Plank time progression so that February is the base month at 1:15, and each month after February increases the *daily* Plank target by +15 seconds (e.g., Mar = 1:30, Apr = 1:45), without incorrectly treating the increment as minutes.",
+      "featureId": "feature-remove-the-entire-total-volume-tile-row-label-value-from-the-monthly-volume-summary-section-only-so-that-monthly-volume-summary-shows-only-total-reps-and-or-total-time-when-applicable-and-never-renders-a-total-volume-item",
+      "featureTitle": "Remove the entire “Total Volume” tile/row (label + value) from the Monthly Volume Summary section only, so that Monthly Volume Summary shows only Total Reps and/or Total Time when applicable and never renders a Total Volume item.",
       "files": [
-        "frontend/src/features/becoming/state/habitModel.ts"
+        "frontend/src/features/becoming/components/MonthlyVolumeSummary.tsx"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -17,44 +17,6 @@
       ],
       "testIds": [
         "REQ-1"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-keep-squash-daily-target-fixed-at-45-00-across-all-months-no-month-to-month-compounding-and-ensure-that-this-fixed-value-is-used-when-calculating-monthly-totals-from-completed-ticked-days",
-      "featureTitle": "Keep Squash daily target fixed at 45:00 across all months (no month-to-month compounding), and ensure that this fixed value is used when calculating monthly totals from completed/ticked days.",
-      "files": [
-        "frontend/src/features/becoming/state/habitModel.ts"
-      ],
-      "components": [
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "authorization@4.0.0"
-      ],
-      "testIds": [
-        "REQ-2"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-ensure-monthly-totals-for-all-habits-including-plank-and-squash-are-calculated-as-number-of-ticked-completed-days-in-the-selected-month-that-habit-s-per-day-target-for-the-selected-month-and-displayed-correctly-in-each-habit-row-and-in-the-monthly-volume-summary",
-      "featureTitle": "Ensure monthly totals for all habits (including Plank and Squash) are calculated as: (number of ticked/completed days in the selected month) × (that habit’s per-day target for the selected month), and displayed correctly in each habit row and in the Monthly Volume Summary.",
-      "files": [
-        "frontend/src/features/becoming/state/habitModel.ts"
-      ],
-      "components": [
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "authorization@4.0.0"
-      ],
-      "testIds": [
-        "REQ-3"
       ],
       "confidence": "high"
     }

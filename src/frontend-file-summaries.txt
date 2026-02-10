@@ -22,5 +22,5 @@
   "frontend/src/features/becoming/components/HabitRowActionsPopover.tsx": "Contextual popover component that displays a single edit action when a habit is clicked, using shadcn Popover component.",
   "frontend/src/hooks/useActorWithTimeout.ts": "Safe wrapper hook that initializes the backend actor with a 15-second hard timeout, normalizes all initialization errors (including stopped-canister rejections), and exposes deterministic error state plus retry functionality.",
   "frontend/src/utils/icErrors.ts": "Utility functions for detecting and normalizing Internet Computer replica rejection errors, with special handling for stopped-canister scenarios (IC0508/reject_code 5) and user-friendly error message generation.",
-  "frontend/src/features/becoming/components/MonthlyVolumeSummary.tsx": "New component that displays selected-month aggregate volume totals across all habits, grouped by category (reps, time, numeric), using the corrected per-habit monthly total calculations with proper imports from timeVolume utils."
+  "frontend/src/features/becoming/components/MonthlyVolumeSummary.tsx": "Component that displays selected-month aggregate volume totals for reps and time habits only, with Total Volume row removed and grid adjusted to 2 columns."
 }
