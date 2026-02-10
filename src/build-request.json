@@ -1,76 +1,57 @@
 {
   "kind": "build_request",
-  "title": "Fix monthly time progression: Plank +15s per calendar month; Squash constant 45:00",
+  "title": "Fix monthly total volume calculations across workout, reps, and time habits",
   "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Fix the monthly progression logic so that the habit named \"Plank\" (time unit) increases by exactly +15 seconds per calendar month (e.g., February 1:15, March 1:30, April 1:45), and the habit named \"Squash\" (time unit) remains constant at 45:00 for every calendar month. Do not change progression behavior for other habits.",
-      "target": "both",
+      "text": "Fix the monthly total volume calculation so it correctly reflects total volume for each habit in the selected month using these formulas: (1) for workout-style numeric volumes, monthly total = (per-completion volume) × (number of completed days); (2) for reps-only habits, monthly total = (per-completion reps) × (number of completed days); (3) for time-based habits, monthly total = (per-completion time) × (number of completed days) computed in seconds when a time string is available, then formatted back to M:SS. Ensure this works consistently for all time-based habits (not only a special-cased habit name).",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "recent-messages"
         ],
         "quotes": [
-          "1. Yes correct so February 1:15, march 1:30, April 1:45 etc \n2. Yes correct \n3. Calendar months"
+          "The volume of workouts/ reps / time etc \nIt should display the total volume of all the reps and time \nYes",
+          "All correct"
         ]
       },
       "acceptanceCriteria": [
-        "When a user sets Plank’s volume for February to 1:15, the app shows March = 1:30 and April = 1:45 (and continues +15s for subsequent months), without unexpected jumps.",
-        "When a user sets Squash’s volume (in any month) to 45:00 (or 45), the app shows 45:00 for every month (Jan–Dec).",
-        "The month-to-month behavior is based on calendar months (Jan–Dec), not on a user-specific training-month counter.",
-        "Other habits keep their current compounding/increment rules and are unaffected by this change.",
-        "After saving and refreshing, Plank and Squash volumes remain correct (values are persisted and reloaded correctly)."
+        "Given a habit with unitType = \"reps\" and a per-completion volume of 10, and 3 completed days in the selected month, the UI shows a monthly total of 30 for that habit.",
+        "Given a habit with a numeric per-completion volume (e.g., workouts volume already expressed as weight×reps×sets per completion) and 4 completed days, the UI shows monthly total = per-completion volume × 4 for that habit.",
+        "Given a time-based habit with per-completion value stored as timeString \"1:15\" and 2 completed days, the UI shows monthly total \"2:30\" (seconds-accurate).",
+        "Given a time-based habit without timeString but with minutes stored, the UI still computes a correct monthly total and formats it as M:SS.",
+        "Monthly totals are correct immediately after toggling completion checkboxes (i.e., after React Query updates and re-render)."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Ensure time-based volume updates correctly preserve and/or initialize unit type as \"time\" so that time habits (including Plank and Squash) never compound using the default \"reps\" rules when a timeString is provided during an update.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "Squash still not staying the same at 45 mins every month.",
-          "Fix these issues"
-        ]
-      },
-      "acceptanceCriteria": [
-        "If a habit has no existing volumeTracking and an updateHabitVolume call includes a timeString, the stored volumeTracking.unitType is set to \"time\" (not left unset/defaulted to \"reps\").",
-        "For existing time habits, unitType remains \"time\" after volume updates.",
-        "This fix prevents incorrect monthly jumps caused by applying non-time increments to time-based habits."
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "text": "Update the frontend’s optimistic volume compounding (used during volume edits) to match the corrected calendar-month rules for Plank (+15 seconds/month) and Squash (constant 45:00 across all months), while leaving other habits unchanged.",
+      "text": "Add a selected-month aggregate total volume summary that sums volumes across all habits for the selected month and displays separate totals at minimum for: total reps (sum of per-habit monthly totals for unitType \"reps\"), total time (sum of per-habit monthly totals for unitType \"time\" in seconds, formatted as M:SS), and total workouts numeric volume (sum of per-habit monthly totals for workout-style numeric unit types if present). The summary must match the corrected per-habit totals from REQ-1.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "recent-messages"
         ],
         "quotes": [
-          "The time on plank and squash is still showing incorrectly - plank should increase by 15 seconds every month but for march it’s way higher than February and so on",
-          "Squash still not staying the same at 45 mins every month."
+          "It should display the total volume of all the reps and time"
         ]
       },
       "acceptanceCriteria": [
-        "After editing Plank’s volume in the UI for a given month, the immediately-updated (optimistic) UI values for other months reflect the correct +15s/month progression based on calendar months.",
-        "After editing Squash’s volume in the UI, the immediately-updated (optimistic) UI values show 45:00 for all months.",
-        "The optimistic UI matches what is shown after the backend response/refresh (no mismatch between optimistic and persisted values)."
+        "When multiple reps habits exist, the aggregate reps total equals the sum of each reps habit’s monthly total for the selected month.",
+        "When multiple time habits exist, the aggregate time total equals the sum of each time habit’s monthly total for the selected month, computed seconds-accurately when timeString is available.",
+        "If no habits exist for a category (e.g., no time habits), the aggregate summary displays 0 (or 0:00 for time) for that category.",
+        "Changing the selected month updates the aggregate totals to reflect the newly selected month."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor with all logic in backend/main.mo; only add backend/migration.mo if an actual stable-state upgrade is required.",
-    "Do not edit any files under frontend/src/components/ui or any paths listed as immutable in SYSTEM_CONTEXT.",
-    "Use English for all user-facing text."
+    "Use English for all user-facing text.",
+    "Do not edit files under frontend/src/components/ui or any path listed in frontend.immutablePaths in SYSTEM_CONTEXT."
   ],
   "nonGoals": [
-    "Do not add new habit types, new progression schemes, or new calendar years/month models beyond fixing the specified Plank and Squash behaviors.",
-    "Do not change authentication (Internet Identity) behavior.",
-    "Do not redesign the UI beyond what is necessary to reflect correct values."
+    "Do not change the monthly progression/compounding rules for Plank/Squash or other habits beyond what is necessary to compute correct totals.",
+    "Do not introduce new backend canisters, external databases, or third-party integrations.",
+    "Do not change authentication behavior (Internet Identity)."
   ],
   "imageRequirements": {
     "required": [],

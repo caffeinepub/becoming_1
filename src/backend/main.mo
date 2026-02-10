@@ -7,9 +7,9 @@ import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
 import Text "mo:core/Text";
 import Runtime "mo:core/Runtime";
-import Migration "migration";
 
-(with migration = Migration.run)
+
+
 actor {
   var _initialized : Bool = false;
   var accessControlState : AccessControl.AccessControlState = AccessControl.initState();

@@ -2,8 +2,8 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-fix-the-monthly-progression-logic-so-that-the-habit-named-plank-time-unit-increases-by-exactly-15-seconds-per-calendar-month-e-g-february-1-15-march-1-30-april-1-45-and-the-habit-named-squash-time-unit-remains-constant-at-45-00-for-every-calendar-month-do-not-change-progression-behavior-for-other-habits",
-      "featureTitle": "Fix the monthly progression logic so that the habit named \"Plank\" (time unit) increases by exactly +15 seconds per calendar month (e.g., February 1:15, March 1:30, April 1:45), and the habit named \"Squash\" (time unit) remains constant at 45:00 for every calendar month. Do not change progression behavior for other habits.",
+      "featureId": "feature-fix-the-monthly-total-volume-calculation-so-it-correctly-reflects-total-volume-for-each-habit-in-the-selected-month-using-these-formulas-1-for-workout-style-numeric-volumes-monthly-total-per-completion-volume-number-of-completed-days-2-for-reps-only-habits-monthly-total-per-completion-reps-number-of-completed-days-3-for-time-based-habits-monthly-total-per-completion-time-number-of-completed-days-computed-in-seconds-when-a-time-string-is-available-then-formatted-back-to-m-ss-ensure-this-works-consistently-for-all-time-based-habits-not-only-a-special-cased-habit-name",
+      "featureTitle": "Fix the monthly total volume calculation so it correctly reflects total volume for each habit in the selected month using these formulas: (1) for workout-style numeric volumes, monthly total = (per-completion volume) × (number of completed days); (2) for reps-only habits, monthly total = (per-completion reps) × (number of completed days); (3) for time-based habits, monthly total = (per-completion time) × (number of completed days) computed in seconds when a time string is available, then formatted back to M:SS. Ensure this works consistently for all time-based habits (not only a special-cased habit name).",
       "files": [
         "frontend/src/features/becoming/state/habitModel.ts"
       ],
@@ -21,9 +21,11 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-update-the-frontend-s-optimistic-volume-compounding-used-during-volume-edits-to-match-the-corrected-calendar-month-rules-for-plank-15-seconds-month-and-squash-constant-45-00-across-all-months-while-leaving-other-habits-unchanged",
-      "featureTitle": "Update the frontend’s optimistic volume compounding (used during volume edits) to match the corrected calendar-month rules for Plank (+15 seconds/month) and Squash (constant 45:00 across all months), while leaving other habits unchanged.",
+      "featureId": "feature-add-a-selected-month-aggregate-total-volume-summary-that-sums-volumes-across-all-habits-for-the-selected-month-and-displays-separate-totals-at-minimum-for-total-reps-sum-of-per-habit-monthly-totals-for-unittype-reps-total-time-sum-of-per-habit-monthly-totals-for-unittype-time-in-seconds-formatted-as-m-ss-and-total-workouts-numeric-volume-sum-of-per-habit-monthly-totals-for-workout-style-numeric-unit-types-if-present-the-summary-must-match-the-corrected-per-habit-totals-from-req-1",
+      "featureTitle": "Add a selected-month aggregate total volume summary that sums volumes across all habits for the selected month and displays separate totals at minimum for: total reps (sum of per-habit monthly totals for unitType \"reps\"), total time (sum of per-habit monthly totals for unitType \"time\" in seconds, formatted as M:SS), and total workouts numeric volume (sum of per-habit monthly totals for workout-style numeric unit types if present). The summary must match the corrected per-habit totals from REQ-1.",
       "files": [
+        "frontend/src/features/becoming/components/BecomingView.tsx",
+        "frontend/src/features/becoming/components/MonthlyVolumeSummary.tsx",
         "frontend/src/features/becoming/state/habitModel.ts"
       ],
       "components": [
@@ -35,7 +37,7 @@
         "authorization@4.0.0"
       ],
       "testIds": [
-        "REQ-3"
+        "REQ-2"
       ],
       "confidence": "high"
     }

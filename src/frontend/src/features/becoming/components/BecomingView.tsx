@@ -5,6 +5,7 @@ import { HabitGrid } from './HabitGrid';
 import { GridSkeleton } from './GridSkeleton';
 import { ErrorBanner } from './ErrorBanner';
 import { AuthRequiredNotice } from '../../../components/auth/AuthRequiredNotice';
+import { MonthlyVolumeSummary } from './MonthlyVolumeSummary';
 import { useHabits } from '../api/queries';
 import { useInternetIdentity } from '../../../hooks/useInternetIdentity';
 
@@ -36,6 +37,10 @@ export function BecomingView() {
   return (
     <div className="space-y-6">
       <HabitManager disabled={false} />
+      
+      {showGrid && habits && habits.length > 0 && (
+        <MonthlyVolumeSummary habits={habits} selectedMonth={selectedMonth} />
+      )}
       
       <div className="glass-surface rounded-lg overflow-hidden">
         <MonthTabs selectedMonth={selectedMonth} onMonthChange={setSelectedMonth} />

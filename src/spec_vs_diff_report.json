@@ -1,48 +1,40 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-10T19:31:03.432Z",
-  "summary": "Diff adds a backend migration and new VolumeTracking/TimeVolumeEntry structures, and updates frontend habit model utilities (and per summaries, optimistic compounding) to support timeString formatting and special Plank/Squash rules. However, the diff summary does not provide clear evidence that the backend monthly progression and time-unit initialization/update logic required by REQ-1/REQ-2 is implemented.",
+  "generatedAt": "2026-02-10T19:50:18.404Z",
+  "summary": "REQ-1 and REQ-2 appear largely implemented via updated monthly total computation helpers in habitModel and a new MonthlyVolumeSummary component rendered in BecomingView. However, the aggregate summary UI conditionally hides categories instead of showing 0/0:00 when a category is absent, which conflicts with REQ-2 acceptance criteria. Several additional, unrelated behavior changes (auth/error/loading prioritization, query behavior changes) are present in the diff summary but were not requested.",
   "missing_requirements": [
     {
-      "id": "REQ-1",
-      "requirement": "Backend monthly progression logic: Plank increases by +15 seconds per calendar month; Squash remains constant at 45:00 for every calendar month; other habits unchanged; persisted/reloaded correctly.",
-      "reason": "backend/main.mo is truncated before any monthly progression/compounding logic is shown. The diff summary provides no explicit evidence of Plank/Squash month-to-month backend computation changes or persistence behavior changes that meet the acceptance criteria.",
-      "evidence": [
-        "backend/main.mo (truncated)"
-      ]
-    },
-    {
       "id": "REQ-2",
-      "requirement": "Ensure updateHabitVolume preserves/initializes volumeTracking.unitType as \"time\" when a timeString is provided, preventing fallback to \"reps\" compounding.",
-      "reason": "The diff summary shows new types for time tracking, but does not show the updateHabitVolume implementation or any unitType initialization/preservation logic. Therefore it cannot be verified as implemented from the provided diff summary.",
+      "requirement": "If no habits exist for a category (e.g., no time habits), the aggregate summary displays 0 (or 0:00 for time) for that category.",
+      "reason": "MonthlyVolumeSummary only renders a category block when `hasReps`/`hasTime`/`hasNumeric` is true; if a category has no habits it is omitted rather than displayed as 0/0:00.",
       "evidence": [
-        "backend/main.mo (truncated)"
+        "frontend/src/features/becoming/components/MonthlyVolumeSummary.tsx"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Stable-state migration that remaps volumeTracking and initializes every month’s minutes to 0 and timeString to null (potentially wiping existing per-month volume data).",
-      "reason": "BuildRequest only asked to fix Plank/Squash progression and ensure correct time unit handling; it did not request a schema reset/migration that overwrites stored monthly values.",
+      "description": "Changed BecomingView behavior to prioritize error states over loading states and added/altered auth gating and skeleton rendering logic beyond adding the monthly volume summary.",
+      "reason": "REQ-1/REQ-2 only request volume calculation fixes and an aggregate summary; they do not request changes to authentication/error/loading state handling.",
       "evidence": [
-        "backend/migration.mo"
+        "frontend/src/features/becoming/components/BecomingView.tsx"
       ]
     },
     {
-      "description": "Backend actor-level migration wiring via `(with migration = Migration.run)` and importing Migration.",
-      "reason": "Not explicitly requested by the BuildRequest; only allowed if an actual stable-state upgrade is required. The diff summary does not establish that such a breaking stable schema change is necessary for the requested progression fixes.",
+      "description": "React Query behavior changes including principal-scoped query keys, immutable optimistic updates for completion toggles, and actor initialization error normalization.",
+      "reason": "Not requested by REQ-1/REQ-2 and could be considered scope expansion beyond volume total calculations and the new summary.",
       "evidence": [
-        "backend/main.mo (truncated)",
-        "backend/migration.mo"
+        "frontend/src/features/becoming/api/queries.ts (described in frontend-file-summaries.txt)",
+        "frontend-file-summaries.txt"
       ]
     }
   ],
-  "confidence": 0.63,
+  "confidence": 0.72,
   "changed_files": [
-    "backend/main.mo",
-    "backend/migration.mo",
     "frontend-file-summaries.txt",
+    "frontend/src/features/becoming/components/BecomingView.tsx",
+    "frontend/src/features/becoming/components/MonthlyVolumeSummary.tsx",
     "frontend/src/features/becoming/state/habitModel.ts",
     "project_state.json"
   ]

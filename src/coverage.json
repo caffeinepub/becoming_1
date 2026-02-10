@@ -1,21 +1,22 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-10T19:31:03.435Z",
+  "generatedAt": "2026-02-10T19:50:18.407Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 3,
+    "total": 2,
     "implemented": 2,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Fix the monthly progression logic so that the habit named \"Plank\" (time unit) increases by exactly +15 seconds per calendar month (e.g., February 1:15, March 1:30, April 1:45), and the habit named \"Squash\" (time unit) remains constant at 45:00 for every calendar month. Do not change progression behavior for other habits.",
+        "summary": "Fix the monthly total volume calculation so it correctly reflects total volume for each habit in the selected month using these formulas: (1) for workout-style numeric volumes, monthly total = (per-completion volume) × (number of completed days); (2) for reps-only habits, monthly total = (per-completion reps) × (number of completed days); (3) for time-based habits, monthly total = (per-completion time) × (number of completed days) computed in seconds when a time string is available, then formatted back to M:SS. Ensure this works consistently for all time-based habits (not only a special-cased habit name).",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/features/becoming/state/habitModel.ts"
+          "frontend/src/features/becoming/state/habitModel.ts",
+          "frontend/src/features/becoming/components/HabitRow.tsx"
         ],
         "matchedFiles": [
           "frontend/src/features/becoming/state/habitModel.ts"
@@ -23,32 +24,28 @@
       },
       {
         "id": "REQ-2",
-        "summary": "Ensure time-based volume updates correctly preserve and/or initialize unit type as \"time\" so that time habits (including Plank and Squash) never compound using the default \"reps\" rules when a timeString is provided during an update.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-3",
-        "summary": "Update the frontend’s optimistic volume compounding (used during volume edits) to match the corrected calendar-month rules for Plank (+15 seconds/month) and Squash (constant 45:00 across all months), while leaving other habits unchanged.",
+        "summary": "Add a selected-month aggregate total volume summary that sums volumes across all habits for the selected month and displays separate totals at minimum for: total reps (sum of per-habit monthly totals for unitType \"reps\"), total time (sum of per-habit monthly totals for unitType \"time\" in seconds, formatted as M:SS), and total workouts numeric volume (sum of per-habit monthly totals for workout-style numeric unit types if present). The summary must match the corrected per-habit totals from REQ-1.",
         "status": "implemented",
         "plannedFiles": [
+          "frontend/src/features/becoming/components/MonthlyVolumeSummary.tsx",
           "frontend/src/features/becoming/state/habitModel.ts",
-          "frontend/src/features/becoming/api/queries.ts"
+          "frontend/src/features/becoming/components/BecomingView.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/features/becoming/state/habitModel.ts"
+          "frontend/src/features/becoming/components/MonthlyVolumeSummary.tsx",
+          "frontend/src/features/becoming/state/habitModel.ts",
+          "frontend/src/features/becoming/components/BecomingView.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
-    "backend/main.mo",
-    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
+    "frontend/src/features/becoming/components/BecomingView.tsx",
+    "frontend/src/features/becoming/components/MonthlyVolumeSummary.tsx",
     "frontend/src/features/becoming/state/habitModel.ts",
     "project_state.json",
     "scratch/component-selection.json",

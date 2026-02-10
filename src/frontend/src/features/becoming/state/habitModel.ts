@@ -117,54 +117,88 @@ export function getVolumeDisplayString(habit: Habit, monthIndex: number): string
  * Returns a formatted string based on unit type
  * 
  * For "reps": monthly total = (per-completion volume) × (completed days count)
- * For "time": monthly total = (per-completion minutes) × (completed days count), formatted as M:SS
- *   - Special case for "Plank": uses seconds-accurate multiplication (M:SS × count)
- * For other units: monthly total = completed days count (each checked day = +1)
+ * For "time": monthly total = (per-completion seconds) × (completed days count), formatted as M:SS
+ *   - Uses seconds-accurate calculation when timeString is available
+ * For other numeric units: monthly total = (per-completion volume) × (completed days count)
  */
 export function getMonthlyTotalVolume(habit: HabitWithCompletion, monthIndex: number): string {
   const completedDays = getCompletedDaysCount(habit, monthIndex);
   const unitType = getUnitType(habit);
   
+  if (completedDays === 0) {
+    return unitType === 'time' ? '0:00' : '0';
+  }
+  
+  const entry = getVolumeEntryForMonth(habit, monthIndex);
+  if (!entry || entry.minutes === undefined || entry.minutes === null) {
+    return unitType === 'time' ? '0:00' : '0';
+  }
+  
   if (unitType === 'reps') {
     // For reps: multiply per-completion volume by completed days
-    if (completedDays === 0) return '0';
-    
-    const entry = getVolumeEntryForMonth(habit, monthIndex);
-    if (!entry || entry.minutes === undefined || entry.minutes === null) return '0';
-    
     const perCompletionVolume = Number(entry.minutes);
     const totalVolume = perCompletionVolume * completedDays;
     return String(totalVolume);
   } else if (unitType === 'time') {
-    // For time: multiply per-completion by completed days
-    if (completedDays === 0) return '0:00';
+    // For time: multiply per-completion by completed days (seconds-accurate when timeString exists)
+    let perCompletionSeconds = 0;
     
-    const entry = getVolumeEntryForMonth(habit, monthIndex);
-    if (!entry || entry.minutes === undefined || entry.minutes === null) return '0:00';
-    
-    // Special case: "Plank" habit uses seconds-accurate multiplication
-    if (habit.name === 'Plank') {
-      // Try to parse timeString first (if available), otherwise fall back to minutes
-      let perCompletionSeconds = 0;
-      
-      if (entry.timeString) {
-        const parsed = parseTimeStringToSeconds(entry.timeString);
-        perCompletionSeconds = parsed !== null ? parsed : Number(entry.minutes) * 60;
-      } else {
-        perCompletionSeconds = Number(entry.minutes) * 60;
-      }
-      
-      const totalSeconds = perCompletionSeconds * completedDays;
-      return formatSecondsToTimeString(totalSeconds);
+    if (entry.timeString) {
+      // Use timeString for seconds-accurate calculation
+      const parsed = parseTimeStringToSeconds(entry.timeString);
+      perCompletionSeconds = parsed !== null ? parsed : Number(entry.minutes) * 60;
     } else {
-      // All other time habits: use minutes-only multiplication
-      const perCompletionVolume = Number(entry.minutes);
-      const totalVolume = perCompletionVolume * completedDays;
-      return formatMinutesToTimeString(totalVolume);
+      // Fallback to minutes
+      perCompletionSeconds = Number(entry.minutes) * 60;
     }
+    
+    const totalSeconds = perCompletionSeconds * completedDays;
+    return formatSecondsToTimeString(totalSeconds);
   } else {
-    // For all other unit types: return completed days count (each checked day = +1)
-    return String(completedDays);
+    // For all other numeric unit types: multiply per-completion volume by completed days
+    const perCompletionVolume = Number(entry.minutes);
+    const totalVolume = perCompletionVolume * completedDays;
+    return String(totalVolume);
+  }
+}
+
+/**
+ * Helper to get raw monthly total values for aggregate calculations
+ * Returns numeric values: reps/workout as number, time as seconds
+ */
+export function getMonthlyTotalRaw(habit: HabitWithCompletion, monthIndex: number): { type: string; value: number } {
+  const completedDays = getCompletedDaysCount(habit, monthIndex);
+  const unitType = getUnitType(habit);
+  
+  if (completedDays === 0) {
+    return { type: unitType, value: 0 };
+  }
+  
+  const entry = getVolumeEntryForMonth(habit, monthIndex);
+  if (!entry || entry.minutes === undefined || entry.minutes === null) {
+    return { type: unitType, value: 0 };
+  }
+  
+  if (unitType === 'reps') {
+    const perCompletionVolume = Number(entry.minutes);
+    const totalVolume = perCompletionVolume * completedDays;
+    return { type: 'reps', value: totalVolume };
+  } else if (unitType === 'time') {
+    let perCompletionSeconds = 0;
+    
+    if (entry.timeString) {
+      const parsed = parseTimeStringToSeconds(entry.timeString);
+      perCompletionSeconds = parsed !== null ? parsed : Number(entry.minutes) * 60;
+    } else {
+      perCompletionSeconds = Number(entry.minutes) * 60;
+    }
+    
+    const totalSeconds = perCompletionSeconds * completedDays;
+    return { type: 'time', value: totalSeconds };
+  } else {
+    const perCompletionVolume = Number(entry.minutes);
+    const totalVolume = perCompletionVolume * completedDays;
+    return { type: 'numeric', value: totalVolume };
   }
 }
 
