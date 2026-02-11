@@ -1,29 +1,16 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-10T21:47:27.145Z",
-  "summary": "REQ-1 appears implemented: the MonthlyVolumeSummary component now only aggregates and conditionally renders “Total Reps” and “Total Time”, with no “Total Volume” label/value block present. Two additional non-product files were also modified (project_state.json and frontend-file-summaries.txt), which were not requested by the BuildRequest.",
+  "generatedAt": "2026-02-11T22:46:38.463Z",
+  "summary": "The diff implements mobile-only sticky positioning for the left \"Habit\" column in both the loaded HabitGrid (header + each row’s habit info cell) and the loading GridSkeleton, including opaque backgrounds and z-index, and reverts to non-sticky behavior at the md breakpoint and above.",
   "missing_requirements": [],
-  "hallucinated_features": [
-    {
-      "description": "Updated project tracking metadata (new_feature_requests entries, statuses, known_issues) unrelated to the UI-only removal request.",
-      "reason": "The BuildRequest only asks to remove the “Total Volume” row from the Monthly Volume Summary UI and explicitly says no other part of the app should be changed; updating project tracking metadata is not part of the requested implementation.",
-      "evidence": [
-        "project_state.json"
-      ]
-    },
-    {
-      "description": "Updated/added frontend file summary metadata text.",
-      "reason": "The BuildRequest does not request regenerating or modifying repository summary documentation; only a targeted UI removal in MonthlyVolumeSummary.tsx was requested.",
-      "evidence": [
-        "frontend-file-summaries.txt"
-      ]
-    }
-  ],
+  "hallucinated_features": [],
   "confidence": 0.9,
   "changed_files": [
     "frontend-file-summaries.txt",
-    "frontend/src/features/becoming/components/MonthlyVolumeSummary.tsx",
+    "frontend/src/features/becoming/components/GridSkeleton.tsx",
+    "frontend/src/features/becoming/components/HabitGrid.tsx",
+    "frontend/src/features/becoming/components/HabitRow.tsx",
     "project_state.json"
   ]
 }

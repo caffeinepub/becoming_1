@@ -1,18 +1,26 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "New project",
-  "architectural_notes": [],
-  "known_issues": [
-    "Monthly Volume Summary section currently shows a “Total Volume” row with value 0 (should be removed in that section)."
+  "summary": "Habit tracking table UI: make the full left \"habit\" block/column sticky on mobile so it remains visible while horizontally scrolling the rest of the table.",
+  "architectural_notes": [
+    "On mobile, the left habit block/column should remain fixed (sticky) during horizontal scrolling of the table."
   ],
-  "isFixRequest": true,
+  "known_issues": [],
+  "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-remove-the-entire-total-volume-tile-row-label-value-from-the-monthly-volume-summary-section-only-so-that-monthly-volume-summary-shows-only-total-reps-and-or-total-time-when-applicable-and-never-renders-a-total-volume-item",
-      "title": "Remove the entire “Total Volume” tile/row (label + value) from the Monthly Volume Summary section only, so that Monthly Volume Summary shows only Total Reps and/or Total Time when applicable and never renders a Total Volume item.",
+      "id": "feature-on-mobile-only-make-the-full-left-habit-info-block-the-first-column-containing-habit-name-unit-volume-and-monthly-total-remain-visible-sticky-while-the-rest-of-the-habit-table-scrolls-horizontally",
+      "title": "On mobile only, make the full left Habit info block (the first column containing habit name, unit, volume, and monthly total) remain visible (sticky) while the rest of the habit table scrolls horizontally.",
       "reqIds": [
         "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-loading-skeleton-state-to-match-the-mobile-sticky-behavior-so-the-first-skeleton-column-remains-sticky-during-horizontal-scrolling-on-mobile",
+      "title": "Update the loading/skeleton state to match the mobile sticky behavior, so the first skeleton column remains sticky during horizontal scrolling on mobile.",
+      "reqIds": [
+        "REQ-2"
       ],
       "version": 1
     }
@@ -20,12 +28,12 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Remove the entire “Total Volume” row (label + value) from the Monthly Volume Summary section only",
+      "summary": "Make the full left habit block/column sticky on mobile so it stays visible while the table scrolls horizontally.",
       "reqIds": [],
       "status": "pending"
     }
   ],
-  "projectName": "Remove Total Volume row from Monthly Volume Summary",
+  "projectName": "Make the left Habit block sticky on mobile during horizontal scroll",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

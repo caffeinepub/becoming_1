@@ -2,10 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-remove-the-entire-total-volume-tile-row-label-value-from-the-monthly-volume-summary-section-only-so-that-monthly-volume-summary-shows-only-total-reps-and-or-total-time-when-applicable-and-never-renders-a-total-volume-item",
-      "featureTitle": "Remove the entire “Total Volume” tile/row (label + value) from the Monthly Volume Summary section only, so that Monthly Volume Summary shows only Total Reps and/or Total Time when applicable and never renders a Total Volume item.",
+      "featureId": "feature-on-mobile-only-make-the-full-left-habit-info-block-the-first-column-containing-habit-name-unit-volume-and-monthly-total-remain-visible-sticky-while-the-rest-of-the-habit-table-scrolls-horizontally",
+      "featureTitle": "On mobile only, make the full left Habit info block (the first column containing habit name, unit, volume, and monthly total) remain visible (sticky) while the rest of the habit table scrolls horizontally.",
       "files": [
-        "frontend/src/features/becoming/components/MonthlyVolumeSummary.tsx"
+        "frontend/src/features/becoming/components/HabitGrid.tsx",
+        "frontend/src/features/becoming/components/HabitRow.tsx"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -17,6 +18,25 @@
       ],
       "testIds": [
         "REQ-1"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-the-loading-skeleton-state-to-match-the-mobile-sticky-behavior-so-the-first-skeleton-column-remains-sticky-during-horizontal-scrolling-on-mobile",
+      "featureTitle": "Update the loading/skeleton state to match the mobile sticky behavior, so the first skeleton column remains sticky during horizontal scrolling on mobile.",
+      "files": [
+        "frontend/src/features/becoming/components/GridSkeleton.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0"
+      ],
+      "testIds": [
+        "REQ-2"
       ],
       "confidence": "high"
     }

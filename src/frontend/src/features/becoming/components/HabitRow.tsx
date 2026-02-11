@@ -60,7 +60,7 @@ export function HabitRow({ habit, selectedMonth, daysInMonth, disabled = false }
             onEdit={handleEditClick}
           >
             <div 
-              className={`${HABIT_INFO_WIDTH} flex-shrink-0 px-3 py-3 border-r-2 border-border cursor-pointer hover:bg-muted/50 transition-colors`}
+              className={`${HABIT_INFO_WIDTH} flex-shrink-0 px-3 py-3 border-r-2 border-border cursor-pointer hover:bg-muted/50 transition-colors sticky left-0 z-10 bg-background md:static md:z-auto`}
               onClick={handleHabitInfoClick}
             >
               {/* Habit name */}
@@ -91,7 +91,7 @@ export function HabitRow({ habit, selectedMonth, daysInMonth, disabled = false }
           </HabitRowActionsPopover>
 
           {/* Day checkboxes */}
-          <div className="flex overflow-x-auto">
+          <div className="flex">
             {days.map((day) => {
               const isCompleted = isHabitCompletedOnDay(habit, selectedMonth, day);
               return (

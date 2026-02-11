@@ -1,24 +1,37 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-10T21:47:27.148Z",
+  "generatedAt": "2026-02-11T22:46:38.466Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 1,
-    "implemented": 1,
+    "total": 2,
+    "implemented": 2,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Remove the entire “Total Volume” tile/row (label + value) from the Monthly Volume Summary section only, so that Monthly Volume Summary shows only Total Reps and/or Total Time when applicable and never renders a Total Volume item.",
+        "summary": "On mobile only, make the full left Habit info block (the first column containing habit name, unit, volume, and monthly total) remain visible (sticky) while the rest of the habit table scrolls horizontally.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/features/becoming/components/MonthlyVolumeSummary.tsx"
+          "frontend/src/features/becoming/components/HabitGrid.tsx",
+          "frontend/src/features/becoming/components/HabitRow.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/features/becoming/components/MonthlyVolumeSummary.tsx"
+          "frontend/src/features/becoming/components/HabitGrid.tsx",
+          "frontend/src/features/becoming/components/HabitRow.tsx"
+        ]
+      },
+      {
+        "id": "REQ-2",
+        "summary": "Update the loading/skeleton state to match the mobile sticky behavior, so the first skeleton column remains sticky during horizontal scrolling on mobile.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/features/becoming/components/GridSkeleton.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/features/becoming/components/GridSkeleton.tsx"
         ]
       }
     ]
@@ -28,7 +41,9 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/features/becoming/components/MonthlyVolumeSummary.tsx",
+    "frontend/src/features/becoming/components/GridSkeleton.tsx",
+    "frontend/src/features/becoming/components/HabitGrid.tsx",
+    "frontend/src/features/becoming/components/HabitRow.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

@@ -1,48 +1,57 @@
 {
   "kind": "build_request",
-  "title": "Remove Total Volume row from Monthly Volume Summary",
+  "title": "Make the left Habit block sticky on mobile during horizontal scroll",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Remove the entire “Total Volume” tile/row (label + value) from the Monthly Volume Summary section only, so that Monthly Volume Summary shows only Total Reps and/or Total Time when applicable and never renders a Total Volume item.",
+      "text": "On mobile only, make the full left Habit info block (the first column containing habit name, unit, volume, and monthly total) remain visible (sticky) while the rest of the habit table scrolls horizontally.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-user-1"
+          "msg-1"
         ],
         "quotes": [
-          "1. Remove row",
-          "2. Only in the monthly volume summary section"
+          "1. Yes correct\n2. On mobile \n3. Full block"
         ]
       },
       "acceptanceCriteria": [
-        "In frontend/src/features/becoming/components/MonthlyVolumeSummary.tsx, the UI no longer renders the block with label “Total Volume”, regardless of whether numeric-volume habits exist.",
-        "Monthly Volume Summary continues to correctly render “Total Reps” when reps-based habits exist and “Total Time” when time-based habits exist.",
-        "No other part of the app (e.g., habit rows, edit modal, or any other summaries) is changed as part of this update."
+        "On a mobile viewport, when the habit grid is horizontally scrolled, the left Habit column stays fixed on the left edge while the day columns scroll behind it.",
+        "The sticky behavior applies to both the header cell labeled \"Habit\" and each habit row’s left info cell.",
+        "The sticky column has an opaque background and appropriate z-index so day columns do not visually bleed through underneath it while scrolling.",
+        "On tablet/desktop breakpoints, the habit grid behaves as before (no sticky first column)."
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Update the loading/skeleton state to match the mobile sticky behavior, so the first skeleton column remains sticky during horizontal scrolling on mobile.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "On mobile"
+        ]
+      },
+      "acceptanceCriteria": [
+        "On a mobile viewport while the grid skeleton is shown, horizontal scrolling keeps the left skeleton column visible (sticky) while the day skeleton columns scroll.",
+        "On tablet/desktop breakpoints, skeleton layout remains unchanged (non-sticky first column)."
       ]
     }
   ],
   "constraints": [
-    "Frontend immutable paths (frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui) must not be edited.",
-    "Do not change backend logic or Motoko state/schema for this UI-only removal."
+    "Do not modify any files under frontend/src/components/ui (read-only Shadcn components).",
+    "Do not change backend logic or data models; this is a UI-only layout behavior change.",
+    "Implement within the existing HabitGrid/HabitRow/GridSkeleton layout structure and Tailwind styling conventions."
   ],
   "nonGoals": [
-    "Do not hide or remove numeric volume tracking elsewhere in the app.",
-    "Do not change how monthly totals are computed; only remove the display of the Total Volume item in Monthly Volume Summary."
+    "Making the first column sticky on desktop/tablet.",
+    "Changing column widths, typography, or habit-row content beyond what is necessary to support sticky behavior.",
+    "Adding new authentication, data fetching, or backend endpoints."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [],
-    "goalsToRemove": [],
-    "preferencesToAdd": [],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
   }
 }

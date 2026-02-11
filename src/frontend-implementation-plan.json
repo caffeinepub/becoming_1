@@ -1,21 +1,42 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Remove Total Volume row from Monthly Volume Summary",
+  "title": "Mobile sticky Habit info column during horizontal scroll",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Remove the “Total Volume” tile from the Monthly Volume Summary so only Total Reps and/or Total Time may render.",
+      "summary": "On mobile viewports, make the first (Habit info) column sticky while the habit grid scrolls horizontally, without affecting tablet/desktop behavior.",
       "acceptanceCriteria": [
-        "In frontend/src/features/becoming/components/MonthlyVolumeSummary.tsx, the UI no longer renders the block with label “Total Volume”, regardless of whether numeric-volume habits exist.",
-        "Monthly Volume Summary continues to correctly render “Total Reps” when reps-based habits exist and “Total Time” when time-based habits exist.",
-        "No other part of the app (e.g., habit rows, edit modal, or any other summaries) is changed as part of this update."
+        "On a mobile viewport, when the habit grid is horizontally scrolled, the left Habit column stays fixed on the left edge while the day columns scroll behind it.",
+        "The sticky behavior applies to both the header cell labeled \"Habit\" and each habit row’s left info cell.",
+        "The sticky column has an opaque background and appropriate z-index so day columns do not visually bleed through underneath it while scrolling.",
+        "On tablet/desktop breakpoints, the habit grid behaves as before (no sticky first column)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/features/becoming/components/MonthlyVolumeSummary.tsx",
+          "path": "frontend/src/features/becoming/components/HabitGrid.tsx",
           "operation": "modify",
-          "description": "Remove rendering of the “Total Volume” tile/row in Monthly Volume Summary only. Ensure the component never displays a Total Volume item (remove/ignore hasNumeric and totalNumeric UI block as needed) while keeping Total Reps and Total Time behavior unchanged. Keep this change isolated to this file to avoid impacting other summaries or habit UI."
+          "description": "Update the header's first column (\"Habit\") to be sticky on mobile only (e.g., base `sticky left-0` with an opaque background and higher z-index) and explicitly disable sticky at md+ breakpoints to preserve existing tablet/desktop behavior."
+        },
+        {
+          "path": "frontend/src/features/becoming/components/HabitRow.tsx",
+          "operation": "modify",
+          "description": "Make each habit row’s left info cell sticky on mobile only with an opaque background and suitable z-index, and ensure the horizontal scroll happens on the same scroll container as the sticky column by removing the nested horizontal scroll from the day-cells wrapper (so scrolling keeps the info cell fixed)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Ensure the grid loading/skeleton layout mirrors the mobile sticky first-column behavior during horizontal scrolling.",
+      "acceptanceCriteria": [
+        "On a mobile viewport while the grid skeleton is shown, horizontal scrolling keeps the left skeleton column visible (sticky) while the day skeleton columns scroll.",
+        "On tablet/desktop breakpoints, skeleton layout remains unchanged (non-sticky first column)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/features/becoming/components/GridSkeleton.tsx",
+          "operation": "modify",
+          "description": "Wrap the skeleton grid area in a horizontal scroll container consistent with HabitGrid and apply mobile-only sticky positioning (with opaque background + z-index) to the first skeleton column in both the header and each skeleton row, disabling sticky at md+ breakpoints."
         }
       ]
     }
