@@ -1,93 +1,111 @@
 {
   "kind": "build_request",
-  "title": "Use a single fixed user-defined time zone for daily quote rotation (persisted)",
+  "title": "Add responsive yearly progress bar chart above Monthly Volume Summary",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Add backend support for a per-user fixed time zone setting that is stored persistently in the canister state (survives canister upgrades/redeploys). The time zone must be representable without relying on server-side IANA/DST rules (e.g., store a fixed UTC offset in minutes or a fixed \"UTC±HH:MM\" value) and must be retrievable and updatable by the logged-in user.",
-      "target": "backend",
+      "text": "Add a new \"Yearly Progress\" chart section above the existing \"Monthly Volume Summary\" in the Becoming view.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-6",
+          "msg-8"
         ],
         "quotes": [
-          "A fixed single time zone (users)"
+          "Add a yearly progress chart section above the Monthly Volume Summary.",
+          "Yes just current year as per the current layout of the app"
         ]
       },
       "acceptanceCriteria": [
-        "A logged-in user can set their fixed time zone value via a dedicated backend method.",
-        "A logged-in user can fetch their currently saved fixed time zone value via a dedicated backend query method.",
-        "The value is stored per Principal and remains intact after an upgrade/redeploy.",
-        "Unauthorized callers cannot set or read another user’s time zone setting."
+        "In the Becoming view, a new section appears above the Monthly Volume Summary when habits are available (same general visibility conditions as the summary).",
+        "The existing Monthly Volume Summary remains present and unchanged below the new chart section."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Implement deterministic quote-of-the-day selection based on the provided static list of 50 quotes, rotating in order (1→50 then loop) and switching at midnight of the user’s saved fixed time zone. The computed daily quote must be stable for the entire day for that user, and must not depend on an external quotes API.",
-      "target": "backend",
+      "text": "Render the yearly progress chart as a responsive grouped bar chart with Jan–Dec on the x-axis and an automatically scaled y-axis based on the computed monthly totals.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-6"
         ],
         "quotes": [
-          "A fixed single time zone (users)"
+          "The chart should be a bar graph showing data for each month from January to December.",
+          "Make the chart responsive... Ensure the x-axis displays the months and the y-axis scales automatically based on the monthly totals."
         ]
       },
       "acceptanceCriteria": [
-        "Given the same user time zone setting and the same day (as determined by that time zone), the backend returns the same quote consistently.",
-        "At the first moment after local midnight in the user’s saved fixed time zone, the returned quote advances by exactly one position in the list (looping after quote 50 to quote 1).",
-        "The quote rotation order is deterministic and does not reset when the canister is redeployed/upgraded.",
-        "The backend exposes a single method to fetch the user’s current daily quote (text + author + optional index/date metadata)."
+        "The x-axis displays the 12 months from January through December (at least using short labels like Jan, Feb, etc.).",
+        "The chart rescales its y-axis automatically when underlying monthly totals change (no hard-coded max).",
+        "The chart layout remains usable on mobile and desktop (does not overflow the page width; labels remain legible)."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Update the frontend daily quote feature to use the backend as the quote source and to respect the backend’s fixed-time-zone daily rotation. If the user has not configured a fixed time zone yet, show an inline prompt in the quote area to set it (English text), and do not show “Quote unavailable” due to missing configuration.",
+      "text": "Compute chart data from the existing saved daily habit data by aggregating all habits into monthly totals for (a) Total Reps and (b) Total Time converted to hours for each month (Jan–Dec).",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-6",
+          "msg-8"
         ],
         "quotes": [
-          "A fixed single time zone (users)"
+          "It should track two metrics: 'Total Reps' and 'Total Time' (converted to hours).",
+          "The data is currently being recorded and saved. I track it each day so once completed it will be included"
         ]
       },
       "acceptanceCriteria": [
-        "The daily quote component renders a quote returned from the backend (not from https://api.quotable.io/random).",
-        "If no fixed time zone is configured for the current user, the quote area displays a clear call-to-action to set a time zone (in English) instead of showing an error state.",
-        "After the user sets a fixed time zone, the daily quote loads successfully without requiring a full page reload.",
-        "User-facing text introduced for this feature is in English."
+        "For each month index 0–11, the chart shows a Total Reps value equal to the sum of all habits' monthly reps totals for that month.",
+        "For each month index 0–11, the chart shows a Total Time value equal to the sum of all habits' monthly time totals for that month, converted from seconds to hours (hours may be fractional).",
+        "The chart updates automatically when the habits query data changes (e.g., after the user records additional daily completions)."
       ]
     },
     {
       "id": "REQ-4",
-      "text": "Add an upgrade-safe state migration (only if required by existing deployed state) so that introducing persisted quote/time-zone state does not break existing stored data (e.g., habit tracking state) on upgrade.",
-      "target": "backend",
+      "text": "Style the chart section with a clean modern aesthetic consistent with the current UI and using blue and gray tones, and include a clear legend identifying \"Total Reps\" and \"Total Time (hours)\".",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-6"
         ],
         "quotes": [
-          "A fixed single time zone (users)"
+          "use a clean modern aesthetic with blue and gray tones to match the current UI, and include a legend."
         ]
       },
       "acceptanceCriteria": [
-        "Upgrading the canister preserves existing user habit/profile data.",
-        "New persisted structures for time zone and daily quote rotation are initialized safely for existing users (e.g., absent until set).",
-        "No runtime traps occur on first call paths after upgrade due to missing/old state."
+        "The chart section uses existing design tokens/components (e.g., glass-surface card styling) and visually matches the rest of the Becoming UI.",
+        "A legend is visible and clearly maps each metric to its bar color: Total Reps and Total Time (hours).",
+        "User-facing text in the chart section is in English."
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "text": "Limit the yearly progress chart to the current calendar year only (no year switching UI).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-6",
+          "msg-8"
+        ],
+        "quotes": [
+          "Should the chart display only the current calendar year...",
+          "Yes just current year as per the current layout of the app"
+        ]
+      },
+      "acceptanceCriteria": [
+        "The chart displays a single year view for the current calendar year, with no controls for selecting other years."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in backend/main.mo.",
-    "Do not modify files under frontend/src/components/ui or other frontend immutablePaths (compose existing UI components instead).",
-    "Use English for any new user-facing text."
+    "Do not modify files under frontend/immutablePaths (e.g., frontend/src/hooks/useInternetIdentity.ts(x), frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui).",
+    "Keep backend architecture as a single Motoko actor; only introduce backend changes if strictly required (this request should be fulfilled using existing saved daily data already available to the frontend)."
   ],
   "nonGoals": [
-    "Supporting automatic timezone detection from the browser.",
-    "Supporting IANA timezone names with DST-aware transitions.",
-    "Real-time quote updates/push notifications at midnight."
+    "Adding a year picker or viewing historical years beyond the current year.",
+    "Adding new backend data models or migrations solely to support the chart, unless aggregation cannot be computed from existing returned habit data.",
+    "Adding tooltips, filtering, exports, or drill-down interactions beyond the requested legend and axes."
   ],
   "imageRequirements": {
     "required": [],

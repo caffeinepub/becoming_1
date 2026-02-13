@@ -1,67 +1,86 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-13T18:43:09.774Z",
+  "generatedAt": "2026-02-13T23:06:50.007Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 4,
-    "implemented": 1,
+    "total": 5,
+    "implemented": 5,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Add backend support for a per-user fixed time zone setting that is stored persistently in the canister state (survives canister upgrades/redeploys). The time zone must be representable without relying on server-side IANA/DST rules (e.g., store a fixed UTC offset in minutes or a fixed \"UTC±HH:MM\" value) and must be retrievable and updatable by the logged-in user.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
+        "summary": "Add a new \"Yearly Progress\" chart section above the existing \"Monthly Volume Summary\" in the Becoming view.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/features/becoming/components/BecomingView.tsx",
+          "frontend/src/features/becoming/components/YearlyProgressChartSection.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/features/becoming/components/BecomingView.tsx",
+          "frontend/src/features/becoming/components/YearlyProgressChartSection.tsx"
+        ]
       },
       {
         "id": "REQ-2",
-        "summary": "Implement deterministic quote-of-the-day selection based on the provided static list of 50 quotes, rotating in order (1→50 then loop) and switching at midnight of the user’s saved fixed time zone. The computed daily quote must be stable for the entire day for that user, and must not depend on an external quotes API.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
+        "summary": "Render the yearly progress chart as a responsive grouped bar chart with Jan–Dec on the x-axis and an automatically scaled y-axis based on the computed monthly totals.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/features/becoming/components/YearlyProgressChartSection.tsx",
+          "frontend/src/features/becoming/constants/months2026.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/features/becoming/components/YearlyProgressChartSection.tsx"
+        ]
       },
       {
         "id": "REQ-3",
-        "summary": "Update the frontend daily quote feature to use the backend as the quote source and to respect the backend’s fixed-time-zone daily rotation. If the user has not configured a fixed time zone yet, show an inline prompt in the quote area to set it (English text), and do not show “Quote unavailable” due to missing configuration.",
+        "summary": "Compute chart data from the existing saved daily habit data by aggregating all habits into monthly totals for (a) Total Reps and (b) Total Time converted to hours for each month (Jan–Dec).",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/features/quotes/hooks/useDailyZenQuote.ts",
-          "frontend/src/components/quotes/DailyMotivationalQuote.tsx",
-          "frontend/src/components/quotes/TimeZoneInlinePrompt.tsx"
+          "frontend/src/features/becoming/state/habitModel.ts",
+          "frontend/src/features/becoming/components/YearlyProgressChartSection.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/features/quotes/hooks/useDailyZenQuote.ts",
-          "frontend/src/components/quotes/DailyMotivationalQuote.tsx",
-          "frontend/src/components/quotes/TimeZoneInlinePrompt.tsx"
+          "frontend/src/features/becoming/state/habitModel.ts",
+          "frontend/src/features/becoming/components/YearlyProgressChartSection.tsx"
         ]
       },
       {
         "id": "REQ-4",
-        "summary": "Add an upgrade-safe state migration (only if required by existing deployed state) so that introducing persisted quote/time-zone state does not break existing stored data (e.g., habit tracking state) on upgrade.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
+        "summary": "Style the chart section with a clean modern aesthetic consistent with the current UI and using blue and gray tones, and include a clear legend identifying \"Total Reps\" and \"Total Time (hours)\".",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/features/becoming/components/YearlyProgressChartSection.tsx",
+          "frontend/src/index.css"
+        ],
+        "matchedFiles": [
+          "frontend/src/features/becoming/components/YearlyProgressChartSection.tsx"
+        ]
+      },
+      {
+        "id": "REQ-5",
+        "summary": "Limit the yearly progress chart to the current calendar year only (no year switching UI).",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/features/becoming/components/YearlyProgressChartSection.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/features/becoming/components/YearlyProgressChartSection.tsx"
+        ]
       }
     ]
   },
   "changedFiles": [
-    "backend/main.mo",
-    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/backend.d.ts",
-    "frontend/src/backend.ts",
-    "frontend/src/components/quotes/DailyMotivationalQuote.tsx",
-    "frontend/src/components/quotes/TimeZoneInlinePrompt.tsx",
-    "frontend/src/declarations/backend.did.d.ts",
-    "frontend/src/declarations/backend.did.js",
-    "frontend/src/features/quotes/hooks/useDailyZenQuote.ts",
+    "frontend/src/features/becoming/components/BecomingView.tsx",
+    "frontend/src/features/becoming/components/YearlyProgressChartSection.tsx",
+    "frontend/src/features/becoming/state/habitModel.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

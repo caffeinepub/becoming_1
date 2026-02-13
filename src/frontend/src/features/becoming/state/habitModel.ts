@@ -203,6 +203,36 @@ export function getMonthlyTotalRaw(habit: HabitWithCompletion, monthIndex: numbe
 }
 
 /**
+ * Aggregates yearly totals across all habits for the chart
+ * Returns arrays of 12 values (one per month) for reps and time (in hours)
+ */
+export function aggregateYearlyTotals(habits: HabitWithCompletion[]): {
+  reps: number[];
+  timeHours: number[];
+} {
+  const reps: number[] = new Array(12).fill(0);
+  const timeHours: number[] = new Array(12).fill(0);
+  
+  habits.forEach((habit) => {
+    for (let monthIndex = 0; monthIndex < 12; monthIndex++) {
+      const raw = getMonthlyTotalRaw(habit, monthIndex);
+      
+      if (raw.type === 'reps') {
+        reps[monthIndex] += raw.value;
+      } else if (raw.type === 'time') {
+        // Convert seconds to hours (fractional)
+        timeHours[monthIndex] += raw.value / 3600;
+      }
+    }
+  });
+  
+  // Round time hours to 2 decimal places for cleaner display
+  const roundedTimeHours = timeHours.map(hours => Math.round(hours * 100) / 100);
+  
+  return { reps, timeHours: roundedTimeHours };
+}
+
+/**
  * Gets the numeric volume for a given month (for backward compatibility)
  * @deprecated Use getVolumeDisplayString for display purposes
  */

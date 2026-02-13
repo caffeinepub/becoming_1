@@ -1,21 +1,51 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Daily rotating quote app: rotate deterministically through a fixed list of 50 quotes, showing a new quote each day at a fixed user-provided timezone midnight, with quote list and rotation state persisted.",
+  "summary": "New project",
   "architectural_notes": [
-    "Persist quote list and rotation state in the canister so redeploys/updates do not reset the order.",
-    "Daily quote selection should be based on a single fixed timezone value provided by the user (not browser local time); compute quote index from current date in that timezone."
+    "Yearly progress chart uses existing daily recorded data aggregated into monthly totals for the current calendar year (Jan–Dec).",
+    "Total Time metric should be converted to hours before charting."
   ],
-  "known_issues": [
-    "Quote is still not loading after deploy (needs investigation/fix)."
-  ],
-  "isFixRequest": true,
+  "known_issues": [],
+  "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-update-the-frontend-daily-quote-feature-to-use-the-backend-as-the-quote-source-and-to-respect-the-backend-s-fixed-time-zone-daily-rotation-if-the-user-has-not-configured-a-fixed-time-zone-yet-show-an-inline-prompt-in-the-quote-area-to-set-it-english-text-and-do-not-show-quote-unavailable-due-to-missing-configuration",
-      "title": "Update the frontend daily quote feature to use the backend as the quote source and to respect the backend’s fixed-time-zone daily rotation. If the user has not configured a fixed time zone yet, show an inline prompt in the quote area to set it (English text), and do not show “Quote unavailable” due to missing configuration.",
+      "id": "feature-add-a-new-yearly-progress-chart-section-above-the-existing-monthly-volume-summary-in-the-becoming-view",
+      "title": "Add a new \"Yearly Progress\" chart section above the existing \"Monthly Volume Summary\" in the Becoming view.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-render-the-yearly-progress-chart-as-a-responsive-grouped-bar-chart-with-jan-dec-on-the-x-axis-and-an-automatically-scaled-y-axis-based-on-the-computed-monthly-totals",
+      "title": "Render the yearly progress chart as a responsive grouped bar chart with Jan–Dec on the x-axis and an automatically scaled y-axis based on the computed monthly totals.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-compute-chart-data-from-the-existing-saved-daily-habit-data-by-aggregating-all-habits-into-monthly-totals-for-a-total-reps-and-b-total-time-converted-to-hours-for-each-month-jan-dec",
+      "title": "Compute chart data from the existing saved daily habit data by aggregating all habits into monthly totals for (a) Total Reps and (b) Total Time converted to hours for each month (Jan–Dec).",
       "reqIds": [
         "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-style-the-chart-section-with-a-clean-modern-aesthetic-consistent-with-the-current-ui-and-using-blue-and-gray-tones-and-include-a-clear-legend-identifying-total-reps-and-total-time-hours",
+      "title": "Style the chart section with a clean modern aesthetic consistent with the current UI and using blue and gray tones, and include a clear legend identifying \"Total Reps\" and \"Total Time (hours)\".",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-limit-the-yearly-progress-chart-to-the-current-calendar-year-only-no-year-switching-ui",
+      "title": "Limit the yearly progress chart to the current calendar year only (no year switching UI).",
+      "reqIds": [
+        "REQ-5"
       ],
       "version": 1
     }
@@ -23,36 +53,12 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Implement deterministic daily quote rotation through provided list (1→50 loop) with quote-of-the-day changing at midnight in a single fixed user-provided timezone, persisted so rotation continues across redeploys.",
+      "summary": "Add responsive yearly progress bar chart above Monthly Volume Summary showing Jan–Dec monthly totals for Total Reps and Total Time (hours), with blue/gray modern styling, legend, and auto-scaling y-axis (current year only; aggregated from existing daily saved data).",
       "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-2",
-      "summary": "Add backend support for a per-user fixed time zone setting that is stored persistently in the canister state (survives canister upgrades/redeploys). The time zone must be representable without relying on server-side IANA/DST rules (e.g., store a fixed UTC offset in minutes or a fixed \"UTC±HH:MM\" value) and must be retrievable and updatable by the logged-in user.",
-      "reqIds": [
-        "REQ-1"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-3",
-      "summary": "Implement deterministic quote-of-the-day selection based on the provided static list of 50 quotes, rotating in order (1→50 then loop) and switching at midnight of the user’s saved fixed time zone. The computed daily quote must be stable for the entire day for that user, and must not depend on an external quotes API.",
-      "reqIds": [
-        "REQ-2"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-5",
-      "summary": "Add an upgrade-safe state migration (only if required by existing deployed state) so that introducing persisted quote/time-zone state does not break existing stored data (e.g., habit tracking state) on upgrade.",
-      "reqIds": [
-        "REQ-4"
-      ],
       "status": "pending"
     }
   ],
-  "projectName": "Use a single fixed user-defined time zone for daily quote rotation (persisted)",
+  "projectName": "Add responsive yearly progress bar chart above Monthly Volume Summary",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

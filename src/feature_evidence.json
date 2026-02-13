@@ -2,12 +2,50 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-update-the-frontend-daily-quote-feature-to-use-the-backend-as-the-quote-source-and-to-respect-the-backend-s-fixed-time-zone-daily-rotation-if-the-user-has-not-configured-a-fixed-time-zone-yet-show-an-inline-prompt-in-the-quote-area-to-set-it-english-text-and-do-not-show-quote-unavailable-due-to-missing-configuration",
-      "featureTitle": "Update the frontend daily quote feature to use the backend as the quote source and to respect the backend’s fixed-time-zone daily rotation. If the user has not configured a fixed time zone yet, show an inline prompt in the quote area to set it (English text), and do not show “Quote unavailable” due to missing configuration.",
+      "featureId": "feature-add-a-new-yearly-progress-chart-section-above-the-existing-monthly-volume-summary-in-the-becoming-view",
+      "featureTitle": "Add a new \"Yearly Progress\" chart section above the existing \"Monthly Volume Summary\" in the Becoming view.",
       "files": [
-        "frontend/src/components/quotes/DailyMotivationalQuote.tsx",
-        "frontend/src/components/quotes/TimeZoneInlinePrompt.tsx",
-        "frontend/src/features/quotes/hooks/useDailyZenQuote.ts"
+        "frontend/src/features/becoming/components/BecomingView.tsx",
+        "frontend/src/features/becoming/components/YearlyProgressChartSection.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0"
+      ],
+      "testIds": [
+        "REQ-1"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-render-the-yearly-progress-chart-as-a-responsive-grouped-bar-chart-with-jan-dec-on-the-x-axis-and-an-automatically-scaled-y-axis-based-on-the-computed-monthly-totals",
+      "featureTitle": "Render the yearly progress chart as a responsive grouped bar chart with Jan–Dec on the x-axis and an automatically scaled y-axis based on the computed monthly totals.",
+      "files": [
+        "frontend/src/features/becoming/components/YearlyProgressChartSection.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0"
+      ],
+      "testIds": [
+        "REQ-2"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-compute-chart-data-from-the-existing-saved-daily-habit-data-by-aggregating-all-habits-into-monthly-totals-for-a-total-reps-and-b-total-time-converted-to-hours-for-each-month-jan-dec",
+      "featureTitle": "Compute chart data from the existing saved daily habit data by aggregating all habits into monthly totals for (a) Total Reps and (b) Total Time converted to hours for each month (Jan–Dec).",
+      "files": [
+        "frontend/src/features/becoming/components/YearlyProgressChartSection.tsx",
+        "frontend/src/features/becoming/state/habitModel.ts"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -19,6 +57,44 @@
       ],
       "testIds": [
         "REQ-3"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-style-the-chart-section-with-a-clean-modern-aesthetic-consistent-with-the-current-ui-and-using-blue-and-gray-tones-and-include-a-clear-legend-identifying-total-reps-and-total-time-hours",
+      "featureTitle": "Style the chart section with a clean modern aesthetic consistent with the current UI and using blue and gray tones, and include a clear legend identifying \"Total Reps\" and \"Total Time (hours)\".",
+      "files": [
+        "frontend/src/features/becoming/components/YearlyProgressChartSection.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0"
+      ],
+      "testIds": [
+        "REQ-4"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-limit-the-yearly-progress-chart-to-the-current-calendar-year-only-no-year-switching-ui",
+      "featureTitle": "Limit the yearly progress chart to the current calendar year only (no year switching UI).",
+      "files": [
+        "frontend/src/features/becoming/components/YearlyProgressChartSection.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0"
+      ],
+      "testIds": [
+        "REQ-5"
       ],
       "confidence": "high"
     }

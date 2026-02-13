@@ -1,32 +1,102 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Frontend: Daily quote sourced from backend with inline fixed time zone setup",
+  "title": "Responsive Yearly Progress grouped bar chart in Becoming view",
   "requirements": [
     {
-      "id": "REQ-3",
-      "summary": "Switch daily quote UI to fetch quote-of-the-day from the backend and prompt users inline to set a fixed UTC offset when not configured.",
+      "id": "REQ-1",
+      "summary": "Add a new Yearly Progress chart section above Monthly Volume Summary in the Becoming view, with the same visibility conditions as the summary.",
       "acceptanceCriteria": [
-        "The daily quote component renders a quote returned from the backend (not from https://api.quotable.io/random).",
-        "If no fixed time zone is configured for the current user, the quote area displays a clear call-to-action to set a time zone (in English) instead of showing an error state.",
-        "After the user sets a fixed time zone, the daily quote loads successfully without requiring a full page reload.",
-        "User-facing text introduced for this feature is in English."
+        "In the Becoming view, a new section appears above the Monthly Volume Summary when habits are available (same general visibility conditions as the summary).",
+        "The existing Monthly Volume Summary remains present and unchanged below the new chart section."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/features/quotes/hooks/useDailyZenQuote.ts",
+          "path": "frontend/src/features/becoming/components/BecomingView.tsx",
           "operation": "modify",
-          "description": "Replace external API/localStorage-based quote logic with backend-driven quote loading using the existing actor (via core-infrastructure’s backend connection pattern through useActor). Use React Query (already used in the app) to (1) query the caller’s saved time zone (getCallerTimeZone) and (2) fetch today’s quote (getTodaysQuote) only when a time zone exists. Ensure the hook surfaces a distinct “missing time zone” state separate from generic errors, and expose a refetch function used after saving the time zone. Verify the component's usage instructions before implementing."
+          "description": "Wire the new YearlyProgressChartSection into the Becoming view render flow so it appears above MonthlyVolumeSummary and only renders when the grid/habits are available (matching the summary’s visibility expectations)."
         },
         {
-          "path": "frontend/src/components/quotes/DailyMotivationalQuote.tsx",
-          "operation": "modify",
-          "description": "Update rendering to: (1) show an inline time zone setup prompt in the quote area when the hook indicates no configured time zone (do not show “Quote unavailable” in this case), (2) render the backend-provided quote text/author when available, and (3) keep loading/error states user-friendly in English. Wire the new inline prompt component into this view so it is not orphaned. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/quotes/TimeZoneInlinePrompt.tsx",
+          "path": "frontend/src/features/becoming/components/YearlyProgressChartSection.tsx",
           "operation": "create",
-          "description": "Create an inline time zone configuration UI used inside the quote area. Provide a simple fixed UTC offset picker (e.g., select common “UTC±HH:MM” values) and a save action that calls the backend via the actor (setUserTimeZone) and then triggers quote reload without a full page refresh. Use shadcn-ui components (e.g., Button, Select, Input, Alert) for consistent styling while respecting immutablePaths (compose, don’t modify ui components). Verify the component's usage instructions before implementing."
+          "description": "Create a Becoming feature component that renders a 'Yearly Progress' section container and delegates to a grouped bar chart renderer; ensure it returns null under the same conditions as MonthlyVolumeSummary (e.g., no relevant volume-tracking data)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Render the Yearly Progress chart as a responsive grouped bar chart with Jan–Dec labels and an automatically scaled y-axis based on computed monthly totals.",
+      "acceptanceCriteria": [
+        "The x-axis displays the 12 months from January through December (at least using short labels like Jan, Feb, etc.).",
+        "The chart rescales its y-axis automatically when underlying monthly totals change (no hard-coded max).",
+        "The chart layout remains usable on mobile and desktop (does not overflow the page width; labels remain legible)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/features/becoming/components/YearlyProgressChartSection.tsx",
+          "operation": "modify",
+          "description": "Implement a responsive grouped bar chart UI (two bars per month for Total Reps and Total Time (hours)) with Jan–Dec x-axis labels and a y-scale derived from the maximum computed monthly total (no hard-coded max); use fluid sizing (e.g., width: 100%) and mobile-friendly label sizing/wrapping to prevent page overflow."
+        },
+        {
+          "path": "frontend/src/features/becoming/constants/months2026.ts",
+          "operation": "modify",
+          "description": "Reuse existing month metadata for short labels (Jan–Dec); if needed, add a small, year-agnostic helper export that provides an ordered Jan–Dec label list without introducing any year-switching UI."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Aggregate existing saved daily habit data into monthly totals for Total Reps and Total Time (hours) across all habits for the current year, and keep the chart reactive to habits query updates.",
+      "acceptanceCriteria": [
+        "For each month index 0–11, the chart shows a Total Reps value equal to the sum of all habits' monthly reps totals for that month.",
+        "For each month index 0–11, the chart shows a Total Time value equal to the sum of all habits' monthly time totals for that month, converted from seconds to hours (hours may be fractional).",
+        "The chart updates automatically when the habits query data changes (e.g., after the user records additional daily completions)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/features/becoming/state/habitModel.ts",
+          "operation": "modify",
+          "description": "Add a pure aggregation helper that, for month indexes 0–11, sums getMonthlyTotalRaw across all habits into two series: Total Reps (number) and Total Time (seconds) and returns time converted to hours for charting."
+        },
+        {
+          "path": "frontend/src/features/becoming/components/YearlyProgressChartSection.tsx",
+          "operation": "modify",
+          "description": "Use the habit aggregation helper to compute Jan–Dec totals for both metrics (convert seconds to hours) directly from the habits prop so it automatically re-renders when the React Query habits data changes."
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "Style the Yearly Progress section to match the current Becoming UI with blue/gray tones and a clear legend for Total Reps and Total Time (hours).",
+      "acceptanceCriteria": [
+        "The chart section uses existing design tokens/components (e.g., glass-surface card styling) and visually matches the rest of the Becoming UI.",
+        "A legend is visible and clearly maps each metric to its bar color: Total Reps and Total Time (hours).",
+        "User-facing text in the chart section is in English."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/features/becoming/components/YearlyProgressChartSection.tsx",
+          "operation": "modify",
+          "description": "Apply existing 'glass-surface' card styling and Tailwind theme tokens; implement a legend with two swatches using blue for Total Reps and gray for Total Time (hours), and ensure all labels/titles are English and consistent with existing typography."
+        },
+        {
+          "path": "frontend/src/index.css",
+          "operation": "modify",
+          "description": "If necessary for consistent chart colors/contrast, add minimal, theme-consistent utility styles (using existing CSS variables/tokens) to support the chart section without introducing new global styling systems."
+        }
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "summary": "Limit the Yearly Progress chart to the current calendar year only with no year switching controls.",
+      "acceptanceCriteria": [
+        "The chart displays a single year view for the current calendar year, with no controls for selecting other years."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/features/becoming/components/YearlyProgressChartSection.tsx",
+          "operation": "modify",
+          "description": "Bind the chart title/subtitle to the current calendar year (derived from Date) and ensure no UI controls or state exist for selecting other years; always render Jan–Dec for the single current-year view."
         }
       ]
     }
