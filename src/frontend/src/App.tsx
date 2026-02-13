@@ -3,6 +3,7 @@ import { BecomingView } from './features/becoming/components/BecomingView';
 import { Toaster } from '@/components/ui/sonner';
 import { LoginButton } from './components/auth/LoginButton';
 import { AuthStateIndicator } from './components/auth/AuthStateIndicator';
+import { DailyMotivationalQuote } from './components/quotes/DailyMotivationalQuote';
 import { Heart } from 'lucide-react';
 
 const queryClient = new QueryClient({
@@ -40,6 +41,7 @@ function App() {
         </header>
         
         <main className="container mx-auto px-4 py-8">
+          <DailyMotivationalQuote />
           <BecomingView />
         </main>
         

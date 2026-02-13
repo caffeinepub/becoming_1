@@ -26,6 +26,10 @@ export interface DayEntries {
     day: bigint;
     completed: boolean;
 }
+export interface TimeZone {
+    name: string;
+    utcOffsetMinutes: bigint;
+}
 export interface Habit {
     id: bigint;
     completion: CompletionState;
@@ -64,13 +68,16 @@ export enum UserRole {
 export interface backendInterface {
     addHabit(name: string, description: string, reminder: Time | null): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
+    getCallerTimeZone(): Promise<TimeZone | null>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getHabits(): Promise<Array<Habit>>;
+    getTodaysQuote(): Promise<string>;
     getTotalHabitsCount(): Promise<bigint>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
+    setUserTimeZone(timeZone: TimeZone): Promise<void>;
     toggleCompletion(habitId: bigint, month: bigint, day: bigint, completed: boolean): Promise<void>;
     updateHabit(habitId: bigint, name: string, description: string, reminder: Time | null): Promise<void>;
     updateHabitUnitType(habitId: bigint, unitType: string): Promise<void>;

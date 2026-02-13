@@ -1,49 +1,67 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-11T22:46:38.466Z",
+  "generatedAt": "2026-02-13T18:43:09.774Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 2,
-    "implemented": 2,
+    "total": 4,
+    "implemented": 1,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "On mobile only, make the full left Habit info block (the first column containing habit name, unit, volume, and monthly total) remain visible (sticky) while the rest of the habit table scrolls horizontally.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/features/becoming/components/HabitGrid.tsx",
-          "frontend/src/features/becoming/components/HabitRow.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/features/becoming/components/HabitGrid.tsx",
-          "frontend/src/features/becoming/components/HabitRow.tsx"
-        ]
+        "summary": "Add backend support for a per-user fixed time zone setting that is stored persistently in the canister state (survives canister upgrades/redeploys). The time zone must be representable without relying on server-side IANA/DST rules (e.g., store a fixed UTC offset in minutes or a fixed \"UTC±HH:MM\" value) and must be retrievable and updatable by the logged-in user.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       },
       {
         "id": "REQ-2",
-        "summary": "Update the loading/skeleton state to match the mobile sticky behavior, so the first skeleton column remains sticky during horizontal scrolling on mobile.",
+        "summary": "Implement deterministic quote-of-the-day selection based on the provided static list of 50 quotes, rotating in order (1→50 then loop) and switching at midnight of the user’s saved fixed time zone. The computed daily quote must be stable for the entire day for that user, and must not depend on an external quotes API.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-3",
+        "summary": "Update the frontend daily quote feature to use the backend as the quote source and to respect the backend’s fixed-time-zone daily rotation. If the user has not configured a fixed time zone yet, show an inline prompt in the quote area to set it (English text), and do not show “Quote unavailable” due to missing configuration.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/features/becoming/components/GridSkeleton.tsx"
+          "frontend/src/features/quotes/hooks/useDailyZenQuote.ts",
+          "frontend/src/components/quotes/DailyMotivationalQuote.tsx",
+          "frontend/src/components/quotes/TimeZoneInlinePrompt.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/features/becoming/components/GridSkeleton.tsx"
+          "frontend/src/features/quotes/hooks/useDailyZenQuote.ts",
+          "frontend/src/components/quotes/DailyMotivationalQuote.tsx",
+          "frontend/src/components/quotes/TimeZoneInlinePrompt.tsx"
         ]
+      },
+      {
+        "id": "REQ-4",
+        "summary": "Add an upgrade-safe state migration (only if required by existing deployed state) so that introducing persisted quote/time-zone state does not break existing stored data (e.g., habit tracking state) on upgrade.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       }
     ]
   },
   "changedFiles": [
+    "backend/main.mo",
+    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/features/becoming/components/GridSkeleton.tsx",
-    "frontend/src/features/becoming/components/HabitGrid.tsx",
-    "frontend/src/features/becoming/components/HabitRow.tsx",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
+    "frontend/src/components/quotes/DailyMotivationalQuote.tsx",
+    "frontend/src/components/quotes/TimeZoneInlinePrompt.tsx",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
+    "frontend/src/features/quotes/hooks/useDailyZenQuote.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

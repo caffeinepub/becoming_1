@@ -1,42 +1,32 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Mobile sticky Habit info column during horizontal scroll",
+  "title": "Frontend: Daily quote sourced from backend with inline fixed time zone setup",
   "requirements": [
     {
-      "id": "REQ-1",
-      "summary": "On mobile viewports, make the first (Habit info) column sticky while the habit grid scrolls horizontally, without affecting tablet/desktop behavior.",
+      "id": "REQ-3",
+      "summary": "Switch daily quote UI to fetch quote-of-the-day from the backend and prompt users inline to set a fixed UTC offset when not configured.",
       "acceptanceCriteria": [
-        "On a mobile viewport, when the habit grid is horizontally scrolled, the left Habit column stays fixed on the left edge while the day columns scroll behind it.",
-        "The sticky behavior applies to both the header cell labeled \"Habit\" and each habit row’s left info cell.",
-        "The sticky column has an opaque background and appropriate z-index so day columns do not visually bleed through underneath it while scrolling.",
-        "On tablet/desktop breakpoints, the habit grid behaves as before (no sticky first column)."
+        "The daily quote component renders a quote returned from the backend (not from https://api.quotable.io/random).",
+        "If no fixed time zone is configured for the current user, the quote area displays a clear call-to-action to set a time zone (in English) instead of showing an error state.",
+        "After the user sets a fixed time zone, the daily quote loads successfully without requiring a full page reload.",
+        "User-facing text introduced for this feature is in English."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/features/becoming/components/HabitGrid.tsx",
+          "path": "frontend/src/features/quotes/hooks/useDailyZenQuote.ts",
           "operation": "modify",
-          "description": "Update the header's first column (\"Habit\") to be sticky on mobile only (e.g., base `sticky left-0` with an opaque background and higher z-index) and explicitly disable sticky at md+ breakpoints to preserve existing tablet/desktop behavior."
+          "description": "Replace external API/localStorage-based quote logic with backend-driven quote loading using the existing actor (via core-infrastructure’s backend connection pattern through useActor). Use React Query (already used in the app) to (1) query the caller’s saved time zone (getCallerTimeZone) and (2) fetch today’s quote (getTodaysQuote) only when a time zone exists. Ensure the hook surfaces a distinct “missing time zone” state separate from generic errors, and expose a refetch function used after saving the time zone. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/features/becoming/components/HabitRow.tsx",
+          "path": "frontend/src/components/quotes/DailyMotivationalQuote.tsx",
           "operation": "modify",
-          "description": "Make each habit row’s left info cell sticky on mobile only with an opaque background and suitable z-index, and ensure the horizontal scroll happens on the same scroll container as the sticky column by removing the nested horizontal scroll from the day-cells wrapper (so scrolling keeps the info cell fixed)."
-        }
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "summary": "Ensure the grid loading/skeleton layout mirrors the mobile sticky first-column behavior during horizontal scrolling.",
-      "acceptanceCriteria": [
-        "On a mobile viewport while the grid skeleton is shown, horizontal scrolling keeps the left skeleton column visible (sticky) while the day skeleton columns scroll.",
-        "On tablet/desktop breakpoints, skeleton layout remains unchanged (non-sticky first column)."
-      ],
-      "file_operations": [
+          "description": "Update rendering to: (1) show an inline time zone setup prompt in the quote area when the hook indicates no configured time zone (do not show “Quote unavailable” in this case), (2) render the backend-provided quote text/author when available, and (3) keep loading/error states user-friendly in English. Wire the new inline prompt component into this view so it is not orphaned. Verify the component's usage instructions before implementing."
+        },
         {
-          "path": "frontend/src/features/becoming/components/GridSkeleton.tsx",
-          "operation": "modify",
-          "description": "Wrap the skeleton grid area in a horizontal scroll container consistent with HabitGrid and apply mobile-only sticky positioning (with opaque background + z-index) to the first skeleton column in both the header and each skeleton row, disabling sticky at md+ breakpoints."
+          "path": "frontend/src/components/quotes/TimeZoneInlinePrompt.tsx",
+          "operation": "create",
+          "description": "Create an inline time zone configuration UI used inside the quote area. Provide a simple fixed UTC offset picker (e.g., select common “UTC±HH:MM” values) and a save action that calls the backend via the actor (setUserTimeZone) and then triggers quote reload without a full page refresh. Use shadcn-ui components (e.g., Button, Select, Input, Alert) for consistent styling while respecting immutablePaths (compose, don’t modify ui components). Verify the component's usage instructions before implementing."
         }
       ]
     }

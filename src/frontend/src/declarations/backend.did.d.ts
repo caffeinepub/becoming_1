@@ -38,6 +38,7 @@ export interface TimeVolumeEntry {
   'minutes' : [] | [bigint],
   'timeString' : [] | [string],
 }
+export interface TimeZone { 'name' : string, 'utcOffsetMinutes' : bigint }
 export interface UserProfile { 'name' : string }
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
@@ -61,13 +62,16 @@ export interface _SERVICE {
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
   'addHabit' : ActorMethod<[string, string, [] | [Time]], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
+  'getCallerTimeZone' : ActorMethod<[], [] | [TimeZone]>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getHabits' : ActorMethod<[], Array<Habit>>,
+  'getTodaysQuote' : ActorMethod<[], string>,
   'getTotalHabitsCount' : ActorMethod<[], bigint>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
+  'setUserTimeZone' : ActorMethod<[TimeZone], undefined>,
   'toggleCompletion' : ActorMethod<
     [bigint, bigint, bigint, boolean],
     undefined

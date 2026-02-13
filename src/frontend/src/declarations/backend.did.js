@@ -14,6 +14,10 @@ export const UserRole = IDL.Variant({
   'user' : IDL.Null,
   'guest' : IDL.Null,
 });
+export const TimeZone = IDL.Record({
+  'name' : IDL.Text,
+  'utcOffsetMinutes' : IDL.Int,
+});
 export const UserProfile = IDL.Record({ 'name' : IDL.Text });
 export const DayEntries = IDL.Record({
   'day' : IDL.Nat,
@@ -65,9 +69,11 @@ export const idlService = IDL.Service({
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
   'addHabit' : IDL.Func([IDL.Text, IDL.Text, IDL.Opt(Time)], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+  'getCallerTimeZone' : IDL.Func([], [IDL.Opt(TimeZone)], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
   'getHabits' : IDL.Func([], [IDL.Vec(Habit)], ['query']),
+  'getTodaysQuote' : IDL.Func([], [IDL.Text], ['query']),
   'getTotalHabitsCount' : IDL.Func([], [IDL.Nat], ['query']),
   'getUserProfile' : IDL.Func(
       [IDL.Principal],
@@ -76,6 +82,7 @@ export const idlService = IDL.Service({
     ),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+  'setUserTimeZone' : IDL.Func([TimeZone], [], []),
   'toggleCompletion' : IDL.Func([IDL.Nat, IDL.Nat, IDL.Nat, IDL.Bool], [], []),
   'updateHabit' : IDL.Func(
       [IDL.Nat, IDL.Text, IDL.Text, IDL.Opt(Time)],
@@ -94,6 +101,10 @@ export const idlFactory = ({ IDL }) => {
     'admin' : IDL.Null,
     'user' : IDL.Null,
     'guest' : IDL.Null,
+  });
+  const TimeZone = IDL.Record({
+    'name' : IDL.Text,
+    'utcOffsetMinutes' : IDL.Int,
   });
   const UserProfile = IDL.Record({ 'name' : IDL.Text });
   const DayEntries = IDL.Record({ 'day' : IDL.Nat, 'completed' : IDL.Bool });
@@ -143,9 +154,11 @@ export const idlFactory = ({ IDL }) => {
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
     'addHabit' : IDL.Func([IDL.Text, IDL.Text, IDL.Opt(Time)], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+    'getCallerTimeZone' : IDL.Func([], [IDL.Opt(TimeZone)], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
     'getHabits' : IDL.Func([], [IDL.Vec(Habit)], ['query']),
+    'getTodaysQuote' : IDL.Func([], [IDL.Text], ['query']),
     'getTotalHabitsCount' : IDL.Func([], [IDL.Nat], ['query']),
     'getUserProfile' : IDL.Func(
         [IDL.Principal],
@@ -154,6 +167,7 @@ export const idlFactory = ({ IDL }) => {
       ),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+    'setUserTimeZone' : IDL.Func([TimeZone], [], []),
     'toggleCompletion' : IDL.Func(
         [IDL.Nat, IDL.Nat, IDL.Nat, IDL.Bool],
         [],

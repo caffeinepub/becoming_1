@@ -1,54 +1,93 @@
 {
   "kind": "build_request",
-  "title": "Make the left Habit block sticky on mobile during horizontal scroll",
+  "title": "Use a single fixed user-defined time zone for daily quote rotation (persisted)",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "On mobile only, make the full left Habit info block (the first column containing habit name, unit, volume, and monthly total) remain visible (sticky) while the rest of the habit table scrolls horizontally.",
-      "target": "frontend",
+      "text": "Add backend support for a per-user fixed time zone setting that is stored persistently in the canister state (survives canister upgrades/redeploys). The time zone must be representable without relying on server-side IANA/DST rules (e.g., store a fixed UTC offset in minutes or a fixed \"UTC±HH:MM\" value) and must be retrievable and updatable by the logged-in user.",
+      "target": "backend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "1. Yes correct\n2. On mobile \n3. Full block"
+          "A fixed single time zone (users)"
         ]
       },
       "acceptanceCriteria": [
-        "On a mobile viewport, when the habit grid is horizontally scrolled, the left Habit column stays fixed on the left edge while the day columns scroll behind it.",
-        "The sticky behavior applies to both the header cell labeled \"Habit\" and each habit row’s left info cell.",
-        "The sticky column has an opaque background and appropriate z-index so day columns do not visually bleed through underneath it while scrolling.",
-        "On tablet/desktop breakpoints, the habit grid behaves as before (no sticky first column)."
+        "A logged-in user can set their fixed time zone value via a dedicated backend method.",
+        "A logged-in user can fetch their currently saved fixed time zone value via a dedicated backend query method.",
+        "The value is stored per Principal and remains intact after an upgrade/redeploy.",
+        "Unauthorized callers cannot set or read another user’s time zone setting."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Update the loading/skeleton state to match the mobile sticky behavior, so the first skeleton column remains sticky during horizontal scrolling on mobile.",
+      "text": "Implement deterministic quote-of-the-day selection based on the provided static list of 50 quotes, rotating in order (1→50 then loop) and switching at midnight of the user’s saved fixed time zone. The computed daily quote must be stable for the entire day for that user, and must not depend on an external quotes API.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "A fixed single time zone (users)"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Given the same user time zone setting and the same day (as determined by that time zone), the backend returns the same quote consistently.",
+        "At the first moment after local midnight in the user’s saved fixed time zone, the returned quote advances by exactly one position in the list (looping after quote 50 to quote 1).",
+        "The quote rotation order is deterministic and does not reset when the canister is redeployed/upgraded.",
+        "The backend exposes a single method to fetch the user’s current daily quote (text + author + optional index/date metadata)."
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Update the frontend daily quote feature to use the backend as the quote source and to respect the backend’s fixed-time-zone daily rotation. If the user has not configured a fixed time zone yet, show an inline prompt in the quote area to set it (English text), and do not show “Quote unavailable” due to missing configuration.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "On mobile"
+          "A fixed single time zone (users)"
         ]
       },
       "acceptanceCriteria": [
-        "On a mobile viewport while the grid skeleton is shown, horizontal scrolling keeps the left skeleton column visible (sticky) while the day skeleton columns scroll.",
-        "On tablet/desktop breakpoints, skeleton layout remains unchanged (non-sticky first column)."
+        "The daily quote component renders a quote returned from the backend (not from https://api.quotable.io/random).",
+        "If no fixed time zone is configured for the current user, the quote area displays a clear call-to-action to set a time zone (in English) instead of showing an error state.",
+        "After the user sets a fixed time zone, the daily quote loads successfully without requiring a full page reload.",
+        "User-facing text introduced for this feature is in English."
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Add an upgrade-safe state migration (only if required by existing deployed state) so that introducing persisted quote/time-zone state does not break existing stored data (e.g., habit tracking state) on upgrade.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "A fixed single time zone (users)"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Upgrading the canister preserves existing user habit/profile data.",
+        "New persisted structures for time zone and daily quote rotation are initialized safely for existing users (e.g., absent until set).",
+        "No runtime traps occur on first call paths after upgrade due to missing/old state."
       ]
     }
   ],
   "constraints": [
-    "Do not modify any files under frontend/src/components/ui (read-only Shadcn components).",
-    "Do not change backend logic or data models; this is a UI-only layout behavior change.",
-    "Implement within the existing HabitGrid/HabitRow/GridSkeleton layout structure and Tailwind styling conventions."
+    "Backend must remain a single Motoko actor in backend/main.mo.",
+    "Do not modify files under frontend/src/components/ui or other frontend immutablePaths (compose existing UI components instead).",
+    "Use English for any new user-facing text."
   ],
   "nonGoals": [
-    "Making the first column sticky on desktop/tablet.",
-    "Changing column widths, typography, or habit-row content beyond what is necessary to support sticky behavior.",
-    "Adding new authentication, data fetching, or backend endpoints."
+    "Supporting automatic timezone detection from the browser.",
+    "Supporting IANA timezone names with DST-aware transitions.",
+    "Real-time quote updates/push notifications at midnight."
   ],
   "imageRequirements": {
     "required": [],

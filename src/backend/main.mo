@@ -3,47 +3,33 @@ import Time "mo:core/Time";
 import Array "mo:core/Array";
 import Nat "mo:core/Nat";
 import Principal "mo:core/Principal";
+import Runtime "mo:core/Runtime";
+import Text "mo:core/Text";
+import Migration "migration";
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
-import Text "mo:core/Text";
-import Runtime "mo:core/Runtime";
 
-
-
+(with migration = Migration.run)
 actor {
-  var _initialized : Bool = false;
-  var accessControlState : AccessControl.AccessControlState = AccessControl.initState();
-
-  include MixinAuthorization(accessControlState);
-
   public type UserProfile = {
     name : Text;
   };
 
-  let userProfiles = Map.empty<Principal, UserProfile>();
-
-  public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can view profiles");
-    };
-    userProfiles.get(caller);
+  type TimeZone = {
+    utcOffsetMinutes : Int;
+    name : Text;
   };
 
-  public query ({ caller }) func getUserProfile(user : Principal) : async ?UserProfile {
-    if (caller != user and not AccessControl.isAdmin(accessControlState, caller)) {
-      Runtime.trap("Unauthorized: Can only view your own profile");
-    };
-    userProfiles.get(user);
-  };
+  let QUOTES : [Text] = [
+    "The only way to do great work is to love what you do. - Steve Jobs",
+    "Success is not the key to happiness. Happiness is the key to success. - Albert Schweitzer",
+    "Don't count the days, make the days count. - Muhammad Ali",
+  ];
 
-  public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can save profiles");
-    };
-    userProfiles.add(caller, profile);
+  type DayEntries = {
+    day : Nat;
+    completed : Bool;
   };
-
-  // Habit tracking
 
   type CompletionState = {
     january : [DayEntries];
@@ -59,13 +45,6 @@ actor {
     november : [DayEntries];
     december : [DayEntries];
   };
-
-  type DayEntries = {
-    day : Nat;
-    completed : Bool;
-  };
-
-  // Time Entries
 
   public type TimeVolumeEntry = {
     timeString : ?Text;
@@ -100,6 +79,78 @@ actor {
   type UserHabitsData = {
     nextHabitId : Nat;
     habits : [Habit];
+  };
+
+  let habitQuoteUserProfiles = Map.empty<Principal, UserProfile>();
+  let userTimeZones = Map.empty<Principal, TimeZone>();
+  let persistentUserHabits = Map.empty<Principal, UserHabitsData>();
+
+  var _initialized : Bool = false;
+  var accessControlState : AccessControl.AccessControlState = AccessControl.initState();
+
+  include MixinAuthorization(accessControlState);
+
+  public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view profiles");
+    };
+    habitQuoteUserProfiles.get(caller);
+  };
+
+  public query ({ caller }) func getUserProfile(user : Principal) : async ?UserProfile {
+    if (caller != user and not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Can only view your own profile");
+    };
+    habitQuoteUserProfiles.get(user);
+  };
+
+  public shared ({ caller }) func setUserTimeZone(timeZone : TimeZone) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can set time zones");
+    };
+    userTimeZones.add(caller, timeZone);
+  };
+
+  public query ({ caller }) func getCallerTimeZone() : async ?TimeZone {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view time zones");
+    };
+    userTimeZones.get(caller);
+  };
+
+  func getCurrentLocalDay(caller : Principal, currentTime : Time.Time) : Nat {
+    let currentTimeZone = switch (userTimeZones.get(caller)) {
+      case (null) { { utcOffsetMinutes = 0; name = "UTC" } };
+      case (?zone) { zone };
+    };
+    let utcOffsetNanos = currentTimeZone.utcOffsetMinutes * 60 * 1_000_000_000;
+    let localTime = currentTime + utcOffsetNanos;
+
+    let localDay = (localTime / 1_000_000_000 / 60_60_24 : Int);
+    localDay.toNat();
+  };
+
+  public query ({ caller }) func getTodaysQuote() : async Text {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only registered users can access motivational quotes");
+    };
+
+    let currentTime = Time.now();
+    let localDay = getCurrentLocalDay(caller, currentTime);
+
+    if (localDay == 0) {
+      return QUOTES[0];
+    };
+    let quoteIndex = (localDay - 1) % QUOTES.size();
+
+    QUOTES[quoteIndex];
+  };
+
+  public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can save profiles");
+    };
+    habitQuoteUserProfiles.add(caller, profile);
   };
 
   module Habit {
@@ -492,8 +543,6 @@ actor {
     };
   };
 
-  let persistentUserHabits = Map.empty<Principal, UserHabitsData>();
-
   public shared ({ caller }) func addHabit(
     name : Text,
     description : Text,
@@ -666,4 +715,3 @@ actor {
     totalCount;
   };
 };
-
