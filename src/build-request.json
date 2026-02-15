@@ -1,114 +1,88 @@
 {
   "kind": "build_request",
-  "title": "Add responsive yearly progress bar chart above Monthly Volume Summary",
+  "title": "Rotate daily motivational quote at 8am UK time for all users",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Add a new \"Yearly Progress\" chart section above the existing \"Monthly Volume Summary\" in the Becoming view.",
-      "target": "frontend",
+      "text": "Update backend quote selection so the quote rotates once per day at 08:00 UK time (Europe/London) for all users (i.e., the same quote is returned to every user for a given UK quote-day), using the existing stored quotes list in backend/main.mo.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-6",
-          "msg-8"
+          "msg-1"
         ],
         "quotes": [
-          "Add a yearly progress chart section above the Monthly Volume Summary.",
-          "Yes just current year as per the current layout of the app"
+          "Automatically change everyday at a certain time (8am UK time every day for all users)",
+          "They should already be stored on the app. I provided a list of quotes to use previously",
+          "The quote isn’t changing it’s just displaying the same one. Can you rotate the quotes between all the ones I previously provided that should be saved?"
         ]
       },
       "acceptanceCriteria": [
-        "In the Becoming view, a new section appears above the Monthly Volume Summary when habits are available (same general visibility conditions as the summary).",
-        "The existing Monthly Volume Summary remains present and unchanged below the new chart section."
+        "Calling getTodaysQuote() before 08:00 UK time returns the quote for the previous UK quote-day; calling it at/after 08:00 UK time returns the next quote in rotation.",
+        "Two different authenticated users calling getTodaysQuote() at the same moment receive the same quote string.",
+        "The quote index cycles through all entries of the stored quotes list (no fixed single quote).",
+        "UK daylight saving time is respected so the changeover remains at 08:00 local UK time year-round (GMT/BST)."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Render the yearly progress chart as a responsive grouped bar chart with Jan–Dec on the x-axis and an automatically scaled y-axis based on the computed monthly totals.",
+      "text": "Remove the frontend dependency on a user-set time zone for showing the daily quote: the quote banner should load and display the daily quote in the current quote location without showing the time zone prompt.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-6"
+          "msg-1"
         ],
         "quotes": [
-          "The chart should be a bar graph showing data for each month from January to December.",
-          "Make the chart responsive... Ensure the x-axis displays the months and the y-axis scales automatically based on the monthly totals."
+          "Exactly where the quote is currently displayed",
+          "Automatically change everyday at a certain time (8am UK time every day for all users)"
         ]
       },
       "acceptanceCriteria": [
-        "The x-axis displays the 12 months from January through December (at least using short labels like Jan, Feb, etc.).",
-        "The chart rescales its y-axis automatically when underlying monthly totals change (no hard-coded max).",
-        "The chart layout remains usable on mobile and desktop (does not overflow the page width; labels remain legible)."
+        "The quote banner (DailyMotivationalQuote) no longer shows the \"Set your time zone to see your daily motivational quote\" prompt as a prerequisite for displaying the quote.",
+        "The quote banner successfully displays a quote for an authenticated user even if they have never saved a time zone.",
+        "If the quote cannot be loaded, the existing \"Quote unavailable\" fallback remains shown in English."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Compute chart data from the existing saved daily habit data by aggregating all habits into monthly totals for (a) Total Reps and (b) Total Time converted to hours for each month (Jan–Dec).",
+      "text": "Ensure the frontend automatically updates the displayed quote after the 08:00 UK time daily rollover while the app remains open (without requiring a full page refresh).",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-6",
-          "msg-8"
+          "msg-1"
         ],
         "quotes": [
-          "It should track two metrics: 'Total Reps' and 'Total Time' (converted to hours).",
-          "The data is currently being recorded and saved. I track it each day so once completed it will be included"
+          "Automatically change everyday at a certain time (8am UK time every day for all users)"
         ]
       },
       "acceptanceCriteria": [
-        "For each month index 0–11, the chart shows a Total Reps value equal to the sum of all habits' monthly reps totals for that month.",
-        "For each month index 0–11, the chart shows a Total Time value equal to the sum of all habits' monthly time totals for that month, converted from seconds to hours (hours may be fractional).",
-        "The chart updates automatically when the habits query data changes (e.g., after the user records additional daily completions)."
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "text": "Style the chart section with a clean modern aesthetic consistent with the current UI and using blue and gray tones, and include a clear legend identifying \"Total Reps\" and \"Total Time (hours)\".",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-6"
-        ],
-        "quotes": [
-          "use a clean modern aesthetic with blue and gray tones to match the current UI, and include a legend."
-        ]
-      },
-      "acceptanceCriteria": [
-        "The chart section uses existing design tokens/components (e.g., glass-surface card styling) and visually matches the rest of the Becoming UI.",
-        "A legend is visible and clearly maps each metric to its bar color: Total Reps and Total Time (hours).",
-        "User-facing text in the chart section is in English."
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "text": "Limit the yearly progress chart to the current calendar year only (no year switching UI).",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-6",
-          "msg-8"
-        ],
-        "quotes": [
-          "Should the chart display only the current calendar year...",
-          "Yes just current year as per the current layout of the app"
-        ]
-      },
-      "acceptanceCriteria": [
-        "The chart displays a single year view for the current calendar year, with no controls for selecting other years."
+        "If a user has the app open across the 08:00 UK time boundary, the displayed quote updates to the new daily quote shortly after 08:00 UK time without manual refresh.",
+        "No excessive polling is introduced (the app should schedule a refetch around the next 08:00 UK time rollover rather than frequently refetching)."
       ]
     }
   ],
   "constraints": [
-    "Do not modify files under frontend/immutablePaths (e.g., frontend/src/hooks/useInternetIdentity.ts(x), frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui).",
-    "Keep backend architecture as a single Motoko actor; only introduce backend changes if strictly required (this request should be fulfilled using existing saved daily data already available to the frontend)."
+    "Backend must remain a single-actor Motoko canister (all logic in backend/main.mo).",
+    "Do not edit files under frontend/src/components/ui or any frontend immutablePaths listed in SYSTEM_CONTEXT.",
+    "Use English for any user-facing text."
   ],
   "nonGoals": [
-    "Adding a year picker or viewing historical years beyond the current year.",
-    "Adding new backend data models or migrations solely to support the chart, unless aggregation cannot be computed from existing returned habit data.",
-    "Adding tooltips, filtering, exports, or drill-down interactions beyond the requested legend and axes."
+    "Adding third-party time zone libraries or external services/APIs.",
+    "Implementing per-user quote schedules or per-user time zone-based quote rollovers (the rollover must be 08:00 UK time for all users).",
+    "Changing where the quote is displayed (it must remain in the existing quote banner location)."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }

@@ -1,51 +1,28 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "New project",
+  "summary": "App should display a quote and rotate it automatically once per day at 8am UK time for all users, using the previously provided stored list, in the existing quote display location.",
   "architectural_notes": [
-    "Yearly progress chart uses existing daily recorded data aggregated into monthly totals for the current calendar year (Jan–Dec).",
-    "Total Time metric should be converted to hours before charting."
+    "Quote rotation should occur once per day at 08:00 UK time (timezone-aware) and be consistent across all users."
   ],
-  "known_issues": [],
-  "isFixRequest": false,
+  "known_issues": [
+    "Quote is currently not changing/rotating and keeps displaying the same quote."
+  ],
+  "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-add-a-new-yearly-progress-chart-section-above-the-existing-monthly-volume-summary-in-the-becoming-view",
-      "title": "Add a new \"Yearly Progress\" chart section above the existing \"Monthly Volume Summary\" in the Becoming view.",
-      "reqIds": [
-        "REQ-1"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-render-the-yearly-progress-chart-as-a-responsive-grouped-bar-chart-with-jan-dec-on-the-x-axis-and-an-automatically-scaled-y-axis-based-on-the-computed-monthly-totals",
-      "title": "Render the yearly progress chart as a responsive grouped bar chart with Jan–Dec on the x-axis and an automatically scaled y-axis based on the computed monthly totals.",
+      "id": "feature-remove-the-frontend-dependency-on-a-user-set-time-zone-for-showing-the-daily-quote-the-quote-banner-should-load-and-display-the-daily-quote-in-the-current-quote-location-without-showing-the-time-zone-prompt",
+      "title": "Remove the frontend dependency on a user-set time zone for showing the daily quote: the quote banner should load and display the daily quote in the current quote location without showing the time zone prompt.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-compute-chart-data-from-the-existing-saved-daily-habit-data-by-aggregating-all-habits-into-monthly-totals-for-a-total-reps-and-b-total-time-converted-to-hours-for-each-month-jan-dec",
-      "title": "Compute chart data from the existing saved daily habit data by aggregating all habits into monthly totals for (a) Total Reps and (b) Total Time converted to hours for each month (Jan–Dec).",
+      "id": "feature-ensure-the-frontend-automatically-updates-the-displayed-quote-after-the-08-00-uk-time-daily-rollover-while-the-app-remains-open-without-requiring-a-full-page-refresh",
+      "title": "Ensure the frontend automatically updates the displayed quote after the 08:00 UK time daily rollover while the app remains open (without requiring a full page refresh).",
       "reqIds": [
         "REQ-3"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-style-the-chart-section-with-a-clean-modern-aesthetic-consistent-with-the-current-ui-and-using-blue-and-gray-tones-and-include-a-clear-legend-identifying-total-reps-and-total-time-hours",
-      "title": "Style the chart section with a clean modern aesthetic consistent with the current UI and using blue and gray tones, and include a clear legend identifying \"Total Reps\" and \"Total Time (hours)\".",
-      "reqIds": [
-        "REQ-4"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-limit-the-yearly-progress-chart-to-the-current-calendar-year-only-no-year-switching-ui",
-      "title": "Limit the yearly progress chart to the current calendar year only (no year switching UI).",
-      "reqIds": [
-        "REQ-5"
       ],
       "version": 1
     }
@@ -53,12 +30,20 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Add responsive yearly progress bar chart above Monthly Volume Summary showing Jan–Dec monthly totals for Total Reps and Total Time (hours), with blue/gray modern styling, legend, and auto-scaling y-axis (current year only; aggregated from existing daily saved data).",
+      "summary": "Rotate the displayed quote daily at 8am UK time (same for all users) using the previously stored list, shown in the current quote location.",
       "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Update backend quote selection so the quote rotates once per day at 08:00 UK time (Europe/London) for all users (i.e., the same quote is returned to every user for a given UK quote-day), using the existing stored quotes list in backend/main.mo.",
+      "reqIds": [
+        "REQ-1"
+      ],
       "status": "pending"
     }
   ],
-  "projectName": "Add responsive yearly progress bar chart above Monthly Volume Summary",
+  "projectName": "Rotate daily motivational quote at 8am UK time for all users",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

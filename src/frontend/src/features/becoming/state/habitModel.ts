@@ -233,6 +233,57 @@ export function aggregateYearlyTotals(habits: HabitWithCompletion[]): {
 }
 
 /**
+ * Aggregates yearly totals for specific habits by name
+ * Returns arrays of 12 values (one per month) for each of the four habits:
+ * - Press-ups (reps)
+ * - Squats (reps)
+ * - Plank (hours, converted from seconds)
+ * - Squash (hours, converted from seconds)
+ */
+export function aggregateYearlyTotalsByHabit(habits: HabitWithCompletion[]): {
+  pressUps: number[];
+  squats: number[];
+  plankHours: number[];
+  squashHours: number[];
+} {
+  const pressUps: number[] = new Array(12).fill(0);
+  const squats: number[] = new Array(12).fill(0);
+  const plankHours: number[] = new Array(12).fill(0);
+  const squashHours: number[] = new Array(12).fill(0);
+  
+  habits.forEach((habit) => {
+    const normalizedName = habit.name.toLowerCase().trim();
+    
+    for (let monthIndex = 0; monthIndex < 12; monthIndex++) {
+      const raw = getMonthlyTotalRaw(habit, monthIndex);
+      
+      if (normalizedName === 'press-ups' && raw.type === 'reps') {
+        pressUps[monthIndex] += raw.value;
+      } else if (normalizedName === 'squats' && raw.type === 'reps') {
+        squats[monthIndex] += raw.value;
+      } else if (normalizedName === 'plank' && raw.type === 'time') {
+        // Convert seconds to hours (fractional)
+        plankHours[monthIndex] += raw.value / 3600;
+      } else if (normalizedName === 'squash' && raw.type === 'time') {
+        // Convert seconds to hours (fractional)
+        squashHours[monthIndex] += raw.value / 3600;
+      }
+    }
+  });
+  
+  // Round hours to 2 decimal places for cleaner display
+  const roundedPlankHours = plankHours.map(hours => Math.round(hours * 100) / 100);
+  const roundedSquashHours = squashHours.map(hours => Math.round(hours * 100) / 100);
+  
+  return {
+    pressUps,
+    squats,
+    plankHours: roundedPlankHours,
+    squashHours: roundedSquashHours,
+  };
+}
+
+/**
  * Gets the numeric volume for a given month (for backward compatibility)
  * @deprecated Use getVolumeDisplayString for display purposes
  */

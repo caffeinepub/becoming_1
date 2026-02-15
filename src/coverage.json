@@ -1,86 +1,60 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-13T23:06:50.007Z",
+  "generatedAt": "2026-02-15T22:50:15.787Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 5,
-    "implemented": 5,
+    "total": 3,
+    "implemented": 2,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Add a new \"Yearly Progress\" chart section above the existing \"Monthly Volume Summary\" in the Becoming view.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/features/becoming/components/BecomingView.tsx",
-          "frontend/src/features/becoming/components/YearlyProgressChartSection.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/features/becoming/components/BecomingView.tsx",
-          "frontend/src/features/becoming/components/YearlyProgressChartSection.tsx"
-        ]
+        "summary": "Update backend quote selection so the quote rotates once per day at 08:00 UK time (Europe/London) for all users (i.e., the same quote is returned to every user for a given UK quote-day), using the existing stored quotes list in backend/main.mo.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       },
       {
         "id": "REQ-2",
-        "summary": "Render the yearly progress chart as a responsive grouped bar chart with Jan–Dec on the x-axis and an automatically scaled y-axis based on the computed monthly totals.",
+        "summary": "Remove the frontend dependency on a user-set time zone for showing the daily quote: the quote banner should load and display the daily quote in the current quote location without showing the time zone prompt.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/features/becoming/components/YearlyProgressChartSection.tsx",
-          "frontend/src/features/becoming/constants/months2026.ts"
+          "frontend/src/features/quotes/hooks/useDailyZenQuote.ts",
+          "frontend/src/components/quotes/DailyMotivationalQuote.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/features/becoming/components/YearlyProgressChartSection.tsx"
+          "frontend/src/features/quotes/hooks/useDailyZenQuote.ts",
+          "frontend/src/components/quotes/DailyMotivationalQuote.tsx"
         ]
       },
       {
         "id": "REQ-3",
-        "summary": "Compute chart data from the existing saved daily habit data by aggregating all habits into monthly totals for (a) Total Reps and (b) Total Time converted to hours for each month (Jan–Dec).",
+        "summary": "Ensure the frontend automatically updates the displayed quote after the 08:00 UK time daily rollover while the app remains open (without requiring a full page refresh).",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/features/becoming/state/habitModel.ts",
-          "frontend/src/features/becoming/components/YearlyProgressChartSection.tsx"
+          "frontend/src/features/quotes/utils/ukQuoteRollover.ts",
+          "frontend/src/features/quotes/hooks/useDailyZenQuote.ts"
         ],
         "matchedFiles": [
-          "frontend/src/features/becoming/state/habitModel.ts",
-          "frontend/src/features/becoming/components/YearlyProgressChartSection.tsx"
-        ]
-      },
-      {
-        "id": "REQ-4",
-        "summary": "Style the chart section with a clean modern aesthetic consistent with the current UI and using blue and gray tones, and include a clear legend identifying \"Total Reps\" and \"Total Time (hours)\".",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/features/becoming/components/YearlyProgressChartSection.tsx",
-          "frontend/src/index.css"
-        ],
-        "matchedFiles": [
-          "frontend/src/features/becoming/components/YearlyProgressChartSection.tsx"
-        ]
-      },
-      {
-        "id": "REQ-5",
-        "summary": "Limit the yearly progress chart to the current calendar year only (no year switching UI).",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/features/becoming/components/YearlyProgressChartSection.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/features/becoming/components/YearlyProgressChartSection.tsx"
+          "frontend/src/features/quotes/utils/ukQuoteRollover.ts",
+          "frontend/src/features/quotes/hooks/useDailyZenQuote.ts"
         ]
       }
     ]
   },
   "changedFiles": [
+    "backend/main.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/features/becoming/components/BecomingView.tsx",
-    "frontend/src/features/becoming/components/YearlyProgressChartSection.tsx",
-    "frontend/src/features/becoming/state/habitModel.ts",
+    "frontend/src/components/quotes/DailyMotivationalQuote.tsx",
+    "frontend/src/components/quotes/TimeZoneInlinePrompt.tsx",
+    "frontend/src/features/quotes/hooks/useDailyZenQuote.ts",
+    "frontend/src/features/quotes/utils/ukQuoteRollover.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

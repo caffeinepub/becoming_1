@@ -1,12 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Add a responsive “Yearly Progress” grouped bar chart (current year only) above the existing Monthly Volume Summary in the Becoming view.
+**Goal:** Rotate the app’s daily motivational quote once per day at 08:00 UK time for all users, and ensure the quote banner displays and updates correctly without relying on a user-set time zone.
 
 **Planned changes:**
-- Add a new “Yearly Progress” section above “Monthly Volume Summary” in the Becoming view, shown under the same general visibility conditions as the existing summary (when habits are available).
-- Compute Jan–Dec monthly aggregates from existing saved daily habit data: (1) Total Reps (sum across all habits) and (2) Total Time converted from seconds to hours (sum across all habits).
-- Render a responsive grouped bar chart with Jan–Dec on the x-axis and an automatically scaling y-axis based on computed totals, including a clear legend for “Total Reps” and “Total Time (hours)”.
-- Style the new chart section to match the current UI using existing components/tokens with blue and gray tones; keep the existing Monthly Volume Summary unchanged below it.
+- Update backend quote selection so `getTodaysQuote()` returns a single shared “UK quote-day” quote for all users, rotating daily at 08:00 Europe/London time (respecting GMT/BST) using the existing stored quotes list in `backend/main.mo`.
+- Update the quote banner (DailyMotivationalQuote) to remove the time zone prompt requirement and load/display the daily quote for authenticated users regardless of whether they have saved a time zone.
+- Add frontend logic to automatically refresh the displayed quote shortly after the next 08:00 UK time rollover while the app remains open, without excessive polling.
 
-**User-visible outcome:** In the Becoming view, users see a new Yearly Progress chart for the current year that updates automatically as they record daily habit completions, while the Monthly Volume Summary remains as-is beneath it.
+**User-visible outcome:** All users see the same motivational quote each UK quote-day, it changes at 08:00 UK time year-round, the quote displays without prompting for a time zone, and it updates automatically if the app stays open across the rollover.

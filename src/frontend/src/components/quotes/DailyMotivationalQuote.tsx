@@ -1,10 +1,9 @@
 import { useDailyZenQuote } from '@/features/quotes/hooks/useDailyZenQuote';
-import { TimeZoneInlinePrompt } from './TimeZoneInlinePrompt';
 import { Quote } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export function DailyMotivationalQuote() {
-  const { quote, isLoading, error, needsTimeZone, refetch } = useDailyZenQuote();
+  const { quote, isLoading, error } = useDailyZenQuote();
 
   if (isLoading) {
     return (
@@ -17,14 +16,6 @@ export function DailyMotivationalQuote() {
             <Skeleton className="h-3 w-32 mt-2" />
           </div>
         </div>
-      </div>
-    );
-  }
-
-  if (needsTimeZone) {
-    return (
-      <div className="mb-6">
-        <TimeZoneInlinePrompt onTimeZoneSet={refetch} />
       </div>
     );
   }

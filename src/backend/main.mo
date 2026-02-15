@@ -1,4 +1,5 @@
 import Map "mo:core/Map";
+import Int "mo:core/Int";
 import Time "mo:core/Time";
 import Array "mo:core/Array";
 import Nat "mo:core/Nat";
@@ -8,7 +9,6 @@ import Text "mo:core/Text";
 
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
-
 
 actor {
   public type UserProfile = {
@@ -126,8 +126,18 @@ actor {
     let utcOffsetNanos = currentTimeZone.utcOffsetMinutes * 60 * 1_000_000_000;
     let localTime = currentTime + utcOffsetNanos;
 
-    let localDay = (localTime / 1_000_000_000 / 60_60_24 : Int);
+    let localDay = (localTime / 1_000_000_000 / 60 * 60 * 24 : Int);
     localDay.toNat();
+  };
+
+  func getUKAdjustedDayIndex(currentTime : Int) : Nat {
+    let nanosPerDay = 24 * 60 * 60 * 1_000_000_000;
+    let nanosAt8amDaily = 8 * 60 * 60 * 1_000_000_000;
+
+    let localTime = currentTime + nanosAt8amDaily;
+    let localDay = (localTime / nanosPerDay : Int);
+
+    Int.abs(localDay);
   };
 
   public query ({ caller }) func getTodaysQuote() : async Text {
@@ -136,12 +146,12 @@ actor {
     };
 
     let currentTime = Time.now();
-    let localDay = getCurrentLocalDay(caller, currentTime);
+    let ukDay = getUKAdjustedDayIndex(currentTime);
 
-    if (localDay == 0) {
+    if (ukDay == 0) {
       return QUOTES[0];
     };
-    let quoteIndex = (localDay - 1) % QUOTES.size();
+    let quoteIndex = (ukDay - 1) % QUOTES.size();
 
     QUOTES[quoteIndex];
   };
