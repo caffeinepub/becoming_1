@@ -1,0 +1,48 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "Daily quote banner: remove timezone prompt and auto-refresh at 08:00 UK time",
+  "requirements": [
+    {
+      "id": "REQ-2",
+      "summary": "Remove the daily quote banner's dependency on a user-saved time zone and always fetch/display the daily quote for authenticated users.",
+      "acceptanceCriteria": [
+        "The quote banner (DailyMotivationalQuote) no longer shows the \"Set your time zone to see your daily motivational quote\" prompt as a prerequisite for displaying the quote.",
+        "The quote banner successfully displays a quote for an authenticated user even if they have never saved a time zone.",
+        "If the quote cannot be loaded, the existing \"Quote unavailable\" fallback remains shown in English."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/features/quotes/hooks/useDailyZenQuote.ts",
+          "operation": "modify",
+          "description": "Remove the user-time-zone query gating from the quote fetch so getTodaysQuote() is fetched for authenticated users regardless of saved time zone; simplify state so needsTimeZone is no longer required, while preserving the existing error handling and refetch capability."
+        },
+        {
+          "path": "frontend/src/components/quotes/DailyMotivationalQuote.tsx",
+          "operation": "modify",
+          "description": "Stop rendering the TimeZoneInlinePrompt flow; always render loading, quote, or the existing English \"Quote unavailable\" fallback based on the updated useDailyZenQuote state, without changing the banner location or overall layout."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Automatically refetch and update the displayed quote shortly after the next 08:00 UK time rollover while the app remains open, without frequent polling.",
+      "acceptanceCriteria": [
+        "If a user has the app open across the 08:00 UK time boundary, the displayed quote updates to the new daily quote shortly after 08:00 UK time without manual refresh.",
+        "No excessive polling is introduced (the app should schedule a refetch around the next 08:00 UK time rollover rather than frequently refetching)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/features/quotes/utils/ukQuoteRollover.ts",
+          "operation": "create",
+          "description": "Add a small utility for computing the milliseconds until the next 08:00 in Europe/London using built-in Intl APIs (no third-party libraries), suitable for scheduling a single refetch timer."
+        },
+        {
+          "path": "frontend/src/features/quotes/hooks/useDailyZenQuote.ts",
+          "operation": "modify",
+          "description": "Add a one-shot scheduling mechanism (setTimeout) that, when authenticated and a quote has been fetched (or attempted), schedules a refetch shortly after the next Europe/London 08:00 rollover; ensure timers are cleared/recomputed on identity/actor changes and that this does not introduce frequent polling."
+        }
+      ]
+    }
+  ]
+}

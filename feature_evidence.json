@@ -1,0 +1,45 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-remove-the-frontend-dependency-on-a-user-set-time-zone-for-showing-the-daily-quote-the-quote-banner-should-load-and-display-the-daily-quote-in-the-current-quote-location-without-showing-the-time-zone-prompt",
+      "featureTitle": "Remove the frontend dependency on a user-set time zone for showing the daily quote: the quote banner should load and display the daily quote in the current quote location without showing the time zone prompt.",
+      "files": [
+        "frontend/src/components/quotes/DailyMotivationalQuote.tsx",
+        "frontend/src/features/quotes/hooks/useDailyZenQuote.ts"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0"
+      ],
+      "testIds": [
+        "REQ-2"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-ensure-the-frontend-automatically-updates-the-displayed-quote-after-the-08-00-uk-time-daily-rollover-while-the-app-remains-open-without-requiring-a-full-page-refresh",
+      "featureTitle": "Ensure the frontend automatically updates the displayed quote after the 08:00 UK time daily rollover while the app remains open (without requiring a full page refresh).",
+      "files": [
+        "frontend/src/features/quotes/hooks/useDailyZenQuote.ts",
+        "frontend/src/features/quotes/utils/ukQuoteRollover.ts"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0"
+      ],
+      "testIds": [
+        "REQ-3"
+      ],
+      "confidence": "high"
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "kind": "coverage_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-15T22:50:15.787Z",
+  "sources": {
+    "buildRequest": true,
+    "implementationPlan": true
+  },
+  "requirements": {
+    "total": 3,
+    "implemented": 2,
+    "items": [
+      {
+        "id": "REQ-1",
+        "summary": "Update backend quote selection so the quote rotates once per day at 08:00 UK time (Europe/London) for all users (i.e., the same quote is returned to every user for a given UK quote-day), using the existing stored quotes list in backend/main.mo.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-2",
+        "summary": "Remove the frontend dependency on a user-set time zone for showing the daily quote: the quote banner should load and display the daily quote in the current quote location without showing the time zone prompt.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/features/quotes/hooks/useDailyZenQuote.ts",
+          "frontend/src/components/quotes/DailyMotivationalQuote.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/features/quotes/hooks/useDailyZenQuote.ts",
+          "frontend/src/components/quotes/DailyMotivationalQuote.tsx"
+        ]
+      },
+      {
+        "id": "REQ-3",
+        "summary": "Ensure the frontend automatically updates the displayed quote after the 08:00 UK time daily rollover while the app remains open (without requiring a full page refresh).",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/features/quotes/utils/ukQuoteRollover.ts",
+          "frontend/src/features/quotes/hooks/useDailyZenQuote.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/features/quotes/utils/ukQuoteRollover.ts",
+          "frontend/src/features/quotes/hooks/useDailyZenQuote.ts"
+        ]
+      }
+    ]
+  },
+  "changedFiles": [
+    "backend/main.mo",
+    "build-request.json",
+    "feature_evidence.json",
+    "frontend-file-summaries.txt",
+    "frontend-implementation-plan.json",
+    "frontend/src/components/quotes/DailyMotivationalQuote.tsx",
+    "frontend/src/components/quotes/TimeZoneInlinePrompt.tsx",
+    "frontend/src/features/quotes/hooks/useDailyZenQuote.ts",
+    "frontend/src/features/quotes/utils/ukQuoteRollover.ts",
+    "project_state.json",
+    "scratch/component-selection.json",
+    "spec.md",
+    "spec_vs_diff_report.json"
+  ]
+}

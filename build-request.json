@@ -1,0 +1,88 @@
+{
+  "kind": "build_request",
+  "title": "Rotate daily motivational quote at 8am UK time for all users",
+  "priority": "normal",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "text": "Update backend quote selection so the quote rotates once per day at 08:00 UK time (Europe/London) for all users (i.e., the same quote is returned to every user for a given UK quote-day), using the existing stored quotes list in backend/main.mo.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Automatically change everyday at a certain time (8am UK time every day for all users)",
+          "They should already be stored on the app. I provided a list of quotes to use previously",
+          "The quote isn’t changing it’s just displaying the same one. Can you rotate the quotes between all the ones I previously provided that should be saved?"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Calling getTodaysQuote() before 08:00 UK time returns the quote for the previous UK quote-day; calling it at/after 08:00 UK time returns the next quote in rotation.",
+        "Two different authenticated users calling getTodaysQuote() at the same moment receive the same quote string.",
+        "The quote index cycles through all entries of the stored quotes list (no fixed single quote).",
+        "UK daylight saving time is respected so the changeover remains at 08:00 local UK time year-round (GMT/BST)."
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Remove the frontend dependency on a user-set time zone for showing the daily quote: the quote banner should load and display the daily quote in the current quote location without showing the time zone prompt.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Exactly where the quote is currently displayed",
+          "Automatically change everyday at a certain time (8am UK time every day for all users)"
+        ]
+      },
+      "acceptanceCriteria": [
+        "The quote banner (DailyMotivationalQuote) no longer shows the \"Set your time zone to see your daily motivational quote\" prompt as a prerequisite for displaying the quote.",
+        "The quote banner successfully displays a quote for an authenticated user even if they have never saved a time zone.",
+        "If the quote cannot be loaded, the existing \"Quote unavailable\" fallback remains shown in English."
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Ensure the frontend automatically updates the displayed quote after the 08:00 UK time daily rollover while the app remains open (without requiring a full page refresh).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Automatically change everyday at a certain time (8am UK time every day for all users)"
+        ]
+      },
+      "acceptanceCriteria": [
+        "If a user has the app open across the 08:00 UK time boundary, the displayed quote updates to the new daily quote shortly after 08:00 UK time without manual refresh.",
+        "No excessive polling is introduced (the app should schedule a refetch around the next 08:00 UK time rollover rather than frequently refetching)."
+      ]
+    }
+  ],
+  "constraints": [
+    "Backend must remain a single-actor Motoko canister (all logic in backend/main.mo).",
+    "Do not edit files under frontend/src/components/ui or any frontend immutablePaths listed in SYSTEM_CONTEXT.",
+    "Use English for any user-facing text."
+  ],
+  "nonGoals": [
+    "Adding third-party time zone libraries or external services/APIs.",
+    "Implementing per-user quote schedules or per-user time zone-based quote rollovers (the rollover must be 08:00 UK time for all users).",
+    "Changing where the quote is displayed (it must remain in the existing quote banner location)."
+  ],
+  "imageRequirements": {
+    "required": [],
+    "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
+  }
+}
