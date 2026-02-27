@@ -1,11 +1,14 @@
 # Specification
 
 ## Summary
-**Goal:** Rotate the app’s daily motivational quote once per day at 08:00 UK time for all users, and ensure the quote banner displays and updates correctly without relying on a user-set time zone.
+**Goal:** Update the Monthly Volume Summary to display Plank and Squash as separate time-based metrics (in minutes) while leaving all other metrics and charts unchanged.
 
 **Planned changes:**
-- Update backend quote selection so `getTodaysQuote()` returns a single shared “UK quote-day” quote for all users, rotating daily at 08:00 Europe/London time (respecting GMT/BST) using the existing stored quotes list in `backend/main.mo`.
-- Update the quote banner (DailyMotivationalQuote) to remove the time zone prompt requirement and load/display the daily quote for authenticated users regardless of whether they have saved a time zone.
-- Add frontend logic to automatically refresh the displayed quote shortly after the next 08:00 UK time rollover while the app remains open, without excessive polling.
+- Add a "Total Plank Time" metric to the Monthly Volume Summary, showing the total plank duration for the selected month in minutes (e.g., "42 min").
+- Add a "Total Squash Time" metric to the Monthly Volume Summary, showing the total squash duration for the selected month in minutes.
+- Display 0 min for Plank or Squash if no data exists for the selected month.
+- Ensure time-based metrics update when the selected month tab changes.
+- Leave Press-ups and Squats "Total Reps" counters completely unchanged.
+- Leave the Yearly Progress chart (YearlyProgressChartSection) completely unchanged.
 
-**User-visible outcome:** All users see the same motivational quote each UK quote-day, it changes at 08:00 UK time year-round, the quote displays without prompting for a time zone, and it updates automatically if the app stays open across the rollover.
+**User-visible outcome:** The Monthly Volume Summary now shows individual "Total Plank Time" and "Total Squash Time" counters in minutes alongside the existing rep-based counters for Press-ups and Squats.

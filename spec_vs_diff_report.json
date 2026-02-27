@@ -1,36 +1,15 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-15T22:50:15.784Z",
-  "summary": "Frontend changes implement timezone-independent quote fetching and schedule a refetch around the next 08:00 UK-time rollover. Backend shows partial new UK-day logic, but the diff summary is truncated before showing getTodaysQuote() and complete DST-aware 08:00 Europe/London rotation behavior.",
-  "missing_requirements": [
-    {
-      "id": "REQ-1",
-      "requirement": "Update backend quote selection so the quote rotates once per day at 08:00 UK time (Europe/London) for all users, respecting UK daylight saving time, cycling through the stored QUOTES list.",
-      "reason": "backend/main.mo is truncated before showing the implementation of getTodaysQuote() and the full UK 08:00 rollover/DST logic. The diff summary only shows the start of a helper (getUKAdjustedDayIndex) and does not provide evidence that getTodaysQuote() now returns a globally-consistent quote per UK quote-day and switches specifically at 08:00 Europe/London year-round.",
-      "evidence": [
-        "backend/main.mo (truncated; shows getUKAdjustedDayIndex start but not getTodaysQuote implementation)"
-      ]
-    }
-  ],
-  "hallucinated_features": [
-    {
-      "description": "Frontend parses the quote string into separate {text, author} fields using a \" - \" delimiter and displays with a leading/trailing quote and an em dash author line.",
-      "reason": "BuildRequest only requires displaying the quote in the existing banner location and removing timezone prompt; it does not request changing quote formatting or splitting into text/author fields.",
-      "evidence": [
-        "frontend/src/features/quotes/hooks/useDailyZenQuote.ts (parseQuoteString)",
-        "frontend/src/components/quotes/DailyMotivationalQuote.tsx (renders \"{quote.text}\" and — {quote.author})"
-      ]
-    }
-  ],
-  "confidence": 0.64,
+  "generatedAt": "2026-02-27T23:08:46.713Z",
+  "summary": "The diff implements REQ-1 by updating MonthlyVolumeSummary.tsx to display 'Total Plank Time' and 'Total Squash Time' as separate metrics in minutes, and by adding an aggregateMonthlyTotals function in habitModel.ts that returns totalReps, totalPlankMinutes, and totalSquashMinutes. Press-ups and Squats retain their 'Total Reps' counters. REQ-2 is satisfied as YearlyProgressChartSection.tsx is not modified. All acceptance criteria appear to be met: minutes-only format with 'min' unit label, visually distinct layout, zero-fallback via the aggregation function, and month-tab-driven updates through the selectedMonth prop.",
+  "missing_requirements": [],
+  "hallucinated_features": [],
+  "confidence": 0.92,
   "changed_files": [
-    "backend/main.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/components/quotes/DailyMotivationalQuote.tsx",
-    "frontend/src/components/quotes/TimeZoneInlinePrompt.tsx",
-    "frontend/src/features/quotes/hooks/useDailyZenQuote.ts",
-    "frontend/src/features/quotes/utils/ukQuoteRollover.ts",
+    "frontend/src/features/becoming/components/MonthlyVolumeSummary.tsx",
+    "frontend/src/features/becoming/state/habitModel.ts",
     "project_state.json"
   ]
 }

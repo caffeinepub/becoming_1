@@ -1,5 +1,4 @@
-import { formatSecondsToTimeString } from '../utils/timeVolume';
-import { type HabitWithCompletion, getMonthlyTotalRaw } from '../state/habitModel';
+import { type HabitWithCompletion, aggregateMonthlyTotals } from '../state/habitModel';
 
 interface MonthlyVolumeSummaryProps {
   habits: HabitWithCompletion[];
@@ -7,42 +6,40 @@ interface MonthlyVolumeSummaryProps {
 }
 
 export function MonthlyVolumeSummary({ habits, selectedMonth }: MonthlyVolumeSummaryProps) {
-  // Aggregate totals by category
-  let totalReps = 0;
-  let totalTimeSeconds = 0;
-
-  habits.forEach((habit) => {
-    const raw = getMonthlyTotalRaw(habit, selectedMonth);
-    
-    if (raw.type === 'reps') {
-      totalReps += raw.value;
-    } else if (raw.type === 'time') {
-      totalTimeSeconds += raw.value;
-    }
-  });
+  const { totalReps, totalPlankMinutes, totalSquashMinutes } = aggregateMonthlyTotals(habits, selectedMonth);
 
   const hasReps = habits.some((h) => h.volumeTracking?.unitType === 'reps');
-  const hasTime = habits.some((h) => h.volumeTracking?.unitType === 'time');
+  const hasPlank = habits.some((h) => h.name.toLowerCase().trim() === 'plank' && h.volumeTracking?.unitType === 'time');
+  const hasSquash = habits.some((h) => h.name.toLowerCase().trim() === 'squash' && h.volumeTracking?.unitType === 'time');
 
   // Don't render if no habits have volume tracking
-  if (!hasReps && !hasTime) {
+  if (!hasReps && !hasPlank && !hasSquash) {
     return null;
   }
 
   return (
     <div className="glass-surface rounded-lg p-4 mb-6">
       <h3 className="text-sm font-semibold mb-3 text-foreground">Monthly Volume Summary</h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {hasReps && (
           <div className="flex flex-col">
-            <span className="text-xs text-muted-foreground mb-1">Total Reps</span>
-            <span className="text-lg font-bold text-primary">{totalReps}</span>
+            <span className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Total Reps</span>
+            <span className="text-2xl font-bold text-primary">{totalReps.toLocaleString()}</span>
+            <span className="text-xs text-muted-foreground mt-0.5">reps</span>
           </div>
         )}
-        {hasTime && (
+        {hasPlank && (
           <div className="flex flex-col">
-            <span className="text-xs text-muted-foreground mb-1">Total Time</span>
-            <span className="text-lg font-bold text-primary">{formatSecondsToTimeString(totalTimeSeconds)}</span>
+            <span className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Total Plank Time</span>
+            <span className="text-2xl font-bold text-accent-foreground">{totalPlankMinutes}</span>
+            <span className="text-xs text-muted-foreground mt-0.5">min</span>
+          </div>
+        )}
+        {hasSquash && (
+          <div className="flex flex-col">
+            <span className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Total Squash Time</span>
+            <span className="text-2xl font-bold text-accent-foreground">{totalSquashMinutes}</span>
+            <span className="text-xs text-muted-foreground mt-0.5">min</span>
           </div>
         )}
       </div>

@@ -203,6 +203,47 @@ export function getMonthlyTotalRaw(habit: HabitWithCompletion, monthIndex: numbe
 }
 
 /**
+ * Aggregates monthly totals for the Monthly Volume Summary.
+ * Returns:
+ * - totalReps: sum of all rep-based habit totals
+ * - totalPlankMinutes: total plank time in whole minutes
+ * - totalSquashMinutes: total squash time in whole minutes
+ */
+export function aggregateMonthlyTotals(
+  habits: HabitWithCompletion[],
+  monthIndex: number
+): {
+  totalReps: number;
+  totalPlankMinutes: number;
+  totalSquashMinutes: number;
+} {
+  let totalReps = 0;
+  let totalPlankSeconds = 0;
+  let totalSquashSeconds = 0;
+
+  habits.forEach((habit) => {
+    const normalizedName = habit.name.toLowerCase().trim();
+    const raw = getMonthlyTotalRaw(habit, monthIndex);
+
+    if (raw.type === 'reps') {
+      totalReps += raw.value;
+    } else if (raw.type === 'time') {
+      if (normalizedName === 'plank') {
+        totalPlankSeconds += raw.value;
+      } else if (normalizedName === 'squash') {
+        totalSquashSeconds += raw.value;
+      }
+    }
+  });
+
+  return {
+    totalReps,
+    totalPlankMinutes: Math.floor(totalPlankSeconds / 60),
+    totalSquashMinutes: Math.floor(totalSquashSeconds / 60),
+  };
+}
+
+/**
  * Aggregates yearly totals across all habits for the chart
  * Returns arrays of 12 values (one per month) for reps and time (in hours)
  */

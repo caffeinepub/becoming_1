@@ -1,28 +1,19 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "App should display a quote and rotate it automatically once per day at 8am UK time for all users, using the previously provided stored list, in the existing quote display location.",
+  "summary": "Fitness tracking app with activity logging for Press-ups, Squats, Plank, and Squash. Monthly Volume Summary and Yearly Progress chart display activity metrics. Time-based activities (Plank, Squash) are separated from rep-based activities (Press-ups, Squats).",
   "architectural_notes": [
-    "Quote rotation should occur once per day at 08:00 UK time (timezone-aware) and be consistent across all users."
+    "Time-based activities (Plank, Squash) use Total Time in minutes; rep-based activities (Press-ups, Squats) use Total Reps",
+    "Yearly Progress chart already shows Plank and Squash time separately — do not modify"
   ],
-  "known_issues": [
-    "Quote is currently not changing/rotating and keeps displaying the same quote."
-  ],
-  "isFixRequest": true,
+  "known_issues": [],
+  "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-remove-the-frontend-dependency-on-a-user-set-time-zone-for-showing-the-daily-quote-the-quote-banner-should-load-and-display-the-daily-quote-in-the-current-quote-location-without-showing-the-time-zone-prompt",
-      "title": "Remove the frontend dependency on a user-set time zone for showing the daily quote: the quote banner should load and display the daily quote in the current quote location without showing the time zone prompt.",
+      "id": "feature-update-the-monthly-volume-summary-to-display-plank-and-squash-as-individual-metrics-with-their-own-counters-total-plank-time-and-total-squash-time-both-expressed-in-minutes-e-g-42-min-press-ups-and-squats-must-retain-their-existing-total-reps-counters-and-must-not-be-affected",
+      "title": "Update the Monthly Volume Summary to display Plank and Squash as individual metrics with their own counters — 'Total Plank Time' and 'Total Squash Time' — both expressed in minutes (e.g., '42 min'). Press-ups and Squats must retain their existing 'Total Reps' counters and must not be affected.",
       "reqIds": [
-        "REQ-2"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-ensure-the-frontend-automatically-updates-the-displayed-quote-after-the-08-00-uk-time-daily-rollover-while-the-app-remains-open-without-requiring-a-full-page-refresh",
-      "title": "Ensure the frontend automatically updates the displayed quote after the 08:00 UK time daily rollover while the app remains open (without requiring a full page refresh).",
-      "reqIds": [
-        "REQ-3"
+        "REQ-1"
       ],
       "version": 1
     }
@@ -30,20 +21,21 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Rotate the displayed quote daily at 8am UK time (same for all users) using the previously stored list, shown in the current quote location.",
+      "summary": "Monthly Volume Summary: display Plank and Squash as individual metrics with 'Total Plank Time' and 'Total Squash Time' in minutes; keep Total Reps for Press-ups and Squats",
       "reqIds": [],
       "status": "pending"
     },
     {
-      "id": "AR-2",
-      "summary": "Update backend quote selection so the quote rotates once per day at 08:00 UK time (Europe/London) for all users (i.e., the same quote is returned to every user for a given UK quote-day), using the existing stored quotes list in backend/main.mo.",
+      "id": "AR-3",
+      "summary": "Leave the Yearly Progress chart (YearlyProgressChartSection) completely unchanged — do not modify its data logic, labels, units, colors, or layout.",
       "reqIds": [
-        "REQ-1"
+        "REQ-2"
       ],
       "status": "pending"
     }
   ],
-  "projectName": "Rotate daily motivational quote at 8am UK time for all users",
+  "gameProjectType": "none",
+  "projectName": "Fitness Tracker",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }
