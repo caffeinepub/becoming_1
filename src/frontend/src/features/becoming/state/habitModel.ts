@@ -1,48 +1,66 @@
-import type { Habit, CompletionState, DayEntries, VolumeTracking, TimeVolumeEntry } from '../../../backend';
-import { formatMinutesToTimeString, normalizeTimeString, parseTimeStringToSeconds, formatSecondsToTimeString } from '../utils/timeVolume';
+import type {
+  CompletionState,
+  DayEntries,
+  Habit,
+  TimeVolumeEntry,
+  VolumeTracking,
+} from "../../../backend";
+import {
+  type ActivityDayEntry,
+  extractPrimaryMetric,
+} from "../types/activityTypes";
+import {
+  formatMinutesToTimeString,
+  formatSecondsToTimeString,
+  normalizeTimeString,
+  parseTimeStringToSeconds,
+} from "../utils/timeVolume";
 
 export interface HabitWithCompletion extends Habit {
   completionMap: Map<number, Map<number, boolean>>;
 }
 
 export const MONTH_KEYS = [
-  'january',
-  'february',
-  'march',
-  'april',
-  'may',
-  'june',
-  'july',
-  'august',
-  'september',
-  'october',
-  'november',
-  'december',
+  "january",
+  "february",
+  "march",
+  "april",
+  "may",
+  "june",
+  "july",
+  "august",
+  "september",
+  "october",
+  "november",
+  "december",
 ] as const;
 
-export type MonthKey = typeof MONTH_KEYS[number];
+export type MonthKey = (typeof MONTH_KEYS)[number];
 
-function getMonthArray(completion: CompletionState, monthIndex: number): DayEntries[] {
+function getMonthArray(
+  completion: CompletionState,
+  monthIndex: number,
+): DayEntries[] {
   const key = MONTH_KEYS[monthIndex];
   return completion[key] || [];
 }
 
 export function buildCompletionMap(habit: Habit): HabitWithCompletion {
   const completionMap = new Map<number, Map<number, boolean>>();
-  
+
   for (let monthIndex = 0; monthIndex < 12; monthIndex++) {
     const monthMap = new Map<number, boolean>();
     const monthArray = getMonthArray(habit.completion, monthIndex);
-    
-    monthArray.forEach((entry) => {
+
+    for (const entry of monthArray) {
       if (entry.day > 0) {
         monthMap.set(Number(entry.day), entry.completed);
       }
-    });
-    
+    }
+
     completionMap.set(monthIndex, monthMap);
   }
-  
+
   return {
     ...habit,
     completionMap,
@@ -52,7 +70,7 @@ export function buildCompletionMap(habit: Habit): HabitWithCompletion {
 export function isHabitCompletedOnDay(
   habit: HabitWithCompletion,
   monthIndex: number,
-  day: number
+  day: number,
 ): boolean {
   return habit.completionMap.get(monthIndex)?.get(day) || false;
 }
@@ -60,24 +78,30 @@ export function isHabitCompletedOnDay(
 /**
  * Counts the number of completed days for a habit in a given month
  */
-export function getCompletedDaysCount(habit: HabitWithCompletion, monthIndex: number): number {
+export function getCompletedDaysCount(
+  habit: HabitWithCompletion,
+  monthIndex: number,
+): number {
   const monthMap = habit.completionMap.get(monthIndex);
   if (!monthMap) return 0;
-  
+
   let count = 0;
-  monthMap.forEach((completed) => {
+  for (const completed of monthMap.values()) {
     if (completed) count++;
-  });
-  
+  }
+
   return count;
 }
 
 /**
  * Gets the volume entry for a given month
  */
-function getVolumeEntryForMonth(habit: Habit, monthIndex: number): TimeVolumeEntry | null {
+function getVolumeEntryForMonth(
+  habit: Habit,
+  monthIndex: number,
+): TimeVolumeEntry | null {
   if (!habit.volumeTracking) return null;
-  
+
   const key = MONTH_KEYS[monthIndex];
   return habit.volumeTracking[key] || null;
 }
@@ -87,13 +111,16 @@ function getVolumeEntryForMonth(habit: Habit, monthIndex: number): TimeVolumeEnt
  * For "time" unit: returns formatted M:SS string (normalized)
  * For other units: returns numeric string
  */
-export function getVolumeDisplayString(habit: Habit, monthIndex: number): string {
+export function getVolumeDisplayString(
+  habit: Habit,
+  monthIndex: number,
+): string {
   const entry = getVolumeEntryForMonth(habit, monthIndex);
-  if (!entry) return '0';
-  
+  if (!entry) return "0";
+
   const unitType = getUnitType(habit);
-  
-  if (unitType === 'time') {
+
+  if (unitType === "time") {
     // For time units, prefer timeString if available (normalized), otherwise format minutes
     if (entry.timeString) {
       // Normalize the stored timeString to M:SS format
@@ -102,104 +129,157 @@ export function getVolumeDisplayString(habit: Habit, monthIndex: number): string
     if (entry.minutes !== undefined && entry.minutes !== null) {
       return formatMinutesToTimeString(Number(entry.minutes));
     }
-    return '0:00';
-  } else {
-    // For non-time units, return minutes as a number
-    if (entry.minutes !== undefined && entry.minutes !== null) {
-      return String(Number(entry.minutes));
-    }
-    return '0';
+    return "0:00";
   }
+  // For non-time units, return minutes as a number
+  if (entry.minutes !== undefined && entry.minutes !== null) {
+    return String(Number(entry.minutes));
+  }
+  return "0";
 }
 
 /**
  * Computes the monthly total volume for a habit in a given month
  * Returns a formatted string based on unit type
- * 
+ *
  * For "reps": monthly total = (per-completion volume) × (completed days count)
  * For "time": monthly total = (per-completion seconds) × (completed days count), formatted as M:SS
  *   - Uses seconds-accurate calculation when timeString is available
  * For other numeric units: monthly total = (per-completion volume) × (completed days count)
  */
-export function getMonthlyTotalVolume(habit: HabitWithCompletion, monthIndex: number): string {
+export function getMonthlyTotalVolume(
+  habit: HabitWithCompletion,
+  monthIndex: number,
+): string {
   const completedDays = getCompletedDaysCount(habit, monthIndex);
   const unitType = getUnitType(habit);
-  
+
   if (completedDays === 0) {
-    return unitType === 'time' ? '0:00' : '0';
+    return unitType === "time" ? "0:00" : "0";
   }
-  
+
   const entry = getVolumeEntryForMonth(habit, monthIndex);
-  if (!entry || entry.minutes === undefined || entry.minutes === null) {
-    return unitType === 'time' ? '0:00' : '0';
+  if (!entry) {
+    return unitType === "time" ? "0:00" : "0";
   }
-  
-  if (unitType === 'reps') {
+
+  if (unitType === "reps") {
     // For reps: multiply per-completion volume by completed days
-    const perCompletionVolume = Number(entry.minutes);
+    const perCompletionVolume = Number(entry.minutes ?? 0);
     const totalVolume = perCompletionVolume * completedDays;
     return String(totalVolume);
-  } else if (unitType === 'time') {
+  }
+  if (unitType === "time") {
     // For time: multiply per-completion by completed days (seconds-accurate when timeString exists)
     let perCompletionSeconds = 0;
-    
+
     if (entry.timeString) {
       // Use timeString for seconds-accurate calculation
       const parsed = parseTimeStringToSeconds(entry.timeString);
-      perCompletionSeconds = parsed !== null ? parsed : Number(entry.minutes) * 60;
-    } else {
+      perCompletionSeconds =
+        parsed !== null ? parsed : Number(entry.minutes ?? 0) * 60;
+    } else if (entry.minutes !== undefined && entry.minutes !== null) {
       // Fallback to minutes
       perCompletionSeconds = Number(entry.minutes) * 60;
     }
-    
+
     const totalSeconds = perCompletionSeconds * completedDays;
     return formatSecondsToTimeString(totalSeconds);
-  } else {
-    // For all other numeric unit types: multiply per-completion volume by completed days
-    const perCompletionVolume = Number(entry.minutes);
-    const totalVolume = perCompletionVolume * completedDays;
-    return String(totalVolume);
   }
+  // For all other numeric unit types: multiply per-completion volume by completed days
+  const perCompletionVolume = Number(entry.minutes ?? 0);
+  const totalVolume = perCompletionVolume * completedDays;
+  return String(totalVolume);
 }
 
 /**
  * Helper to get raw monthly total values for aggregate calculations
  * Returns numeric values: reps/workout as number, time as seconds
+ *
+ * Handles entries that have only timeString (no minutes) correctly.
  */
-export function getMonthlyTotalRaw(habit: HabitWithCompletion, monthIndex: number): { type: string; value: number } {
+export function getMonthlyTotalRaw(
+  habit: HabitWithCompletion,
+  monthIndex: number,
+): { type: string; value: number } {
   const completedDays = getCompletedDaysCount(habit, monthIndex);
   const unitType = getUnitType(habit);
-  
+
   if (completedDays === 0) {
     return { type: unitType, value: 0 };
   }
-  
+
   const entry = getVolumeEntryForMonth(habit, monthIndex);
-  if (!entry || entry.minutes === undefined || entry.minutes === null) {
+  if (!entry) {
     return { type: unitType, value: 0 };
   }
-  
-  if (unitType === 'reps') {
-    const perCompletionVolume = Number(entry.minutes);
+
+  // Check if entry has any usable value (timeString OR minutes)
+  const hasTimeString = !!entry.timeString;
+  const hasMinutes = entry.minutes !== undefined && entry.minutes !== null;
+
+  if (!hasTimeString && !hasMinutes) {
+    return { type: unitType, value: 0 };
+  }
+
+  if (unitType === "reps") {
+    const perCompletionVolume = Number(entry.minutes ?? 0);
     const totalVolume = perCompletionVolume * completedDays;
-    return { type: 'reps', value: totalVolume };
-  } else if (unitType === 'time') {
+    return { type: "reps", value: totalVolume };
+  }
+  if (unitType === "time") {
     let perCompletionSeconds = 0;
-    
-    if (entry.timeString) {
-      const parsed = parseTimeStringToSeconds(entry.timeString);
-      perCompletionSeconds = parsed !== null ? parsed : Number(entry.minutes) * 60;
-    } else {
+
+    if (hasTimeString) {
+      // Prefer timeString for seconds-accurate calculation
+      const parsed = parseTimeStringToSeconds(entry.timeString!);
+      if (parsed !== null) {
+        perCompletionSeconds = parsed;
+      } else if (hasMinutes) {
+        perCompletionSeconds = Number(entry.minutes) * 60;
+      }
+    } else if (hasMinutes) {
       perCompletionSeconds = Number(entry.minutes) * 60;
     }
-    
+
     const totalSeconds = perCompletionSeconds * completedDays;
-    return { type: 'time', value: totalSeconds };
-  } else {
-    const perCompletionVolume = Number(entry.minutes);
-    const totalVolume = perCompletionVolume * completedDays;
-    return { type: 'numeric', value: totalVolume };
+    return { type: "time", value: totalSeconds };
   }
+  const perCompletionVolume = Number(entry.minutes ?? 0);
+  const totalVolume = perCompletionVolume * completedDays;
+  return { type: "numeric", value: totalVolume };
+}
+
+/**
+ * Aggregates monthly totals for the Monthly Volume Summary.
+ * Returns:
+ * - totalReps: sum of all rep-based habit totals
+ * - totalTimeMinutes: sum of ALL time-based habit totals in whole minutes (rounded)
+ */
+export function aggregateMonthlyTotals(
+  habits: HabitWithCompletion[],
+  monthIndex: number,
+): {
+  totalReps: number;
+  totalTimeMinutes: number;
+} {
+  let totalReps = 0;
+  let totalTimeSeconds = 0;
+
+  for (const habit of habits) {
+    const raw = getMonthlyTotalRaw(habit, monthIndex);
+
+    if (raw.type === "reps") {
+      totalReps += raw.value;
+    } else if (raw.type === "time") {
+      totalTimeSeconds += raw.value;
+    }
+  }
+
+  return {
+    totalReps,
+    totalTimeMinutes: Math.round(totalTimeSeconds / 60),
+  };
 }
 
 /**
@@ -212,23 +292,25 @@ export function aggregateYearlyTotals(habits: HabitWithCompletion[]): {
 } {
   const reps: number[] = new Array(12).fill(0);
   const timeHours: number[] = new Array(12).fill(0);
-  
-  habits.forEach((habit) => {
+
+  for (const habit of habits) {
     for (let monthIndex = 0; monthIndex < 12; monthIndex++) {
       const raw = getMonthlyTotalRaw(habit, monthIndex);
-      
-      if (raw.type === 'reps') {
+
+      if (raw.type === "reps") {
         reps[monthIndex] += raw.value;
-      } else if (raw.type === 'time') {
+      } else if (raw.type === "time") {
         // Convert seconds to hours (fractional)
         timeHours[monthIndex] += raw.value / 3600;
       }
     }
-  });
-  
+  }
+
   // Round time hours to 2 decimal places for cleaner display
-  const roundedTimeHours = timeHours.map(hours => Math.round(hours * 100) / 100);
-  
+  const roundedTimeHours = timeHours.map(
+    (hours) => Math.round(hours * 100) / 100,
+  );
+
   return { reps, timeHours: roundedTimeHours };
 }
 
@@ -250,31 +332,35 @@ export function aggregateYearlyTotalsByHabit(habits: HabitWithCompletion[]): {
   const squats: number[] = new Array(12).fill(0);
   const plankHours: number[] = new Array(12).fill(0);
   const squashHours: number[] = new Array(12).fill(0);
-  
-  habits.forEach((habit) => {
+
+  for (const habit of habits) {
     const normalizedName = habit.name.toLowerCase().trim();
-    
+
     for (let monthIndex = 0; monthIndex < 12; monthIndex++) {
       const raw = getMonthlyTotalRaw(habit, monthIndex);
-      
-      if (normalizedName === 'press-ups' && raw.type === 'reps') {
+
+      if (normalizedName === "press-ups" && raw.type === "reps") {
         pressUps[monthIndex] += raw.value;
-      } else if (normalizedName === 'squats' && raw.type === 'reps') {
+      } else if (normalizedName === "squats" && raw.type === "reps") {
         squats[monthIndex] += raw.value;
-      } else if (normalizedName === 'plank' && raw.type === 'time') {
+      } else if (normalizedName === "plank" && raw.type === "time") {
         // Convert seconds to hours (fractional)
         plankHours[monthIndex] += raw.value / 3600;
-      } else if (normalizedName === 'squash' && raw.type === 'time') {
+      } else if (normalizedName === "squash" && raw.type === "time") {
         // Convert seconds to hours (fractional)
         squashHours[monthIndex] += raw.value / 3600;
       }
     }
-  });
-  
+  }
+
   // Round hours to 2 decimal places for cleaner display
-  const roundedPlankHours = plankHours.map(hours => Math.round(hours * 100) / 100);
-  const roundedSquashHours = squashHours.map(hours => Math.round(hours * 100) / 100);
-  
+  const roundedPlankHours = plankHours.map(
+    (hours) => Math.round(hours * 100) / 100,
+  );
+  const roundedSquashHours = squashHours.map(
+    (hours) => Math.round(hours * 100) / 100,
+  );
+
   return {
     pressUps,
     squats,
@@ -294,13 +380,16 @@ export function getVolumeForMonth(habit: Habit, monthIndex: number): number {
 }
 
 export function getUnitType(habit: Habit): string {
-  return habit.volumeTracking?.unitType || 'reps';
+  return habit.volumeTracking?.unitType || "reps";
 }
 
 export function getDefaultVolumeTracking(): VolumeTracking {
-  const defaultEntry: TimeVolumeEntry = { timeString: undefined, minutes: BigInt(0) };
+  const defaultEntry: TimeVolumeEntry = {
+    timeString: undefined,
+    minutes: BigInt(0),
+  };
   return {
-    unitType: 'reps',
+    unitType: "reps",
     january: defaultEntry,
     february: defaultEntry,
     march: defaultEntry,
@@ -324,37 +413,42 @@ export function getDefaultVolumeTracking(): VolumeTracking {
  * - Other time habits: 30 minutes
  * - Reps: 5
  */
-function getMonthIncrement(habitName: string, unitType: string): { minutes: number; seconds: number } {
+function getMonthIncrement(
+  habitName: string,
+  unitType: string,
+): { minutes: number; seconds: number } {
   const normalizedName = habitName.toLowerCase().trim();
-  
-  if (normalizedName === 'squash') {
+
+  if (normalizedName === "squash") {
     // Squash: no increment (constant volume)
     return { minutes: 0, seconds: 0 };
-  } else if (normalizedName === 'plank' && unitType === 'time') {
+  }
+  if (normalizedName === "plank" && unitType === "time") {
     // Plank: +15 seconds per month after February
     return { minutes: 0, seconds: 15 };
-  } else if (unitType === 'time') {
+  }
+  if (unitType === "time") {
     // Other time habits: +30 minutes per month
     return { minutes: 30, seconds: 0 };
-  } else if (unitType === 'reps') {
+  }
+  if (unitType === "reps") {
     // Reps: +5 per month
     return { minutes: 5, seconds: 0 };
-  } else {
-    // Default: no increment
-    return { minutes: 0, seconds: 0 };
   }
+  // Default: no increment
+  return { minutes: 0, seconds: 0 };
 }
 
 /**
  * Compute optimistic volume tracking with auto-compounding based on calendar months.
- * 
+ *
  * Habit-specific progression rules:
  * - Squash: constant volume across ALL 12 months (Jan-Dec)
  * - Plank (time): February is the base month; +15 seconds per month after February
  *   (Feb = base, Mar = base+15s, Apr = base+30s, etc.)
  * - Other time habits: +30 minutes per calendar month from the edited month
  * - Reps: +5 per calendar month from the edited month
- * 
+ *
  * For Squash: all months are set to the same value
  * For Plank: February (month index 1) is the base; progression applies to months after February
  * For others: only future months (after edited month) are updated
@@ -364,40 +458,46 @@ export function computeCompoundedVolumeTracking(
   monthIndex: number,
   minutes: number,
   habitName: string,
-  timeString?: string
+  timeString?: string,
 ): VolumeTracking {
   // Infer unitType: if timeString is provided, it's "time", otherwise use existing or default to "reps"
-  const unitType = existingVolumeTracking?.unitType || (timeString ? 'time' : 'reps');
+  const unitType =
+    existingVolumeTracking?.unitType || (timeString ? "time" : "reps");
   const increment = getMonthIncrement(habitName, unitType);
-  
+
   // Start with existing values or defaults
   const baseTracking = existingVolumeTracking || getDefaultVolumeTracking();
-  
+
   // Build the new volume tracking object
   const newTracking: VolumeTracking = { ...baseTracking, unitType };
-  
+
   // Normalize timeString to M:SS format if provided
-  const normalizedTimeString = timeString ? normalizeTimeString(timeString) : undefined;
-  
+  const normalizedTimeString = timeString
+    ? normalizeTimeString(timeString)
+    : undefined;
+
   const normalizedName = habitName.toLowerCase().trim();
-  
+
   // Special case: Squash - set ALL months to the same value
-  if (normalizedName === 'squash') {
+  if (normalizedName === "squash") {
     const constantEntry: TimeVolumeEntry = {
       minutes: BigInt(minutes),
-      timeString: unitType === 'time' && normalizedTimeString ? normalizedTimeString : undefined,
+      timeString:
+        unitType === "time" && normalizedTimeString
+          ? normalizedTimeString
+          : undefined,
     };
-    
+
     for (let i = 0; i < 12; i++) {
       const monthKey = MONTH_KEYS[i];
       newTracking[monthKey] = constantEntry;
     }
-    
+
     return newTracking;
   }
-  
+
   // Special case: Plank - February (month index 1) is the base month
-  if (normalizedName === 'plank' && unitType === 'time') {
+  if (normalizedName === "plank" && unitType === "time") {
     // Parse the edited month's value to seconds
     let editedMonthSeconds = 0;
     if (normalizedTimeString) {
@@ -406,75 +506,102 @@ export function computeCompoundedVolumeTracking(
     } else {
       editedMonthSeconds = minutes * 60;
     }
-    
+
     // Calculate what February's value should be based on the edited month
     // February is month index 1 (the base month)
     const februaryIndex = 1;
-    let februarySeconds: number;
-    
-    if (monthIndex === februaryIndex) {
-      // If editing February directly, use that value as the base
-      februarySeconds = editedMonthSeconds;
-    } else if (monthIndex < februaryIndex) {
-      // If editing a month before February (e.g., January)
-      // February should be editedValue + (Feb - editedMonth) * 15s
-      februarySeconds = editedMonthSeconds + ((februaryIndex - monthIndex) * increment.seconds);
-    } else {
-      // If editing a month after February (e.g., March, April)
-      // February should be editedValue - (editedMonth - Feb) * 15s
-      februarySeconds = editedMonthSeconds - ((monthIndex - februaryIndex) * increment.seconds);
-    }
-    
-    // Now set all 12 months based on their position relative to February
+    const monthsFromFebruary = monthIndex - februaryIndex;
+    const februarySeconds =
+      editedMonthSeconds - monthsFromFebruary * increment.seconds;
+
+    // Now compound forward from February
     for (let i = 0; i < 12; i++) {
       const monthKey = MONTH_KEYS[i];
-      let monthSeconds: number;
-      
-      if (i <= februaryIndex) {
-        // For months up to and including February, calculate backwards from February
-        monthSeconds = februarySeconds - ((februaryIndex - i) * increment.seconds);
+      if (i < februaryIndex) {
+        // Months before February: keep existing values
+        // (don't overwrite January etc.)
       } else {
-        // For months after February, add 15s per month
-        monthSeconds = februarySeconds + ((i - februaryIndex) * increment.seconds);
+        const monthsAfterFeb = i - februaryIndex;
+        const monthSeconds =
+          februarySeconds + monthsAfterFeb * increment.seconds;
+        const monthMinutes = Math.round(monthSeconds / 60);
+
+        newTracking[monthKey] = {
+          minutes: BigInt(Math.max(0, monthMinutes)),
+          timeString: undefined,
+        };
       }
-      
-      // Ensure non-negative values
-      monthSeconds = Math.max(0, monthSeconds);
-      
-      const monthMinutes = Math.floor(monthSeconds / 60);
-      const monthTimeString = formatSecondsToTimeString(monthSeconds);
-      
-      newTracking[monthKey] = {
-        minutes: BigInt(monthMinutes),
-        timeString: monthTimeString,
+    }
+
+    // Set the edited month's entry with the original timeString if provided
+    if (normalizedTimeString) {
+      newTracking[MONTH_KEYS[monthIndex]] = {
+        minutes: BigInt(minutes),
+        timeString: normalizedTimeString,
       };
     }
-    
+
     return newTracking;
   }
-  
-  // Default behavior for other habits: update selected month and future months only
-  for (let i = 0; i < 12; i++) {
+
+  // General case: set the edited month and compound forward
+  // Set the edited month
+  newTracking[MONTH_KEYS[monthIndex]] = {
+    minutes: BigInt(minutes),
+    timeString:
+      unitType === "time" && normalizedTimeString
+        ? normalizedTimeString
+        : undefined,
+  };
+
+  // Compound forward from the edited month
+  for (let i = monthIndex + 1; i < 12; i++) {
     const monthKey = MONTH_KEYS[i];
-    
-    if (i === monthIndex) {
-      // Set the selected month to the user-entered value (normalized)
+    const monthsAhead = i - monthIndex;
+
+    if (unitType === "time") {
+      // For time: add increment.minutes per month
+      const compoundedMinutes = minutes + monthsAhead * increment.minutes;
       newTracking[monthKey] = {
-        minutes: BigInt(minutes),
-        timeString: unitType === 'time' && normalizedTimeString ? normalizedTimeString : undefined,
+        minutes: BigInt(Math.max(0, compoundedMinutes)),
+        timeString: undefined,
       };
-    } else if (i > monthIndex) {
-      // Auto-generate future months with habit-specific compounding
-      const k = i - monthIndex;
-      const compoundedMinutes = Math.max(0, minutes + (k * increment.minutes));
-      
+    } else {
+      // For reps: add increment.minutes (which is actually reps increment) per month
+      const compoundedValue = minutes + monthsAhead * increment.minutes;
       newTracking[monthKey] = {
-        minutes: BigInt(compoundedMinutes),
-        timeString: unitType === 'time' ? formatMinutesToTimeString(compoundedMinutes) : undefined,
+        minutes: BigInt(Math.max(0, compoundedValue)),
+        timeString: undefined,
       };
     }
-    // else: preserve earlier months (i < monthIndex) as-is
   }
-  
+
   return newTracking;
+}
+
+/**
+ * Computes the monthly primary metric total from an array of ActivityDayEntry records.
+ *
+ * - Running / Cycling / Swimming: sums `distance` in km across all entries
+ * - Strength: sums `sets × reps` across all entries (total reps volume)
+ * - Freeform: sums the numeric `value` field
+ *
+ * Returns a rounded number representing the total for the month.
+ */
+export function getActivityPrimaryMetric(entries: ActivityDayEntry[]): number {
+  if (!entries || entries.length === 0) return 0;
+
+  const total = entries.reduce(
+    (sum, entry) => sum + extractPrimaryMetric(entry),
+    0,
+  );
+
+  // Round to 2 decimal places for distance; whole numbers for rep-based
+  const firstType = entries[0]?.type;
+  const isDistanceBased =
+    firstType === "running" ||
+    firstType === "cycling" ||
+    firstType === "swimming";
+
+  return isDistanceBased ? Math.round(total * 100) / 100 : Math.round(total);
 }

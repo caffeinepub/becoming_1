@@ -1,10 +1,10 @@
-import { Pencil } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover';
+} from "@/components/ui/popover";
+import { Pencil } from "lucide-react";
 
 interface HabitRowActionsPopoverProps {
   open: boolean;
@@ -13,7 +13,12 @@ interface HabitRowActionsPopoverProps {
   children: React.ReactNode;
 }
 
-export function HabitRowActionsPopover({ open, onOpenChange, onEdit, children }: HabitRowActionsPopoverProps) {
+export function HabitRowActionsPopover({
+  open,
+  onOpenChange,
+  onEdit,
+  children,
+}: HabitRowActionsPopoverProps) {
   const handleEdit = () => {
     onEdit();
     onOpenChange(false);
@@ -21,9 +26,7 @@ export function HabitRowActionsPopover({ open, onOpenChange, onEdit, children }:
 
   return (
     <Popover open={open} onOpenChange={onOpenChange}>
-      <PopoverTrigger asChild>
-        {children}
-      </PopoverTrigger>
+      <PopoverTrigger asChild>{children}</PopoverTrigger>
       <PopoverContent className="w-auto p-2" align="start">
         <Button
           variant="ghost"

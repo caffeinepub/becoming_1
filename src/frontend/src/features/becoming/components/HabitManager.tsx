@@ -1,34 +1,34 @@
-import { useState } from 'react';
-import { Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { useAddHabit } from '../api/queries';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Plus } from "lucide-react";
+import { useState } from "react";
+import { useAddHabit } from "../api/queries";
 
 interface HabitManagerProps {
   disabled?: boolean;
 }
 
 export function HabitManager({ disabled = false }: HabitManagerProps) {
-  const [habitName, setHabitName] = useState('');
+  const [habitName, setHabitName] = useState("");
   const [isAdding, setIsAdding] = useState(false);
   const addHabitMutation = useAddHabit();
 
   const handleAddHabit = async () => {
     if (!habitName.trim() || disabled) return;
-    
+
     await addHabitMutation.mutateAsync(habitName.trim());
-    setHabitName('');
+    setHabitName("");
     setIsAdding(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (disabled) return;
-    
-    if (e.key === 'Enter') {
+
+    if (e.key === "Enter") {
       handleAddHabit();
-    } else if (e.key === 'Escape') {
+    } else if (e.key === "Escape") {
       setIsAdding(false);
-      setHabitName('');
+      setHabitName("");
     }
   };
 
@@ -67,12 +67,12 @@ export function HabitManager({ disabled = false }: HabitManagerProps) {
         size="sm"
         className="touch-optimized cyber-primary-glow"
       >
-        {addHabitMutation.isPending ? 'Adding...' : 'Add'}
+        {addHabitMutation.isPending ? "Adding..." : "Add"}
       </Button>
       <Button
         onClick={() => {
           setIsAdding(false);
-          setHabitName('');
+          setHabitName("");
         }}
         variant="ghost"
         size="sm"

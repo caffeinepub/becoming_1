@@ -1,0 +1,131 @@
+// Version: 1.0.0
+type ActivityData__873755797 =
+  {
+    april : MonthActivityLog__497747014;
+    august : MonthActivityLog__497747014;
+    december : MonthActivityLog__497747014;
+    february : MonthActivityLog__497747014;
+    january : MonthActivityLog__497747014;
+    july : MonthActivityLog__497747014;
+    june : MonthActivityLog__497747014;
+    march : MonthActivityLog__497747014;
+    may : MonthActivityLog__497747014;
+    november : MonthActivityLog__497747014;
+    october : MonthActivityLog__497747014;
+    september : MonthActivityLog__497747014
+  };
+type ActivityDayEntry__122391371 =
+  {
+    #cycling : CyclingEntry__793992191;
+    #running : RunningEntry__309383594;
+    #strength : StrengthEntry__274642573;
+    #swimming : SwimmingEntry__186534119
+  };
+type ActivityType__291397608 =
+  {#cycling; #freeform; #running; #strengthTraining; #swimming};
+type CompletionState__350916024 =
+  {
+    april : [DayEntries__878452908];
+    august : [DayEntries__878452908];
+    december : [DayEntries__878452908];
+    february : [DayEntries__878452908];
+    january : [DayEntries__878452908];
+    july : [DayEntries__878452908];
+    june : [DayEntries__878452908];
+    march : [DayEntries__878452908];
+    may : [DayEntries__878452908];
+    november : [DayEntries__878452908];
+    october : [DayEntries__878452908];
+    september : [DayEntries__878452908]
+  };
+type CyclingEntry__793992191 =
+  {distance : Float; duration : ?Text; intensity : ?Text};
+type Data__791452850<K, V> =
+  {var count : Nat__490723111; kvs : [var ?(K, V)]};
+type DayEntries__878452908 = {completed : Bool; day : Nat};
+type Habit__1015246288 =
+  {
+    completion : CompletionState__350916024;
+    description : Text;
+    id : Nat;
+    name : Text;
+    reminder : ?Time__900049286;
+    volumeTracking : ?VolumeTracking__912887101
+  };
+type Int__270357528 = Int__616954475;
+type Int__616954475 = Int;
+type Internal__8484328<K, V> =
+  {children : [var ?Node__46230540<K, V>]; data : Data__791452850<K, V>};
+type Leaf__809889148<K, V> = {data : Data__791452850<K, V>};
+type Map__158565046<K, V> = Map__297112838<K, V>;
+type Map__297112838<K, V> =
+  {var root : Node__46230540<K, V>; var size : Nat__490723111};
+type Map__605269027<K, V> = Map__158565046<K, V>;
+type MonthActivityLog__497747014 = [(Nat, ActivityDayEntry__122391371)];
+type Nat__490723111 = Nat__920180692;
+type Nat__920180692 = Nat;
+type Node__46230540<K, V> =
+  {#internal : Internal__8484328<K, V>; #leaf : Leaf__809889148<K, V>};
+type RunningEntry__309383594 =
+  {distance : Float; duration : ?Text; pace : ?Text};
+type StrengthEntry__274642573 =
+  {exerciseName : Text; reps : Nat; sets : Nat; unit : Text; weight : Float};
+type SwimmingEntry__186534119 =
+  {distance : Float; duration : ?Text; strokeType : ?Text};
+type TimeVolumeEntry__720586649 = {minutes : ?Nat; timeString : ?Text};
+type TimeZone__917755412 = {name : Text; utcOffsetMinutes : Int};
+type Time__796480547 = Int__270357528;
+type Time__900049286 = Time__796480547;
+type UserHabitsData__61450445 =
+  {habits : [Habit__1015246288]; nextHabitId : Nat};
+type UserProfile__491224006 = {name : Text};
+type UserRole__1054455867 = {#admin; #guest; #user};
+type VolumeTracking__912887101 =
+  {
+    april : TimeVolumeEntry__720586649;
+    august : TimeVolumeEntry__720586649;
+    december : TimeVolumeEntry__720586649;
+    february : TimeVolumeEntry__720586649;
+    january : TimeVolumeEntry__720586649;
+    july : TimeVolumeEntry__720586649;
+    june : TimeVolumeEntry__720586649;
+    march : TimeVolumeEntry__720586649;
+    may : TimeVolumeEntry__720586649;
+    november : TimeVolumeEntry__720586649;
+    october : TimeVolumeEntry__720586649;
+    september : TimeVolumeEntry__720586649;
+    unitType : Text
+  };
+actor {
+  stable QUOTES : [Text];
+  stable accessControlState :
+    {
+      var adminAssigned : Bool;
+      userRoles : Map__605269027<Principal, UserRole__1054455867>
+    };
+  stable habitQuoteUserProfiles :
+    {
+      var root : Node__46230540<Principal, UserProfile__491224006>;
+      var size : Nat__490723111
+    };
+  stable persistentActivityData :
+    {
+      var root : Node__46230540<Principal, [(Nat, ActivityData__873755797)]>;
+      var size : Nat__490723111
+    };
+  stable persistentActivityTypes :
+    {
+      var root : Node__46230540<Principal, [(Nat, ActivityType__291397608)]>;
+      var size : Nat__490723111
+    };
+  stable persistentUserHabits :
+    {
+      var root : Node__46230540<Principal, UserHabitsData__61450445>;
+      var size : Nat__490723111
+    };
+  stable userTimeZones :
+    {
+      var root : Node__46230540<Principal, TimeZone__917755412>;
+      var size : Nat__490723111
+    }
+};

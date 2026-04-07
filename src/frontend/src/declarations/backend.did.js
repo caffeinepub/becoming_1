@@ -19,6 +19,41 @@ export const TimeZone = IDL.Record({
   'utcOffsetMinutes' : IDL.Int,
 });
 export const UserProfile = IDL.Record({ 'name' : IDL.Text });
+export const SwimmingEntry = IDL.Record({
+  'duration' : IDL.Opt(IDL.Text),
+  'distance' : IDL.Float64,
+  'strokeType' : IDL.Opt(IDL.Text),
+});
+export const StrengthEntry = IDL.Record({
+  'weight' : IDL.Float64,
+  'reps' : IDL.Nat,
+  'sets' : IDL.Nat,
+  'unit' : IDL.Text,
+  'exerciseName' : IDL.Text,
+});
+export const CyclingEntry = IDL.Record({
+  'duration' : IDL.Opt(IDL.Text),
+  'distance' : IDL.Float64,
+  'intensity' : IDL.Opt(IDL.Text),
+});
+export const RunningEntry = IDL.Record({
+  'duration' : IDL.Opt(IDL.Text),
+  'pace' : IDL.Opt(IDL.Text),
+  'distance' : IDL.Float64,
+});
+export const ActivityDayEntry = IDL.Variant({
+  'swimming' : SwimmingEntry,
+  'strength' : StrengthEntry,
+  'cycling' : CyclingEntry,
+  'running' : RunningEntry,
+});
+export const ActivityType = IDL.Variant({
+  'swimming' : IDL.Null,
+  'freeform' : IDL.Null,
+  'cycling' : IDL.Null,
+  'running' : IDL.Null,
+  'strengthTraining' : IDL.Null,
+});
 export const DayEntries = IDL.Record({
   'day' : IDL.Nat,
   'completed' : IDL.Bool,
@@ -64,15 +99,34 @@ export const Habit = IDL.Record({
   'name' : IDL.Text,
   'description' : IDL.Text,
 });
+export const MonthlyActivityAggregate = IDL.Record({
+  'totalDistanceKm' : IDL.Float64,
+  'totalReps' : IDL.Nat,
+});
 
 export const idlService = IDL.Service({
-  '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+  '_initializeAccessControl' : IDL.Func([], [], []),
   'addHabit' : IDL.Func([IDL.Text, IDL.Text, IDL.Opt(Time)], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
   'getCallerTimeZone' : IDL.Func([], [IDL.Opt(TimeZone)], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+  'getDailyActivityEntry' : IDL.Func(
+      [IDL.Nat, IDL.Nat, IDL.Nat],
+      [IDL.Opt(ActivityDayEntry)],
+      ['query'],
+    ),
+  'getHabitActivityType' : IDL.Func(
+      [IDL.Nat],
+      [IDL.Opt(ActivityType)],
+      ['query'],
+    ),
   'getHabits' : IDL.Func([], [IDL.Vec(Habit)], ['query']),
+  'getMonthlyActivityAggregate' : IDL.Func(
+      [IDL.Nat, IDL.Nat],
+      [IDL.Opt(MonthlyActivityAggregate)],
+      ['query'],
+    ),
   'getTodaysQuote' : IDL.Func([], [IDL.Text], ['query']),
   'getTotalHabitsCount' : IDL.Func([], [IDL.Nat], ['query']),
   'getUserProfile' : IDL.Func(
@@ -82,11 +136,21 @@ export const idlService = IDL.Service({
     ),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+  'setDailyActivityEntry' : IDL.Func(
+      [IDL.Nat, IDL.Nat, IDL.Nat, ActivityDayEntry],
+      [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+      [],
+    ),
   'setUserTimeZone' : IDL.Func([TimeZone], [], []),
   'toggleCompletion' : IDL.Func([IDL.Nat, IDL.Nat, IDL.Nat, IDL.Bool], [], []),
   'updateHabit' : IDL.Func(
       [IDL.Nat, IDL.Text, IDL.Text, IDL.Opt(Time)],
       [],
+      [],
+    ),
+  'updateHabitActivityType' : IDL.Func(
+      [IDL.Nat, IDL.Opt(ActivityType)],
+      [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
       [],
     ),
   'updateHabitUnitType' : IDL.Func([IDL.Nat, IDL.Text], [], []),
@@ -107,6 +171,41 @@ export const idlFactory = ({ IDL }) => {
     'utcOffsetMinutes' : IDL.Int,
   });
   const UserProfile = IDL.Record({ 'name' : IDL.Text });
+  const SwimmingEntry = IDL.Record({
+    'duration' : IDL.Opt(IDL.Text),
+    'distance' : IDL.Float64,
+    'strokeType' : IDL.Opt(IDL.Text),
+  });
+  const StrengthEntry = IDL.Record({
+    'weight' : IDL.Float64,
+    'reps' : IDL.Nat,
+    'sets' : IDL.Nat,
+    'unit' : IDL.Text,
+    'exerciseName' : IDL.Text,
+  });
+  const CyclingEntry = IDL.Record({
+    'duration' : IDL.Opt(IDL.Text),
+    'distance' : IDL.Float64,
+    'intensity' : IDL.Opt(IDL.Text),
+  });
+  const RunningEntry = IDL.Record({
+    'duration' : IDL.Opt(IDL.Text),
+    'pace' : IDL.Opt(IDL.Text),
+    'distance' : IDL.Float64,
+  });
+  const ActivityDayEntry = IDL.Variant({
+    'swimming' : SwimmingEntry,
+    'strength' : StrengthEntry,
+    'cycling' : CyclingEntry,
+    'running' : RunningEntry,
+  });
+  const ActivityType = IDL.Variant({
+    'swimming' : IDL.Null,
+    'freeform' : IDL.Null,
+    'cycling' : IDL.Null,
+    'running' : IDL.Null,
+    'strengthTraining' : IDL.Null,
+  });
   const DayEntries = IDL.Record({ 'day' : IDL.Nat, 'completed' : IDL.Bool });
   const CompletionState = IDL.Record({
     'may' : IDL.Vec(DayEntries),
@@ -149,15 +248,34 @@ export const idlFactory = ({ IDL }) => {
     'name' : IDL.Text,
     'description' : IDL.Text,
   });
+  const MonthlyActivityAggregate = IDL.Record({
+    'totalDistanceKm' : IDL.Float64,
+    'totalReps' : IDL.Nat,
+  });
   
   return IDL.Service({
-    '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+    '_initializeAccessControl' : IDL.Func([], [], []),
     'addHabit' : IDL.Func([IDL.Text, IDL.Text, IDL.Opt(Time)], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
     'getCallerTimeZone' : IDL.Func([], [IDL.Opt(TimeZone)], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+    'getDailyActivityEntry' : IDL.Func(
+        [IDL.Nat, IDL.Nat, IDL.Nat],
+        [IDL.Opt(ActivityDayEntry)],
+        ['query'],
+      ),
+    'getHabitActivityType' : IDL.Func(
+        [IDL.Nat],
+        [IDL.Opt(ActivityType)],
+        ['query'],
+      ),
     'getHabits' : IDL.Func([], [IDL.Vec(Habit)], ['query']),
+    'getMonthlyActivityAggregate' : IDL.Func(
+        [IDL.Nat, IDL.Nat],
+        [IDL.Opt(MonthlyActivityAggregate)],
+        ['query'],
+      ),
     'getTodaysQuote' : IDL.Func([], [IDL.Text], ['query']),
     'getTotalHabitsCount' : IDL.Func([], [IDL.Nat], ['query']),
     'getUserProfile' : IDL.Func(
@@ -167,6 +285,11 @@ export const idlFactory = ({ IDL }) => {
       ),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+    'setDailyActivityEntry' : IDL.Func(
+        [IDL.Nat, IDL.Nat, IDL.Nat, ActivityDayEntry],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        [],
+      ),
     'setUserTimeZone' : IDL.Func([TimeZone], [], []),
     'toggleCompletion' : IDL.Func(
         [IDL.Nat, IDL.Nat, IDL.Nat, IDL.Bool],
@@ -176,6 +299,11 @@ export const idlFactory = ({ IDL }) => {
     'updateHabit' : IDL.Func(
         [IDL.Nat, IDL.Text, IDL.Text, IDL.Opt(Time)],
         [],
+        [],
+      ),
+    'updateHabitActivityType' : IDL.Func(
+        [IDL.Nat, IDL.Opt(ActivityType)],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
         [],
       ),
     'updateHabitUnitType' : IDL.Func([IDL.Nat, IDL.Text], [], []),

@@ -1,0 +1,151 @@
+type VolumeTracking = 
+ record {
+   april: TimeVolumeEntry;
+   august: TimeVolumeEntry;
+   december: TimeVolumeEntry;
+   february: TimeVolumeEntry;
+   january: TimeVolumeEntry;
+   july: TimeVolumeEntry;
+   june: TimeVolumeEntry;
+   march: TimeVolumeEntry;
+   may: TimeVolumeEntry;
+   november: TimeVolumeEntry;
+   october: TimeVolumeEntry;
+   september: TimeVolumeEntry;
+   unitType: text;
+ };
+type UserRole = 
+ variant {
+   admin;
+   guest;
+   user;
+ };
+type UserProfile = record {name: text;};
+type TimeZone = 
+ record {
+   name: text;
+   utcOffsetMinutes: int;
+ };
+type TimeVolumeEntry = 
+ record {
+   minutes: opt nat;
+   timeString: opt text;
+ };
+type Time = int;
+type SwimmingEntry = 
+ record {
+   distance: float64;
+   duration: opt text;
+   strokeType: opt text;
+ };
+type StrengthEntry = 
+ record {
+   exerciseName: text;
+   reps: nat;
+   sets: nat;
+   unit: text;
+   weight: float64;
+ };
+type RunningEntry = 
+ record {
+   distance: float64;
+   duration: opt text;
+   pace: opt text;
+ };
+type MonthlyActivityAggregate = 
+ record {
+   totalDistanceKm: float64;
+   totalReps: nat;
+ };
+type Habit = 
+ record {
+   completion: CompletionState;
+   description: text;
+   id: nat;
+   name: text;
+   reminder: opt Time;
+   volumeTracking: opt VolumeTracking;
+ };
+type DayEntries = 
+ record {
+   completed: bool;
+   day: nat;
+ };
+type CyclingEntry = 
+ record {
+   distance: float64;
+   duration: opt text;
+   intensity: opt text;
+ };
+type CompletionState = 
+ record {
+   april: vec DayEntries;
+   august: vec DayEntries;
+   december: vec DayEntries;
+   february: vec DayEntries;
+   january: vec DayEntries;
+   july: vec DayEntries;
+   june: vec DayEntries;
+   march: vec DayEntries;
+   may: vec DayEntries;
+   november: vec DayEntries;
+   october: vec DayEntries;
+   september: vec DayEntries;
+ };
+type ActivityType = 
+ variant {
+   cycling;
+   freeform;
+   running;
+   strengthTraining;
+   swimming;
+ };
+type ActivityDayEntry = 
+ variant {
+   cycling: CyclingEntry;
+   running: RunningEntry;
+   strength: StrengthEntry;
+   swimming: SwimmingEntry;
+ };
+service : {
+  _initializeAccessControl: () -> ();
+  addHabit: (name: text, description: text, reminder: opt Time) -> ();
+  assignCallerUserRole: (user: principal, role: UserRole) -> ();
+  getCallerTimeZone: () -> (opt TimeZone) query;
+  getCallerUserProfile: () -> (opt UserProfile) query;
+  getCallerUserRole: () -> (UserRole) query;
+  /// Get the multi-field activity entry for a specific habit/month/day.
+  getDailyActivityEntry: (habitId: nat, month: nat, day: nat) ->
+   (opt ActivityDayEntry) query;
+  /// Get the activityType for a specific habit (null if not set).
+  getHabitActivityType: (habitId: nat) -> (opt ActivityType) query;
+  getHabits: () -> (vec Habit) query;
+  /// Get monthly aggregate stats (total distance km + total reps) for a habit.
+  getMonthlyActivityAggregate: (habitId: nat, month: nat) ->
+   (opt MonthlyActivityAggregate) query;
+  getTodaysQuote: () -> (text) query;
+  getTotalHabitsCount: () -> (nat) query;
+  getUserProfile: (user: principal) -> (opt UserProfile) query;
+  isCallerAdmin: () -> (bool) query;
+  saveCallerUserProfile: (profile: UserProfile) -> ();
+  /// Set or replace a multi-field activity entry for a specific habit/month/day.
+  setDailyActivityEntry: (habitId: nat, month: nat, day: nat, entry:
+   ActivityDayEntry) -> (variant {
+                           err: text;
+                           ok;
+                         });
+  setUserTimeZone: (timeZone: TimeZone) -> ();
+  toggleCompletion: (habitId: nat, month: nat, day: nat, completed: bool) ->
+   ();
+  updateHabit: (habitId: nat, name: text, description: text, reminder:
+   opt Time) -> ();
+  /// Update the activityType tag on a habit (nil to clear).
+  updateHabitActivityType: (habitId: nat, activityType: opt ActivityType) ->
+   (variant {
+      err: text;
+      ok;
+    });
+  updateHabitUnitType: (habitId: nat, unitType: text) -> ();
+  updateHabitVolume: (habitId: nat, monthIndex: nat, entry:
+   TimeVolumeEntry) -> ();
+}

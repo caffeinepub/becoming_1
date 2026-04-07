@@ -1,6 +1,6 @@
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { LoginButton } from './LoginButton';
-import { Info } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Info } from "lucide-react";
+import { LoginButton } from "./LoginButton";
 
 export function AuthRequiredNotice() {
   return (
@@ -9,8 +9,9 @@ export function AuthRequiredNotice() {
       <AlertTitle>Sign in required</AlertTitle>
       <AlertDescription className="mt-2 space-y-3">
         <p>
-          Please sign in with Internet Identity to view and save your habits. Your data will be
-          securely stored and accessible across all your devices.
+          Please sign in with Internet Identity to view and save your habits.
+          Your data will be securely stored and accessible across all your
+          devices.
         </p>
         <div>
           <LoginButton />

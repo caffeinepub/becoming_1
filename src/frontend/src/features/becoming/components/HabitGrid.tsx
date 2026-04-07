@@ -1,7 +1,7 @@
-import { HabitRow } from './HabitRow';
-import { getDaysInMonth } from '../constants/months2026';
-import type { HabitWithCompletion } from '../state/habitModel';
-import { HABIT_INFO_WIDTH, getDayColumnClasses } from './habitGridLayout';
+import { getDaysInMonth } from "../constants/months2026";
+import type { HabitWithCompletion } from "../state/habitModel";
+import { HabitRow } from "./HabitRow";
+import { HABIT_INFO_WIDTH, getDayColumnClasses } from "./habitGridLayout";
 
 interface HabitGridProps {
   habits: HabitWithCompletion[];
@@ -9,7 +9,11 @@ interface HabitGridProps {
   disabled?: boolean;
 }
 
-export function HabitGrid({ habits, selectedMonth, disabled = false }: HabitGridProps) {
+export function HabitGrid({
+  habits,
+  selectedMonth,
+  disabled = false,
+}: HabitGridProps) {
   const daysInMonth = getDaysInMonth(selectedMonth);
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
@@ -27,7 +31,9 @@ export function HabitGrid({ habits, selectedMonth, disabled = false }: HabitGrid
       <div className="inline-block min-w-full">
         {/* Header row with day numbers */}
         <div className="flex border-b-2 border-border bg-muted/50">
-          <div className={`${HABIT_INFO_WIDTH} flex-shrink-0 px-4 py-3 font-semibold text-sm border-r-2 border-border sticky left-0 z-10 bg-muted/50 md:static md:z-auto`}>
+          <div
+            className={`${HABIT_INFO_WIDTH} flex-shrink-0 px-4 py-3 font-semibold text-sm border-r-2 border-border sticky left-0 z-10 bg-muted/50 md:static md:z-auto`}
+          >
             Habit
           </div>
           <div className="flex">

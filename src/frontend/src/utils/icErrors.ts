@@ -10,13 +10,13 @@ export function normalizeError(error: unknown): Error {
   if (error instanceof Error) {
     return error;
   }
-  if (typeof error === 'string') {
+  if (typeof error === "string") {
     return new Error(error);
   }
-  if (error && typeof error === 'object' && 'message' in error) {
+  if (error && typeof error === "object" && "message" in error) {
     return new Error(String(error.message));
   }
-  return new Error('An unknown error occurred');
+  return new Error("An unknown error occurred");
 }
 
 /**
@@ -26,22 +26,25 @@ export function normalizeError(error: unknown): Error {
 export function isStoppedCanisterError(error: unknown): boolean {
   const normalized = normalizeError(error);
   const message = normalized.message.toLowerCase();
-  
+
   // Check for IC0508 error code
-  if (message.includes('ic0508')) {
+  if (message.includes("ic0508")) {
     return true;
   }
-  
+
   // Check for reject_code 5
-  if (message.includes('reject code: 5') || message.includes('reject_code: 5')) {
+  if (
+    message.includes("reject code: 5") ||
+    message.includes("reject_code: 5")
+  ) {
     return true;
   }
-  
+
   // Check for "canister ... is stopped" message pattern
-  if (message.includes('canister') && message.includes('is stopped')) {
+  if (message.includes("canister") && message.includes("is stopped")) {
     return true;
   }
-  
+
   return false;
 }
 
@@ -50,7 +53,7 @@ export function isStoppedCanisterError(error: unknown): boolean {
  * Returns a safe message that omits raw CBOR/HTTP dumps.
  */
 export function getStoppedCanisterMessage(): string {
-  return 'The backend is temporarily unavailable. The canister may be stopped or restarting. Please try again in a moment.';
+  return "The backend is temporarily unavailable. The canister may be stopped or restarting. Please try again in a moment.";
 }
 
 /**
@@ -60,7 +63,7 @@ export function getUserFriendlyErrorMessage(error: unknown): string {
   if (isStoppedCanisterError(error)) {
     return getStoppedCanisterMessage();
   }
-  
+
   const normalized = normalizeError(error);
   return normalized.message;
 }

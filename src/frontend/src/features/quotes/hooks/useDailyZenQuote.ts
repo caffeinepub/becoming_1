@@ -1,8 +1,8 @@
-import { useQuery } from '@tanstack/react-query';
-import { useActorWithTimeout } from '../../../hooks/useActorWithTimeout';
-import { useInternetIdentity } from '../../../hooks/useInternetIdentity';
-import { useEffect, useRef } from 'react';
-import { getMillisecondsUntilNext8amUK } from '../utils/ukQuoteRollover';
+import { useInternetIdentity } from "@caffeineai/core-infrastructure";
+import { useQuery } from "@tanstack/react-query";
+import { useCallback, useEffect, useRef } from "react";
+import { useActorWithTimeout } from "../../../hooks/useActorWithTimeout";
+import { getMillisecondsUntilNext8amUK } from "../utils/ukQuoteRollover";
 
 interface QuoteState {
   quote: { text: string; author: string } | null;
@@ -12,16 +12,19 @@ interface QuoteState {
   refetch: () => void;
 }
 
-function parseQuoteString(quoteString: string): { text: string; author: string } {
+function parseQuoteString(quoteString: string): {
+  text: string;
+  author: string;
+} {
   // Expected format: "Quote text - Author Name"
-  const lastDashIndex = quoteString.lastIndexOf(' - ');
+  const lastDashIndex = quoteString.lastIndexOf(" - ");
   if (lastDashIndex === -1) {
-    return { text: quoteString, author: 'Unknown' };
+    return { text: quoteString, author: "Unknown" };
   }
-  
+
   const text = quoteString.substring(0, lastDashIndex).trim();
   const author = quoteString.substring(lastDashIndex + 3).trim();
-  
+
   return { text, author };
 }
 
@@ -31,12 +34,13 @@ export function useDailyZenQuote(): QuoteState {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const isAuthenticated = !!identity;
+  const principalStr = identity?.getPrincipal().toString();
 
   // Query for today's quote (no timezone dependency)
   const quoteQuery = useQuery<string>({
-    queryKey: ['todaysQuote', identity?.getPrincipal().toString()],
+    queryKey: ["todaysQuote", principalStr],
     queryFn: async () => {
-      if (!actor) throw new Error('Actor not available');
+      if (!actor) throw new Error("Actor not available");
       return actor.getTodaysQuote();
     },
     enabled: !!actor && !isActorFetching && isAuthenticated,
@@ -49,9 +53,9 @@ export function useDailyZenQuote(): QuoteState {
 
   const quote = quoteQuery.data ? parseQuoteString(quoteQuery.data) : null;
 
-  const refetch = () => {
+  const refetch = useCallback(() => {
     quoteQuery.refetch();
-  };
+  }, [quoteQuery]);
 
   // Schedule automatic refetch at next 8am UK time
   useEffect(() => {
@@ -68,7 +72,7 @@ export function useDailyZenQuote(): QuoteState {
 
     const scheduleNextRefetch = () => {
       const msUntilNext8am = getMillisecondsUntilNext8amUK();
-      
+
       timerRef.current = setTimeout(() => {
         refetch();
         // Schedule the next refetch after this one completes
@@ -85,7 +89,7 @@ export function useDailyZenQuote(): QuoteState {
         timerRef.current = null;
       }
     };
-  }, [isAuthenticated, isActorFetching, identity?.getPrincipal().toString()]);
+  }, [isAuthenticated, isActorFetching, refetch]);
 
   return {
     quote,

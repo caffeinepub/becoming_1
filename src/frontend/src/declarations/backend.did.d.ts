@@ -10,6 +10,15 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
+export type ActivityDayEntry = { 'swimming' : SwimmingEntry } |
+  { 'strength' : StrengthEntry } |
+  { 'cycling' : CyclingEntry } |
+  { 'running' : RunningEntry };
+export type ActivityType = { 'swimming' : null } |
+  { 'freeform' : null } |
+  { 'cycling' : null } |
+  { 'running' : null } |
+  { 'strengthTraining' : null };
 export interface CompletionState {
   'may' : Array<DayEntries>,
   'march' : Array<DayEntries>,
@@ -24,6 +33,11 @@ export interface CompletionState {
   'october' : Array<DayEntries>,
   'december' : Array<DayEntries>,
 }
+export interface CyclingEntry {
+  'duration' : [] | [string],
+  'distance' : number,
+  'intensity' : [] | [string],
+}
 export interface DayEntries { 'day' : bigint, 'completed' : boolean }
 export interface Habit {
   'id' : bigint,
@@ -32,6 +46,27 @@ export interface Habit {
   'reminder' : [] | [Time],
   'name' : string,
   'description' : string,
+}
+export interface MonthlyActivityAggregate {
+  'totalDistanceKm' : number,
+  'totalReps' : bigint,
+}
+export interface RunningEntry {
+  'duration' : [] | [string],
+  'pace' : [] | [string],
+  'distance' : number,
+}
+export interface StrengthEntry {
+  'weight' : number,
+  'reps' : bigint,
+  'sets' : bigint,
+  'unit' : string,
+  'exerciseName' : string,
+}
+export interface SwimmingEntry {
+  'duration' : [] | [string],
+  'distance' : number,
+  'strokeType' : [] | [string],
 }
 export type Time = bigint;
 export interface TimeVolumeEntry {
@@ -59,24 +94,58 @@ export interface VolumeTracking {
   'december' : TimeVolumeEntry,
 }
 export interface _SERVICE {
-  '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
+  '_initializeAccessControl' : ActorMethod<[], undefined>,
   'addHabit' : ActorMethod<[string, string, [] | [Time]], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'getCallerTimeZone' : ActorMethod<[], [] | [TimeZone]>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
+  /**
+   * / Get the multi-field activity entry for a specific habit/month/day.
+   */
+  'getDailyActivityEntry' : ActorMethod<
+    [bigint, bigint, bigint],
+    [] | [ActivityDayEntry]
+  >,
+  /**
+   * / Get the activityType for a specific habit (null if not set).
+   */
+  'getHabitActivityType' : ActorMethod<[bigint], [] | [ActivityType]>,
   'getHabits' : ActorMethod<[], Array<Habit>>,
+  /**
+   * / Get monthly aggregate stats (total distance km + total reps) for a habit.
+   */
+  'getMonthlyActivityAggregate' : ActorMethod<
+    [bigint, bigint],
+    [] | [MonthlyActivityAggregate]
+  >,
   'getTodaysQuote' : ActorMethod<[], string>,
   'getTotalHabitsCount' : ActorMethod<[], bigint>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
+  /**
+   * / Set or replace a multi-field activity entry for a specific habit/month/day.
+   */
+  'setDailyActivityEntry' : ActorMethod<
+    [bigint, bigint, bigint, ActivityDayEntry],
+    { 'ok' : null } |
+      { 'err' : string }
+  >,
   'setUserTimeZone' : ActorMethod<[TimeZone], undefined>,
   'toggleCompletion' : ActorMethod<
     [bigint, bigint, bigint, boolean],
     undefined
   >,
   'updateHabit' : ActorMethod<[bigint, string, string, [] | [Time]], undefined>,
+  /**
+   * / Update the activityType tag on a habit (nil to clear).
+   */
+  'updateHabitActivityType' : ActorMethod<
+    [bigint, [] | [ActivityType]],
+    { 'ok' : null } |
+      { 'err' : string }
+  >,
   'updateHabitUnitType' : ActorMethod<[bigint, string], undefined>,
   'updateHabitVolume' : ActorMethod<
     [bigint, bigint, TimeVolumeEntry],

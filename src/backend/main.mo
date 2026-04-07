@@ -1,5 +1,6 @@
 import Map "mo:core/Map";
 import Int "mo:core/Int";
+import Iter "mo:core/Iter";
 import Time "mo:core/Time";
 import Array "mo:core/Array";
 import Nat "mo:core/Nat";
@@ -7,8 +8,13 @@ import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
 import Text "mo:core/Text";
 
-import MixinAuthorization "authorization/MixinAuthorization";
-import AccessControl "authorization/access-control";
+import MixinAuthorization "mo:caffeineai-authorization/MixinAuthorization";
+import AccessControl "mo:caffeineai-authorization/access-control";
+
+import ActivityTypes "types/activity";
+import ActivityLib "lib/activity";
+
+
 
 actor {
   public type UserProfile = {
@@ -21,9 +27,56 @@ actor {
   };
 
   let QUOTES : [Text] = [
-    "The only way to do great work is to love what you do. - Steve Jobs",
-    "Success is not the key to happiness. Happiness is the key to success. - Albert Schweitzer",
-    "Don't count the days, make the days count. - Muhammad Ali",
+    "The unexamined life is not worth living. - Socrates",
+    "He who has a why to live can bear almost any how. - Friedrich Nietzsche",
+    "Life is what happens when you're busy making other plans. - John Lennon",
+    "We are what we repeatedly do. Excellence, then, is not an act, but a habit. - Aristotle",
+    "Life is really simple, but we insist on making it complicated. - Confucius",
+    "The only constant in life is change. - Heraclitus",
+    "To be is to be perceived. - George Berkeley",
+    "Man is condemned to be free. - Jean-Paul Sartre",
+    "Life can only be understood backwards; but it must be lived forwards. - Soren Kierkegaard",
+    "In the midst of winter, I found there was, within me, an invincible summer. - Albert Camus",
+    "I think, therefore I am. - Rene Descartes",
+    "The only thing I know is that I know nothing. - Socrates",
+    "Yesterday I was clever, so I wanted to change the world. Today I am wise, so I am changing myself. - Rumi",
+    "The mind is its own place, and in itself can make a heaven of hell, a hell of heaven. - John Milton",
+    "Whatever is begun in anger ends in shame. - Benjamin Franklin",
+    "The greatest discovery of my generation is that a human being can alter his life by altering his attitudes. - William James",
+    "Everything that irritates us about others can lead us to an understanding of ourselves. - Carl Jung",
+    "Knowledge is power. - Francis Bacon",
+    "The wound is the place where the Light enters you. - Rumi",
+    "Your visions will become clear only when you can look into your own heart. - Carl Jung",
+    "Be the change that you wish to see in the world. - Mahatma Gandhi",
+    "Darkness cannot drive out darkness; only light can do that. Hate cannot drive out hate; only love can do that. - Martin Luther King Jr.",
+    "Those who do not remember the past are condemned to repeat it. - George Santayana",
+    "Man is by nature a political animal. - Aristotle",
+    "The measure of a man is what he does with power. - Plato",
+    "Injustice anywhere is a threat to justice everywhere. - Martin Luther King Jr.",
+    "Freedom is what you do with what's been done to you. - Jean-Paul Sartre",
+    "Government of the people, by the people, for the people, shall not perish from the earth. - Abraham Lincoln",
+    "The secret of freedom lies in educating people, whereas the secret of tyranny is in keeping them ignorant. - Maximilien Robespierre",
+    "The best way to predict the future is to create it. - Peter Drucker",
+    "What does not kill me makes me stronger. - Friedrich Nietzsche",
+    "Waste no more time arguing about what a good man should be. Be one. - Marcus Aurelius",
+    "The journey of a thousand miles begins with one step. - Lao Tzu",
+    "It is not death that a man should fear, but he should fear never beginning to live. - Marcus Aurelius",
+    "Character is destiny. - Heraclitus",
+    "Integrity is doing the right thing, even when no one is watching. - C.S. Lewis",
+    "Success is not final, failure is not fatal: it is the courage to continue that counts. - Winston Churchill",
+    "Do what you can, with what you have, where you are. - Theodore Roosevelt",
+    "Happiness depends upon ourselves. - Aristotle",
+    "Amor Fati: Love your fate, which is in fact your life. - Friedrich Nietzsche",
+    "Man is the measure of all things. - Protagoras",
+    "The privilege of a lifetime is to become who you truly are. - Carl Jung",
+    "Whereof one cannot speak, thereof one must be silent. - Ludwig Wittgenstein",
+    "The heart has its reasons which reason knows nothing of. - Blaise Pascal",
+    "Hell is other people. - Jean-Paul Sartre",
+    "Two things are infinite: the universe and human stupidity; and I'm not sure about the universe. - Albert Einstein",
+    "Out of the crooked timber of humanity, no straight thing was ever made. - Immanuel Kant",
+    "Science is what you know, philosophy is what you don't know. - Bertrand Russell",
+    "If you want to know what a man's like, take a good look at how he treats his inferiors, not his equals. - J.K. Rowling",
+    "God is dead. God remains dead. And we have killed him. - Friedrich Nietzsche",
   ];
 
   type DayEntries = {
@@ -84,9 +137,11 @@ actor {
   let habitQuoteUserProfiles = Map.empty<Principal, UserProfile>();
   let userTimeZones = Map.empty<Principal, TimeZone>();
   let persistentUserHabits = Map.empty<Principal, UserHabitsData>();
+  // Separate stable maps for new activity fields (keeps Habit type backward-compatible)
+  let persistentActivityTypes = Map.empty<Principal, [(Nat, ActivityTypes.ActivityType)]>();
+  let persistentActivityData  = Map.empty<Principal, [(Nat, ActivityTypes.ActivityData)]>();
 
-  var _initialized : Bool = false;
-  var accessControlState : AccessControl.AccessControlState = AccessControl.initState();
+  let accessControlState = AccessControl.initState();
 
   include MixinAuthorization(accessControlState);
 
@@ -116,18 +171,6 @@ actor {
       Runtime.trap("Unauthorized: Only users can view time zones");
     };
     userTimeZones.get(caller);
-  };
-
-  func getCurrentLocalDay(caller : Principal, currentTime : Time.Time) : Nat {
-    let currentTimeZone = switch (userTimeZones.get(caller)) {
-      case (null) { { utcOffsetMinutes = 0; name = "UTC" } };
-      case (?zone) { zone };
-    };
-    let utcOffsetNanos = currentTimeZone.utcOffsetMinutes * 60 * 1_000_000_000;
-    let localTime = currentTime + utcOffsetNanos;
-
-    let localDay = (localTime / 1_000_000_000 / 60 * 60 * 24 : Int);
-    localDay.toNat();
   };
 
   func getUKAdjustedDayIndex(currentTime : Int) : Nat {
@@ -430,29 +473,32 @@ actor {
       };
     };
 
-    func updateMonthOnly(habit : Habit, monthIndex : Nat, entry : TimeVolumeEntry) : Habit {
-      let updatedVolumeTracking = switch (habit.volumeTracking) {
-        case (null) {
-          let baseVolumeTracking = {
-            unitType = "time";
-            january = if (monthIndex == 0) { entry } else { defaultVolumeEntry() };
-            february = if (monthIndex == 1) { entry } else { defaultVolumeEntry() };
-            march = if (monthIndex == 2) { entry } else { defaultVolumeEntry() };
-            april = if (monthIndex == 3) { entry } else { defaultVolumeEntry() };
-            may = if (monthIndex == 4) { entry } else { defaultVolumeEntry() };
-            june = if (monthIndex == 5) { entry } else { defaultVolumeEntry() };
-            july = if (monthIndex == 6) { entry } else { defaultVolumeEntry() };
-            august = if (monthIndex == 7) { entry } else { defaultVolumeEntry() };
-            september = if (monthIndex == 8) { entry } else { defaultVolumeEntry() };
-            october = if (monthIndex == 9) { entry } else { defaultVolumeEntry() };
-            november = if (monthIndex == 10) { entry } else { defaultVolumeEntry() };
-            december = if (monthIndex == 11) { entry } else { defaultVolumeEntry() };
-          };
-          baseVolumeTracking;
+    // Converts a timeString like "1:15" (mm:ss) to total seconds.
+    // "1:15" -> 75 seconds. "45" -> 45 * 60 = 2700 seconds (45 minutes).
+    public func timeStringToSeconds(ts : Text) : Nat {
+      let parts = ts.split(#char ':').toArray();
+      switch (parts.size()) {
+        case (2) {
+          let m = switch (Nat.fromText(parts[0])) { case (?v) v; case null 0 };
+          let s = switch (Nat.fromText(parts[1])) { case (?v) v; case null 0 };
+          m * 60 + s;
         };
-        case (?existingVolumeTracking) { updateMonthEntry(existingVolumeTracking, monthIndex, entry) };
+        case (_) {
+          let m = switch (Nat.fromText(ts)) { case (?v) v; case null 0 };
+          m * 60;
+        };
       };
-      { habit with volumeTracking = ?updatedVolumeTracking };
+    };
+
+    // Converts total seconds to "mm:ss" timeString.
+    public func secondsToTimeString(totalSeconds : Nat) : Text {
+      let mins = totalSeconds / 60;
+      let secs = totalSeconds % 60;
+      if (secs < 10) {
+        mins.toText() # ":0" # secs.toText();
+      } else {
+        mins.toText() # ":" # secs.toText();
+      };
     };
 
     func compoundVolumesFromMonthIndex(
@@ -477,24 +523,57 @@ actor {
         tracking.november,
         tracking.december,
       ];
+
+      // For time habits, work in seconds using timeString as the source of truth.
+      // For reps/other habits, work in the integer minutes/reps field.
+      let startValueInSeconds : ?Nat = if (unitType == "time") {
+        switch (startEntry.timeString) {
+          case (?ts) { ?timeStringToSeconds(ts) };
+          case null {
+            switch (startEntry.minutes) {
+              case (?m) { ?(m * 60) };
+              case null null;
+            };
+          };
+        };
+      } else { null };
+
       let updatedMonthsArray = Array.tabulate(
         monthsArray.size(),
         func(i) {
-          switch (startEntry.minutes) {
-            case (null) {
-              monthsArray[i];
-            };
-            case (?minutes_value) {
-              if (i == startIndex) {
-                startEntry;
-              } else if (i > startIndex) {
-                let compoundedMinutes = Nat.max(0, minutes_value) + (i - startIndex) * increment;
-                {
-                  timeString = null;
-                  minutes = ?compoundedMinutes;
+          if (unitType == "time") {
+            switch (startValueInSeconds) {
+              case (null) { monthsArray[i] };
+              case (?baseSeconds) {
+                if (i == startIndex) {
+                  // Regenerate the start entry with a canonical timeString from seconds
+                  let ts = secondsToTimeString(baseSeconds);
+                  { timeString = ?ts; minutes = ?(baseSeconds / 60) };
+                } else if (i > startIndex) {
+                  // Each month adds `increment` seconds
+                  let compoundedSeconds = baseSeconds + (i - startIndex) * increment;
+                  let ts = secondsToTimeString(compoundedSeconds);
+                  { timeString = ?ts; minutes = ?(compoundedSeconds / 60) };
+                } else {
+                  monthsArray[i];
                 };
-              } else {
-                monthsArray[i];
+              };
+            };
+          } else {
+            switch (startEntry.minutes) {
+              case (null) { monthsArray[i] };
+              case (?minutes_value) {
+                if (i == startIndex) {
+                  startEntry;
+                } else if (i > startIndex) {
+                  let compoundedMinutes = Nat.max(0, minutes_value) + (i - startIndex) * increment;
+                  {
+                    timeString = null;
+                    minutes = ?compoundedMinutes;
+                  };
+                } else {
+                  monthsArray[i];
+                };
               };
             };
           };
@@ -521,9 +600,10 @@ actor {
     func getMonthIncrement(habitName : Text, unitType : Text) : Nat {
       switch (unitType, habitName.toLower().trim(#char ' ')) {
         case ("reps", _) { 5 };
-        // Starting base time is 75 sec for every day in Feb, then every month in/decreases the daily target by +15s (Mar = 90s, Apr = 105s), i.e. monthly target in Mar = 275 * days_in_Mar = 2790 (mins).
+        // Plank: +15 seconds per month. Increment is in SECONDS (matching time storage unit).
+        // Feb=1:15 (75s), Mar=1:30 (90s), Apr=1:45 (105s), etc.
         case ("time", "plank") { 15 };
-        // Always 45 minutes for every day in the month
+        // Squash: always fixed, no increment.
         case ("time", "squash") { 0 };
         case ("time", _) { 30 };
         case (_, _) { 0 };
@@ -723,5 +803,132 @@ actor {
       totalCount += userData.habits.size();
     };
     totalCount;
+  };
+
+  // ── Activity tracking functions ─────────────────────────────────────────────
+
+  // Helper: look up habit activity data for a caller by habitId
+  func getHabitActivityData(caller : Principal, habitId : Nat) : ActivityTypes.ActivityData {
+    switch (persistentActivityData.get(caller)) {
+      case (null) { ActivityLib.emptyActivityData() };
+      case (?pairs) {
+        switch (pairs.find<(Nat, ActivityTypes.ActivityData)>(func(p) { let (id, _) = p; id == habitId })) {
+          case (null) { ActivityLib.emptyActivityData() };
+          case (?(_, d)) { d };
+        };
+      };
+    };
+  };
+
+  // Helper: set habit activity data for a caller by habitId
+  func setHabitActivityData(caller : Principal, habitId : Nat, data : ActivityTypes.ActivityData) {
+    let existing = switch (persistentActivityData.get(caller)) {
+      case (null) { [] };
+      case (?p) { p };
+    };
+    let filtered = existing.filter(func(p) { let (id, _) = p; id != habitId });
+    persistentActivityData.add(caller, filtered.concat<(Nat, ActivityTypes.ActivityData)>([(habitId, data)]));
+  };
+
+  /// Set or replace a multi-field activity entry for a specific habit/month/day.
+  public shared ({ caller }) func setDailyActivityEntry(
+    habitId : Nat,
+    month   : Nat,
+    day     : Nat,
+    entry   : ActivityTypes.ActivityDayEntry,
+  ) : async { #ok; #err : Text } {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      return #err("Unauthorized: Only users can set activity entries");
+    };
+    // Verify the habit exists
+    switch (persistentUserHabits.get(caller)) {
+      case (null) { return #err("No habits found") };
+      case (?userData) {
+        switch (userData.habits.find(func(h) { h.id == habitId })) {
+          case (null) { return #err("Habit not found") };
+          case (_) {};
+        };
+      };
+    };
+    let existingData = getHabitActivityData(caller, habitId);
+    setHabitActivityData(caller, habitId, ActivityLib.setDayEntry(existingData, month, day, entry));
+    #ok;
+  };
+
+  /// Get the multi-field activity entry for a specific habit/month/day.
+  public query ({ caller }) func getDailyActivityEntry(
+    habitId : Nat,
+    month   : Nat,
+    day     : Nat,
+  ) : async ?ActivityTypes.ActivityDayEntry {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view activity entries");
+    };
+    let data = getHabitActivityData(caller, habitId);
+    ActivityLib.getDayEntry(data, month, day);
+  };
+
+  /// Update the activityType tag on a habit (nil to clear).
+  public shared ({ caller }) func updateHabitActivityType(
+    habitId      : Nat,
+    activityType : ?ActivityTypes.ActivityType,
+  ) : async { #ok; #err : Text } {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      return #err("Unauthorized: Only users can update activity type");
+    };
+    // Verify the habit exists
+    switch (persistentUserHabits.get(caller)) {
+      case (null) { return #err("No habits found") };
+      case (?userData) {
+        switch (userData.habits.find(func(h) { h.id == habitId })) {
+          case (null) { return #err("Habit not found") };
+          case (_) {};
+        };
+      };
+    };
+    let existing = switch (persistentActivityTypes.get(caller)) {
+      case (null) { [] };
+      case (?p) { p };
+    };
+    let filtered = existing.filter(func(p) { let (id, _) = p; id != habitId });
+    switch (activityType) {
+      case (null) {
+        persistentActivityTypes.add(caller, filtered);
+      };
+      case (?at) {
+        persistentActivityTypes.add(caller, filtered.concat<(Nat, ActivityTypes.ActivityType)>([(habitId, at)]));
+      };
+    };
+    #ok;
+  };
+
+  /// Get the activityType for a specific habit (null if not set).
+  public query ({ caller }) func getHabitActivityType(
+    habitId : Nat,
+  ) : async ?ActivityTypes.ActivityType {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view activity type");
+    };
+    switch (persistentActivityTypes.get(caller)) {
+      case (null) { null };
+      case (?pairs) {
+        switch (pairs.find<(Nat, ActivityTypes.ActivityType)>(func(p) { let (id, _) = p; id == habitId })) {
+          case (null) { null };
+          case (?(_, at)) { ?at };
+        };
+      };
+    };
+  };
+
+  /// Get monthly aggregate stats (total distance km + total reps) for a habit.
+  public query ({ caller }) func getMonthlyActivityAggregate(
+    habitId : Nat,
+    month   : Nat,
+  ) : async ?ActivityTypes.MonthlyActivityAggregate {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view activity aggregates");
+    };
+    let data = getHabitActivityData(caller, habitId);
+    ?ActivityLib.aggregateMonth(ActivityLib.getMonthLog(data, month));
   };
 };

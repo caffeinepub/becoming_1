@@ -89,28 +89,28 @@ export class ExternalBlob {
         return this;
     }
 }
-export interface CompletionState {
-    may: Array<DayEntries>;
-    march: Array<DayEntries>;
-    april: Array<DayEntries>;
-    november: Array<DayEntries>;
-    july: Array<DayEntries>;
-    june: Array<DayEntries>;
-    february: Array<DayEntries>;
-    september: Array<DayEntries>;
-    august: Array<DayEntries>;
-    january: Array<DayEntries>;
-    october: Array<DayEntries>;
-    december: Array<DayEntries>;
-}
 export type Time = bigint;
 export interface DayEntries {
     day: bigint;
     completed: boolean;
 }
-export interface TimeZone {
-    name: string;
-    utcOffsetMinutes: bigint;
+export type ActivityDayEntry = {
+    __kind__: "swimming";
+    swimming: SwimmingEntry;
+} | {
+    __kind__: "strength";
+    strength: StrengthEntry;
+} | {
+    __kind__: "cycling";
+    cycling: CyclingEntry;
+} | {
+    __kind__: "running";
+    running: RunningEntry;
+};
+export interface CyclingEntry {
+    duration?: string;
+    distance: number;
+    intensity?: string;
 }
 export interface Habit {
     id: bigint;
@@ -119,6 +119,11 @@ export interface Habit {
     reminder?: Time;
     name: string;
     description: string;
+}
+export interface RunningEntry {
+    duration?: string;
+    pace?: string;
+    distance: number;
 }
 export interface VolumeTracking {
     unitType: string;
@@ -135,12 +140,53 @@ export interface VolumeTracking {
     october: TimeVolumeEntry;
     december: TimeVolumeEntry;
 }
-export interface UserProfile {
-    name: string;
+export interface MonthlyActivityAggregate {
+    totalDistanceKm: number;
+    totalReps: bigint;
+}
+export interface CompletionState {
+    may: Array<DayEntries>;
+    march: Array<DayEntries>;
+    april: Array<DayEntries>;
+    november: Array<DayEntries>;
+    july: Array<DayEntries>;
+    june: Array<DayEntries>;
+    february: Array<DayEntries>;
+    september: Array<DayEntries>;
+    august: Array<DayEntries>;
+    january: Array<DayEntries>;
+    october: Array<DayEntries>;
+    december: Array<DayEntries>;
 }
 export interface TimeVolumeEntry {
     minutes?: bigint;
     timeString?: string;
+}
+export interface TimeZone {
+    name: string;
+    utcOffsetMinutes: bigint;
+}
+export interface SwimmingEntry {
+    duration?: string;
+    distance: number;
+    strokeType?: string;
+}
+export interface UserProfile {
+    name: string;
+}
+export interface StrengthEntry {
+    weight: number;
+    reps: bigint;
+    sets: bigint;
+    unit: string;
+    exerciseName: string;
+}
+export enum ActivityType {
+    swimming = "swimming",
+    freeform = "freeform",
+    cycling = "cycling",
+    running = "running",
+    strengthTraining = "strengthTraining"
 }
 export enum UserRole {
     admin = "admin",
@@ -148,38 +194,70 @@ export enum UserRole {
     guest = "guest"
 }
 export interface backendInterface {
-    _initializeAccessControlWithSecret(userSecret: string): Promise<void>;
+    _initializeAccessControl(): Promise<void>;
     addHabit(name: string, description: string, reminder: Time | null): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     getCallerTimeZone(): Promise<TimeZone | null>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
+    /**
+     * / Get the multi-field activity entry for a specific habit/month/day.
+     */
+    getDailyActivityEntry(habitId: bigint, month: bigint, day: bigint): Promise<ActivityDayEntry | null>;
+    /**
+     * / Get the activityType for a specific habit (null if not set).
+     */
+    getHabitActivityType(habitId: bigint): Promise<ActivityType | null>;
     getHabits(): Promise<Array<Habit>>;
+    /**
+     * / Get monthly aggregate stats (total distance km + total reps) for a habit.
+     */
+    getMonthlyActivityAggregate(habitId: bigint, month: bigint): Promise<MonthlyActivityAggregate | null>;
     getTodaysQuote(): Promise<string>;
     getTotalHabitsCount(): Promise<bigint>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
+    /**
+     * / Set or replace a multi-field activity entry for a specific habit/month/day.
+     */
+    setDailyActivityEntry(habitId: bigint, month: bigint, day: bigint, entry: ActivityDayEntry): Promise<{
+        __kind__: "ok";
+        ok: null;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     setUserTimeZone(timeZone: TimeZone): Promise<void>;
     toggleCompletion(habitId: bigint, month: bigint, day: bigint, completed: boolean): Promise<void>;
     updateHabit(habitId: bigint, name: string, description: string, reminder: Time | null): Promise<void>;
+    /**
+     * / Update the activityType tag on a habit (nil to clear).
+     */
+    updateHabitActivityType(habitId: bigint, activityType: ActivityType | null): Promise<{
+        __kind__: "ok";
+        ok: null;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     updateHabitUnitType(habitId: bigint, unitType: string): Promise<void>;
     updateHabitVolume(habitId: bigint, monthIndex: bigint, entry: TimeVolumeEntry): Promise<void>;
 }
-import type { CompletionState as _CompletionState, Habit as _Habit, Time as _Time, TimeVolumeEntry as _TimeVolumeEntry, TimeZone as _TimeZone, UserProfile as _UserProfile, UserRole as _UserRole, VolumeTracking as _VolumeTracking } from "./declarations/backend.did.d.ts";
+import type { ActivityDayEntry as _ActivityDayEntry, ActivityType as _ActivityType, CompletionState as _CompletionState, CyclingEntry as _CyclingEntry, Habit as _Habit, MonthlyActivityAggregate as _MonthlyActivityAggregate, RunningEntry as _RunningEntry, StrengthEntry as _StrengthEntry, SwimmingEntry as _SwimmingEntry, Time as _Time, TimeVolumeEntry as _TimeVolumeEntry, TimeZone as _TimeZone, UserProfile as _UserProfile, UserRole as _UserRole, VolumeTracking as _VolumeTracking } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
-    async _initializeAccessControlWithSecret(arg0: string): Promise<void> {
+    async _initializeAccessControl(): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor._initializeAccessControlWithSecret(arg0);
+                const result = await this.actor._initializeAccessControl();
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor._initializeAccessControlWithSecret(arg0);
+            const result = await this.actor._initializeAccessControl();
             return result;
         }
     }
@@ -253,18 +331,60 @@ export class Backend implements backendInterface {
             return from_candid_UserRole_n6(this._uploadFile, this._downloadFile, result);
         }
     }
+    async getDailyActivityEntry(arg0: bigint, arg1: bigint, arg2: bigint): Promise<ActivityDayEntry | null> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getDailyActivityEntry(arg0, arg1, arg2);
+                return from_candid_opt_n8(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getDailyActivityEntry(arg0, arg1, arg2);
+            return from_candid_opt_n8(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getHabitActivityType(arg0: bigint): Promise<ActivityType | null> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getHabitActivityType(arg0);
+                return from_candid_opt_n18(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getHabitActivityType(arg0);
+            return from_candid_opt_n18(this._uploadFile, this._downloadFile, result);
+        }
+    }
     async getHabits(): Promise<Array<Habit>> {
         if (this.processError) {
             try {
                 const result = await this.actor.getHabits();
-                return from_candid_vec_n8(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n21(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getHabits();
-            return from_candid_vec_n8(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n21(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getMonthlyActivityAggregate(arg0: bigint, arg1: bigint): Promise<MonthlyActivityAggregate | null> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getMonthlyActivityAggregate(arg0, arg1);
+                return from_candid_opt_n31(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getMonthlyActivityAggregate(arg0, arg1);
+            return from_candid_opt_n31(this._uploadFile, this._downloadFile, result);
         }
     }
     async getTodaysQuote(): Promise<string> {
@@ -337,6 +457,26 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async setDailyActivityEntry(arg0: bigint, arg1: bigint, arg2: bigint, arg3: ActivityDayEntry): Promise<{
+        __kind__: "ok";
+        ok: null;
+    } | {
+        __kind__: "err";
+        err: string;
+    }> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.setDailyActivityEntry(arg0, arg1, arg2, to_candid_ActivityDayEntry_n32(this._uploadFile, this._downloadFile, arg3));
+                return from_candid_variant_n40(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.setDailyActivityEntry(arg0, arg1, arg2, to_candid_ActivityDayEntry_n32(this._uploadFile, this._downloadFile, arg3));
+            return from_candid_variant_n40(this._uploadFile, this._downloadFile, result);
+        }
+    }
     async setUserTimeZone(arg0: TimeZone): Promise<void> {
         if (this.processError) {
             try {
@@ -379,6 +519,26 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async updateHabitActivityType(arg0: bigint, arg1: ActivityType | null): Promise<{
+        __kind__: "ok";
+        ok: null;
+    } | {
+        __kind__: "err";
+        err: string;
+    }> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.updateHabitActivityType(arg0, to_candid_opt_n41(this._uploadFile, this._downloadFile, arg1));
+                return from_candid_variant_n40(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.updateHabitActivityType(arg0, to_candid_opt_n41(this._uploadFile, this._downloadFile, arg1));
+            return from_candid_variant_n40(this._uploadFile, this._downloadFile, result);
+        }
+    }
     async updateHabitUnitType(arg0: bigint, arg1: string): Promise<void> {
         if (this.processError) {
             try {
@@ -396,40 +556,61 @@ export class Backend implements backendInterface {
     async updateHabitVolume(arg0: bigint, arg1: bigint, arg2: TimeVolumeEntry): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.updateHabitVolume(arg0, arg1, to_candid_TimeVolumeEntry_n19(this._uploadFile, this._downloadFile, arg2));
+                const result = await this.actor.updateHabitVolume(arg0, arg1, to_candid_TimeVolumeEntry_n44(this._uploadFile, this._downloadFile, arg2));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.updateHabitVolume(arg0, arg1, to_candid_TimeVolumeEntry_n19(this._uploadFile, this._downloadFile, arg2));
+            const result = await this.actor.updateHabitVolume(arg0, arg1, to_candid_TimeVolumeEntry_n44(this._uploadFile, this._downloadFile, arg2));
             return result;
         }
     }
 }
-function from_candid_Habit_n9(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Habit): Habit {
-    return from_candid_record_n10(_uploadFile, _downloadFile, value);
+function from_candid_ActivityDayEntry_n9(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ActivityDayEntry): ActivityDayEntry {
+    return from_candid_variant_n10(_uploadFile, _downloadFile, value);
 }
-function from_candid_TimeVolumeEntry_n14(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _TimeVolumeEntry): TimeVolumeEntry {
+function from_candid_ActivityType_n19(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ActivityType): ActivityType {
+    return from_candid_variant_n20(_uploadFile, _downloadFile, value);
+}
+function from_candid_CyclingEntry_n14(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _CyclingEntry): CyclingEntry {
     return from_candid_record_n15(_uploadFile, _downloadFile, value);
+}
+function from_candid_Habit_n22(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Habit): Habit {
+    return from_candid_record_n23(_uploadFile, _downloadFile, value);
+}
+function from_candid_RunningEntry_n16(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _RunningEntry): RunningEntry {
+    return from_candid_record_n17(_uploadFile, _downloadFile, value);
+}
+function from_candid_SwimmingEntry_n11(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _SwimmingEntry): SwimmingEntry {
+    return from_candid_record_n12(_uploadFile, _downloadFile, value);
+}
+function from_candid_TimeVolumeEntry_n27(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _TimeVolumeEntry): TimeVolumeEntry {
+    return from_candid_record_n28(_uploadFile, _downloadFile, value);
 }
 function from_candid_UserRole_n6(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserRole): UserRole {
     return from_candid_variant_n7(_uploadFile, _downloadFile, value);
 }
-function from_candid_VolumeTracking_n12(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _VolumeTracking): VolumeTracking {
-    return from_candid_record_n13(_uploadFile, _downloadFile, value);
+function from_candid_VolumeTracking_n25(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _VolumeTracking): VolumeTracking {
+    return from_candid_record_n26(_uploadFile, _downloadFile, value);
 }
-function from_candid_opt_n11(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_VolumeTracking]): VolumeTracking | null {
-    return value.length === 0 ? null : from_candid_VolumeTracking_n12(_uploadFile, _downloadFile, value[0]);
-}
-function from_candid_opt_n16(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [bigint]): bigint | null {
+function from_candid_opt_n13(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [string]): string | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_opt_n17(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [string]): string | null {
+function from_candid_opt_n18(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_ActivityType]): ActivityType | null {
+    return value.length === 0 ? null : from_candid_ActivityType_n19(_uploadFile, _downloadFile, value[0]);
+}
+function from_candid_opt_n24(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_VolumeTracking]): VolumeTracking | null {
+    return value.length === 0 ? null : from_candid_VolumeTracking_n25(_uploadFile, _downloadFile, value[0]);
+}
+function from_candid_opt_n29(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [bigint]): bigint | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_opt_n18(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_Time]): Time | null {
+function from_candid_opt_n30(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_Time]): Time | null {
+    return value.length === 0 ? null : value[0];
+}
+function from_candid_opt_n31(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_MonthlyActivityAggregate]): MonthlyActivityAggregate | null {
     return value.length === 0 ? null : value[0];
 }
 function from_candid_opt_n4(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_TimeZone]): TimeZone | null {
@@ -438,7 +619,55 @@ function from_candid_opt_n4(_uploadFile: (file: ExternalBlob) => Promise<Uint8Ar
 function from_candid_opt_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_UserProfile]): UserProfile | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_record_n10(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_opt_n8(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_ActivityDayEntry]): ActivityDayEntry | null {
+    return value.length === 0 ? null : from_candid_ActivityDayEntry_n9(_uploadFile, _downloadFile, value[0]);
+}
+function from_candid_record_n12(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    duration: [] | [string];
+    distance: number;
+    strokeType: [] | [string];
+}): {
+    duration?: string;
+    distance: number;
+    strokeType?: string;
+} {
+    return {
+        duration: record_opt_to_undefined(from_candid_opt_n13(_uploadFile, _downloadFile, value.duration)),
+        distance: value.distance,
+        strokeType: record_opt_to_undefined(from_candid_opt_n13(_uploadFile, _downloadFile, value.strokeType))
+    };
+}
+function from_candid_record_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    duration: [] | [string];
+    distance: number;
+    intensity: [] | [string];
+}): {
+    duration?: string;
+    distance: number;
+    intensity?: string;
+} {
+    return {
+        duration: record_opt_to_undefined(from_candid_opt_n13(_uploadFile, _downloadFile, value.duration)),
+        distance: value.distance,
+        intensity: record_opt_to_undefined(from_candid_opt_n13(_uploadFile, _downloadFile, value.intensity))
+    };
+}
+function from_candid_record_n17(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    duration: [] | [string];
+    pace: [] | [string];
+    distance: number;
+}): {
+    duration?: string;
+    pace?: string;
+    distance: number;
+} {
+    return {
+        duration: record_opt_to_undefined(from_candid_opt_n13(_uploadFile, _downloadFile, value.duration)),
+        pace: record_opt_to_undefined(from_candid_opt_n13(_uploadFile, _downloadFile, value.pace)),
+        distance: value.distance
+    };
+}
+function from_candid_record_n23(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     id: bigint;
     completion: _CompletionState;
     volumeTracking: [] | [_VolumeTracking];
@@ -456,13 +685,13 @@ function from_candid_record_n10(_uploadFile: (file: ExternalBlob) => Promise<Uin
     return {
         id: value.id,
         completion: value.completion,
-        volumeTracking: record_opt_to_undefined(from_candid_opt_n11(_uploadFile, _downloadFile, value.volumeTracking)),
-        reminder: record_opt_to_undefined(from_candid_opt_n18(_uploadFile, _downloadFile, value.reminder)),
+        volumeTracking: record_opt_to_undefined(from_candid_opt_n24(_uploadFile, _downloadFile, value.volumeTracking)),
+        reminder: record_opt_to_undefined(from_candid_opt_n30(_uploadFile, _downloadFile, value.reminder)),
         name: value.name,
         description: value.description
     };
 }
-function from_candid_record_n13(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_record_n26(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     unitType: string;
     may: _TimeVolumeEntry;
     march: _TimeVolumeEntry;
@@ -493,21 +722,21 @@ function from_candid_record_n13(_uploadFile: (file: ExternalBlob) => Promise<Uin
 } {
     return {
         unitType: value.unitType,
-        may: from_candid_TimeVolumeEntry_n14(_uploadFile, _downloadFile, value.may),
-        march: from_candid_TimeVolumeEntry_n14(_uploadFile, _downloadFile, value.march),
-        april: from_candid_TimeVolumeEntry_n14(_uploadFile, _downloadFile, value.april),
-        november: from_candid_TimeVolumeEntry_n14(_uploadFile, _downloadFile, value.november),
-        july: from_candid_TimeVolumeEntry_n14(_uploadFile, _downloadFile, value.july),
-        june: from_candid_TimeVolumeEntry_n14(_uploadFile, _downloadFile, value.june),
-        february: from_candid_TimeVolumeEntry_n14(_uploadFile, _downloadFile, value.february),
-        september: from_candid_TimeVolumeEntry_n14(_uploadFile, _downloadFile, value.september),
-        august: from_candid_TimeVolumeEntry_n14(_uploadFile, _downloadFile, value.august),
-        january: from_candid_TimeVolumeEntry_n14(_uploadFile, _downloadFile, value.january),
-        october: from_candid_TimeVolumeEntry_n14(_uploadFile, _downloadFile, value.october),
-        december: from_candid_TimeVolumeEntry_n14(_uploadFile, _downloadFile, value.december)
+        may: from_candid_TimeVolumeEntry_n27(_uploadFile, _downloadFile, value.may),
+        march: from_candid_TimeVolumeEntry_n27(_uploadFile, _downloadFile, value.march),
+        april: from_candid_TimeVolumeEntry_n27(_uploadFile, _downloadFile, value.april),
+        november: from_candid_TimeVolumeEntry_n27(_uploadFile, _downloadFile, value.november),
+        july: from_candid_TimeVolumeEntry_n27(_uploadFile, _downloadFile, value.july),
+        june: from_candid_TimeVolumeEntry_n27(_uploadFile, _downloadFile, value.june),
+        february: from_candid_TimeVolumeEntry_n27(_uploadFile, _downloadFile, value.february),
+        september: from_candid_TimeVolumeEntry_n27(_uploadFile, _downloadFile, value.september),
+        august: from_candid_TimeVolumeEntry_n27(_uploadFile, _downloadFile, value.august),
+        january: from_candid_TimeVolumeEntry_n27(_uploadFile, _downloadFile, value.january),
+        october: from_candid_TimeVolumeEntry_n27(_uploadFile, _downloadFile, value.october),
+        december: from_candid_TimeVolumeEntry_n27(_uploadFile, _downloadFile, value.december)
     };
 }
-function from_candid_record_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_record_n28(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     minutes: [] | [bigint];
     timeString: [] | [string];
 }): {
@@ -515,9 +744,76 @@ function from_candid_record_n15(_uploadFile: (file: ExternalBlob) => Promise<Uin
     timeString?: string;
 } {
     return {
-        minutes: record_opt_to_undefined(from_candid_opt_n16(_uploadFile, _downloadFile, value.minutes)),
-        timeString: record_opt_to_undefined(from_candid_opt_n17(_uploadFile, _downloadFile, value.timeString))
+        minutes: record_opt_to_undefined(from_candid_opt_n29(_uploadFile, _downloadFile, value.minutes)),
+        timeString: record_opt_to_undefined(from_candid_opt_n13(_uploadFile, _downloadFile, value.timeString))
     };
+}
+function from_candid_variant_n10(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    swimming: _SwimmingEntry;
+} | {
+    strength: _StrengthEntry;
+} | {
+    cycling: _CyclingEntry;
+} | {
+    running: _RunningEntry;
+}): {
+    __kind__: "swimming";
+    swimming: SwimmingEntry;
+} | {
+    __kind__: "strength";
+    strength: StrengthEntry;
+} | {
+    __kind__: "cycling";
+    cycling: CyclingEntry;
+} | {
+    __kind__: "running";
+    running: RunningEntry;
+} {
+    return "swimming" in value ? {
+        __kind__: "swimming",
+        swimming: from_candid_SwimmingEntry_n11(_uploadFile, _downloadFile, value.swimming)
+    } : "strength" in value ? {
+        __kind__: "strength",
+        strength: value.strength
+    } : "cycling" in value ? {
+        __kind__: "cycling",
+        cycling: from_candid_CyclingEntry_n14(_uploadFile, _downloadFile, value.cycling)
+    } : "running" in value ? {
+        __kind__: "running",
+        running: from_candid_RunningEntry_n16(_uploadFile, _downloadFile, value.running)
+    } : value;
+}
+function from_candid_variant_n20(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    swimming: null;
+} | {
+    freeform: null;
+} | {
+    cycling: null;
+} | {
+    running: null;
+} | {
+    strengthTraining: null;
+}): ActivityType {
+    return "swimming" in value ? ActivityType.swimming : "freeform" in value ? ActivityType.freeform : "cycling" in value ? ActivityType.cycling : "running" in value ? ActivityType.running : "strengthTraining" in value ? ActivityType.strengthTraining : value;
+}
+function from_candid_variant_n40(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    ok: null;
+} | {
+    err: string;
+}): {
+    __kind__: "ok";
+    ok: null;
+} | {
+    __kind__: "err";
+    err: string;
+} {
+    return "ok" in value ? {
+        __kind__: "ok",
+        ok: value.ok
+    } : "err" in value ? {
+        __kind__: "err",
+        err: value.err
+    } : value;
 }
 function from_candid_variant_n7(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     admin: null;
@@ -528,11 +824,26 @@ function from_candid_variant_n7(_uploadFile: (file: ExternalBlob) => Promise<Uin
 }): UserRole {
     return "admin" in value ? UserRole.admin : "user" in value ? UserRole.user : "guest" in value ? UserRole.guest : value;
 }
-function from_candid_vec_n8(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Habit>): Array<Habit> {
-    return value.map((x)=>from_candid_Habit_n9(_uploadFile, _downloadFile, x));
+function from_candid_vec_n21(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Habit>): Array<Habit> {
+    return value.map((x)=>from_candid_Habit_n22(_uploadFile, _downloadFile, x));
 }
-function to_candid_TimeVolumeEntry_n19(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: TimeVolumeEntry): _TimeVolumeEntry {
-    return to_candid_record_n20(_uploadFile, _downloadFile, value);
+function to_candid_ActivityDayEntry_n32(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ActivityDayEntry): _ActivityDayEntry {
+    return to_candid_variant_n33(_uploadFile, _downloadFile, value);
+}
+function to_candid_ActivityType_n42(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ActivityType): _ActivityType {
+    return to_candid_variant_n43(_uploadFile, _downloadFile, value);
+}
+function to_candid_CyclingEntry_n36(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: CyclingEntry): _CyclingEntry {
+    return to_candid_record_n37(_uploadFile, _downloadFile, value);
+}
+function to_candid_RunningEntry_n34(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: RunningEntry): _RunningEntry {
+    return to_candid_record_n35(_uploadFile, _downloadFile, value);
+}
+function to_candid_SwimmingEntry_n38(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: SwimmingEntry): _SwimmingEntry {
+    return to_candid_record_n39(_uploadFile, _downloadFile, value);
+}
+function to_candid_TimeVolumeEntry_n44(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: TimeVolumeEntry): _TimeVolumeEntry {
+    return to_candid_record_n45(_uploadFile, _downloadFile, value);
 }
 function to_candid_UserRole_n2(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserRole): _UserRole {
     return to_candid_variant_n3(_uploadFile, _downloadFile, value);
@@ -540,7 +851,55 @@ function to_candid_UserRole_n2(_uploadFile: (file: ExternalBlob) => Promise<Uint
 function to_candid_opt_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Time | null): [] | [_Time] {
     return value === null ? candid_none() : candid_some(value);
 }
-function to_candid_record_n20(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function to_candid_opt_n41(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ActivityType | null): [] | [_ActivityType] {
+    return value === null ? candid_none() : candid_some(to_candid_ActivityType_n42(_uploadFile, _downloadFile, value));
+}
+function to_candid_record_n35(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    duration?: string;
+    pace?: string;
+    distance: number;
+}): {
+    duration: [] | [string];
+    pace: [] | [string];
+    distance: number;
+} {
+    return {
+        duration: value.duration ? candid_some(value.duration) : candid_none(),
+        pace: value.pace ? candid_some(value.pace) : candid_none(),
+        distance: value.distance
+    };
+}
+function to_candid_record_n37(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    duration?: string;
+    distance: number;
+    intensity?: string;
+}): {
+    duration: [] | [string];
+    distance: number;
+    intensity: [] | [string];
+} {
+    return {
+        duration: value.duration ? candid_some(value.duration) : candid_none(),
+        distance: value.distance,
+        intensity: value.intensity ? candid_some(value.intensity) : candid_none()
+    };
+}
+function to_candid_record_n39(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    duration?: string;
+    distance: number;
+    strokeType?: string;
+}): {
+    duration: [] | [string];
+    distance: number;
+    strokeType: [] | [string];
+} {
+    return {
+        duration: value.duration ? candid_some(value.duration) : candid_none(),
+        distance: value.distance,
+        strokeType: value.strokeType ? candid_some(value.strokeType) : candid_none()
+    };
+}
+function to_candid_record_n45(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     minutes?: bigint;
     timeString?: string;
 }): {
@@ -565,6 +924,60 @@ function to_candid_variant_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8
         user: null
     } : value == UserRole.guest ? {
         guest: null
+    } : value;
+}
+function to_candid_variant_n33(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    __kind__: "swimming";
+    swimming: SwimmingEntry;
+} | {
+    __kind__: "strength";
+    strength: StrengthEntry;
+} | {
+    __kind__: "cycling";
+    cycling: CyclingEntry;
+} | {
+    __kind__: "running";
+    running: RunningEntry;
+}): {
+    swimming: _SwimmingEntry;
+} | {
+    strength: _StrengthEntry;
+} | {
+    cycling: _CyclingEntry;
+} | {
+    running: _RunningEntry;
+} {
+    return value.__kind__ === "swimming" ? {
+        swimming: to_candid_SwimmingEntry_n38(_uploadFile, _downloadFile, value.swimming)
+    } : value.__kind__ === "strength" ? {
+        strength: value.strength
+    } : value.__kind__ === "cycling" ? {
+        cycling: to_candid_CyclingEntry_n36(_uploadFile, _downloadFile, value.cycling)
+    } : value.__kind__ === "running" ? {
+        running: to_candid_RunningEntry_n34(_uploadFile, _downloadFile, value.running)
+    } : value;
+}
+function to_candid_variant_n43(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ActivityType): {
+    swimming: null;
+} | {
+    freeform: null;
+} | {
+    cycling: null;
+} | {
+    running: null;
+} | {
+    strengthTraining: null;
+} {
+    return value == ActivityType.swimming ? {
+        swimming: null
+    } : value == ActivityType.freeform ? {
+        freeform: null
+    } : value == ActivityType.cycling ? {
+        cycling: null
+    } : value == ActivityType.running ? {
+        running: null
+    } : value == ActivityType.strengthTraining ? {
+        strengthTraining: null
     } : value;
 }
 export interface CreateActorOptions {

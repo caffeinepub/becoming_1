@@ -1,18 +1,25 @@
-import { useState } from 'react';
-import { MonthTabs } from './MonthTabs';
-import { HabitManager } from './HabitManager';
-import { HabitGrid } from './HabitGrid';
-import { GridSkeleton } from './GridSkeleton';
-import { ErrorBanner } from './ErrorBanner';
-import { AuthRequiredNotice } from '../../../components/auth/AuthRequiredNotice';
-import { YearlyProgressChartSection } from './YearlyProgressChartSection';
-import { MonthlyVolumeSummary } from './MonthlyVolumeSummary';
-import { useHabits } from '../api/queries';
-import { useInternetIdentity } from '../../../hooks/useInternetIdentity';
+import { useInternetIdentity } from "@caffeineai/core-infrastructure";
+import { useState } from "react";
+import { AuthRequiredNotice } from "../../../components/auth/AuthRequiredNotice";
+import { useHabits } from "../api/queries";
+import { ErrorBanner } from "./ErrorBanner";
+import { GridSkeleton } from "./GridSkeleton";
+import { HabitGrid } from "./HabitGrid";
+import { HabitManager } from "./HabitManager";
+import { MonthTabs } from "./MonthTabs";
+import { MonthlyVolumeSummary } from "./MonthlyVolumeSummary";
+import { YearlyProgressChartSection } from "./YearlyProgressChartSection";
 
 export function BecomingView() {
   const [selectedMonth, setSelectedMonth] = useState(0);
-  const { data: habits, isLoading, error, isFetched, isError, retry } = useHabits();
+  const {
+    data: habits,
+    isLoading,
+    error,
+    isFetched,
+    isError,
+    retry,
+  } = useHabits();
   const { identity, isInitializing } = useInternetIdentity();
 
   const isAuthenticated = !!identity;
@@ -38,20 +45,27 @@ export function BecomingView() {
   return (
     <div className="space-y-6">
       <HabitManager disabled={false} />
-      
+
       {showGrid && habits && habits.length > 0 && (
         <>
           <YearlyProgressChartSection habits={habits} />
           <MonthlyVolumeSummary habits={habits} selectedMonth={selectedMonth} />
         </>
       )}
-      
+
       <div className="glass-surface rounded-lg overflow-hidden">
-        <MonthTabs selectedMonth={selectedMonth} onMonthChange={setSelectedMonth} />
-        
+        <MonthTabs
+          selectedMonth={selectedMonth}
+          onMonthChange={setSelectedMonth}
+        />
+
         <div className="p-4">
           {showGrid ? (
-            <HabitGrid habits={habits || []} selectedMonth={selectedMonth} disabled={false} />
+            <HabitGrid
+              habits={habits || []}
+              selectedMonth={selectedMonth}
+              disabled={false}
+            />
           ) : (
             <GridSkeleton />
           )}

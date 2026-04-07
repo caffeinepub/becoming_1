@@ -1,8 +1,17 @@
-import { useMemo } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { type HabitWithCompletion } from '../state/habitModel';
-import { aggregateYearlyTotalsByHabit } from '../state/habitModel';
-import { MONTHS_2026 } from '../constants/months2026';
+import { useMemo } from "react";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Legend,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import { MONTHS_2026 } from "../constants/months2026";
+import type { HabitWithCompletion } from "../state/habitModel";
+import { aggregateYearlyTotalsByHabit } from "../state/habitModel";
 
 interface YearlyProgressChartSectionProps {
   habits: HabitWithCompletion[];
@@ -28,30 +37,41 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
     <div
       className="rounded-lg border p-3 shadow-lg"
       style={{
-        backgroundColor: 'oklch(var(--popover))',
-        borderColor: 'oklch(var(--border))',
+        backgroundColor: "oklch(var(--popover))",
+        borderColor: "oklch(var(--border))",
       }}
     >
-      <p className="text-sm font-semibold mb-2" style={{ color: 'oklch(var(--foreground))' }}>
+      <p
+        className="text-sm font-semibold mb-2"
+        style={{ color: "oklch(var(--foreground))" }}
+      >
         {label}
       </p>
       <div className="space-y-1">
         {payload.map((entry) => {
-          const isHours = entry.dataKey === 'Plank' || entry.dataKey === 'Squash';
-          const unit = isHours ? ' hours' : ' reps';
+          const isHours =
+            entry.dataKey === "Plank" || entry.dataKey === "Squash";
+          const unit = isHours ? " hours" : " reps";
           const displayValue = entry.value.toFixed(isHours ? 2 : 0);
-          
+
           return (
-            <div key={entry.dataKey} className="flex items-center gap-2 text-xs">
+            <div
+              key={entry.dataKey}
+              className="flex items-center gap-2 text-xs"
+            >
               <div
                 className="w-3 h-3 rounded-sm"
                 style={{ backgroundColor: entry.color }}
               />
-              <span style={{ color: 'oklch(var(--muted-foreground))' }}>
+              <span style={{ color: "oklch(var(--muted-foreground))" }}>
                 {entry.name}:
               </span>
-              <span className="font-medium" style={{ color: 'oklch(var(--foreground))' }}>
-                {displayValue}{unit}
+              <span
+                className="font-medium"
+                style={{ color: "oklch(var(--foreground))" }}
+              >
+                {displayValue}
+                {unit}
               </span>
             </div>
           );
@@ -61,16 +81,18 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
   );
 }
 
-export function YearlyProgressChartSection({ habits }: YearlyProgressChartSectionProps) {
+export function YearlyProgressChartSection({
+  habits,
+}: YearlyProgressChartSectionProps) {
   const chartData = useMemo(() => {
     const yearlyTotals = aggregateYearlyTotalsByHabit(habits);
-    
+
     return MONTHS_2026.map((month, index) => ({
       month: month.shortName,
-      'Press-ups': yearlyTotals.pressUps[index],
-      'Squats': yearlyTotals.squats[index],
-      'Plank': yearlyTotals.plankHours[index],
-      'Squash': yearlyTotals.squashHours[index],
+      "Press-ups": yearlyTotals.pressUps[index],
+      Squats: yearlyTotals.squats[index],
+      Plank: yearlyTotals.plankHours[index],
+      Squash: yearlyTotals.squashHours[index],
     }));
   }, [habits]);
 
@@ -78,10 +100,10 @@ export function YearlyProgressChartSection({ habits }: YearlyProgressChartSectio
   const hasData = habits.some((h) => {
     const normalizedName = h.name.toLowerCase().trim();
     return (
-      normalizedName === 'press-ups' ||
-      normalizedName === 'squats' ||
-      normalizedName === 'plank' ||
-      normalizedName === 'squash'
+      normalizedName === "press-ups" ||
+      normalizedName === "squats" ||
+      normalizedName === "plank" ||
+      normalizedName === "squash"
     );
   });
 
@@ -95,30 +117,38 @@ export function YearlyProgressChartSection({ habits }: YearlyProgressChartSectio
   return (
     <div className="glass-surface rounded-lg p-4 mb-6">
       <div className="mb-4">
-        <h3 className="text-sm font-semibold text-foreground">Yearly Progress</h3>
-        <p className="text-xs text-muted-foreground mt-1">{currentYear} Overview</p>
+        <h3 className="text-sm font-semibold text-foreground">
+          Yearly Progress
+        </h3>
+        <p className="text-xs text-muted-foreground mt-1">
+          {currentYear} Overview
+        </p>
       </div>
-      
+
       <ResponsiveContainer width="100%" height={300}>
         <BarChart
           data={chartData}
           margin={{ top: 10, right: 10, left: 0, bottom: 20 }}
         >
-          <CartesianGrid strokeDasharray="3 3" stroke="oklch(var(--border))" opacity={0.3} />
+          <CartesianGrid
+            strokeDasharray="3 3"
+            stroke="oklch(var(--border))"
+            opacity={0.3}
+          />
           <XAxis
             dataKey="month"
-            tick={{ fill: 'oklch(var(--muted-foreground))', fontSize: 12 }}
-            tickLine={{ stroke: 'oklch(var(--border))' }}
-            axisLine={{ stroke: 'oklch(var(--border))' }}
+            tick={{ fill: "oklch(var(--muted-foreground))", fontSize: 12 }}
+            tickLine={{ stroke: "oklch(var(--border))" }}
+            axisLine={{ stroke: "oklch(var(--border))" }}
           />
           <YAxis
-            tick={{ fill: 'oklch(var(--muted-foreground))', fontSize: 12 }}
-            tickLine={{ stroke: 'oklch(var(--border))' }}
-            axisLine={{ stroke: 'oklch(var(--border))' }}
+            tick={{ fill: "oklch(var(--muted-foreground))", fontSize: 12 }}
+            tickLine={{ stroke: "oklch(var(--border))" }}
+            axisLine={{ stroke: "oklch(var(--border))" }}
           />
           <Tooltip content={<CustomTooltip />} />
           <Legend
-            wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }}
+            wrapperStyle={{ fontSize: "12px", paddingTop: "10px" }}
             iconType="rect"
           />
           <Bar

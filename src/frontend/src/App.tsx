@@ -1,10 +1,10 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BecomingView } from './features/becoming/components/BecomingView';
-import { Toaster } from '@/components/ui/sonner';
-import { LoginButton } from './components/auth/LoginButton';
-import { AuthStateIndicator } from './components/auth/AuthStateIndicator';
-import { DailyMotivationalQuote } from './components/quotes/DailyMotivationalQuote';
-import { Heart } from 'lucide-react';
+import { Toaster } from "@/components/ui/sonner";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Heart } from "lucide-react";
+import { AuthStateIndicator } from "./components/auth/AuthStateIndicator";
+import { LoginButton } from "./components/auth/LoginButton";
+import { DailyMotivationalQuote } from "./components/quotes/DailyMotivationalQuote";
+import { BecomingView } from "./features/becoming/components/BecomingView";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -16,9 +16,10 @@ const queryClient = new QueryClient({
 });
 
 function App() {
-  const appIdentifier = typeof window !== 'undefined' 
-    ? encodeURIComponent(window.location.hostname) 
-    : 'unknown-app';
+  const appIdentifier =
+    typeof window !== "undefined"
+      ? encodeURIComponent(window.location.hostname)
+      : "unknown-app";
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -39,15 +40,16 @@ function App() {
             </div>
           </div>
         </header>
-        
+
         <main className="container mx-auto px-4 py-8">
           <DailyMotivationalQuote />
           <BecomingView />
         </main>
-        
+
         <footer className="border-t border-border mt-16 py-6">
           <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-            © {new Date().getFullYear()}. Built with <Heart className="inline h-3 w-3 text-primary fill-primary" /> using{' '}
+            © {new Date().getFullYear()}. Built with{" "}
+            <Heart className="inline h-3 w-3 text-primary fill-primary" /> using{" "}
             <a
               href={`https://caffeine.ai/?utm_source=Caffeine-footer&utm_medium=referral&utm_content=${appIdentifier}`}
               target="_blank"
@@ -58,7 +60,7 @@ function App() {
             </a>
           </div>
         </footer>
-        
+
         <Toaster />
       </div>
     </QueryClientProvider>

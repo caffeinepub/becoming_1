@@ -4,13 +4,13 @@
  */
 
 // Width of the first column (habit info)
-export const HABIT_INFO_WIDTH = 'w-48';
+export const HABIT_INFO_WIDTH = "w-48";
 
 // Width of each day column (must match for header and checkboxes)
-export const DAY_COLUMN_WIDTH = 'w-10';
+export const DAY_COLUMN_WIDTH = "w-10";
 
 // Padding for day cells to center content
-export const DAY_CELL_PADDING = 'px-2';
+export const DAY_CELL_PADDING = "px-2";
 
 /**
  * Builds the grid template columns string for CSS grid layout
@@ -19,7 +19,7 @@ export const DAY_CELL_PADDING = 'px-2';
  */
 export function buildGridColumns(daysInMonth: number): string {
   // First column is fixed width for habit info, rest are day columns
-  const dayColumns = Array(daysInMonth).fill('2.5rem').join(' ');
+  const dayColumns = Array(daysInMonth).fill("2.5rem").join(" ");
   return `12rem ${dayColumns}`;
 }
 
